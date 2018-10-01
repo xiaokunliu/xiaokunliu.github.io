@@ -3,7 +3,7 @@
 ## Source: https://github.com/hexojs/hexo/
 
 # Site
-title: Hexo
+title: 疾风先生博客
 subtitle:
 description:
 keywords:
@@ -13,8 +13,8 @@ timezone:
 
 # URL
 ## If your site is put in a subdirectory, set url as 'http://yoursite.com/child' and root as '/child/'
-url: https://xiaokunliu.github.io/websites
-root: /websites/
+url: https://xiaokunliu.github.io/
+root: /
 permalink: :year/:month/:day/:title/
 permalink_defaults:
 
@@ -54,9 +54,21 @@ index_generator:
   order_by: -date
   
 # Category & Tag
-default_category: uncategorized
+# Category & Tag
+default_category: 前端
 category_map:
+  前端: front
+  后台: server
+  设计: design
+  运维: operator
+  资源: resource
 tag_map:
+  java: java
+  golang: golang
+  网站: website
+  后台: server
+  JS: js
+  Mac必备工具: mactools
 
 # Date / Time format
 ## Hexo uses Moment.js to parse and display date
@@ -73,7 +85,7 @@ pagination_dir: page
 # Extensions
 ## Plugins: https://hexo.io/plugins/
 ## Themes: https://hexo.io/themes/
-theme: landscape
+theme: jsimple
 
 # Deployment
 ## Docs: https://hexo.io/docs/deployment.html
