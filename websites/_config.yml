@@ -54,20 +54,11 @@ index_generator:
   order_by: -date
   
 # Category & Tag
-# Category & Tag
-default_category: 前端
+default_category: 后台
 category_map:
-  前端: front
   后台: server
-  设计: design
-  运维: operator
-  资源: resource
 tag_map:
-  java: java
-  golang: golang
-  网站: website
-  后台: server
-  JS: js
+  spring: spring
   Mac必备工具: mactools
 
 # Date / Time format
