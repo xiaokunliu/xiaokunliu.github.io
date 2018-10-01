@@ -13,13 +13,13 @@ tags: spring
 * 基于切面和惯例进行声明式编程
 * 通过切面和模板减少样板式代码
 
-> 依赖注入（DI）
+###### 依赖注入（DI）
 
 * 作用：通过将对象的依赖关系交由系统中负责协调各对象的第三方组件（Spring容器）在创建对象的时候进行设定，对象无需自行创建或管理它们的依赖关系
 * 装配：创建应用组件之间协作的行为通常称为装配
 * 工作原理：Spring通过应用上下文(Application Context)装载bean的定义并把它们组装起来。Spring应用上下文全权负责对象的创建和组装。Spring自带了多种应用上下文的实现，它们之间主要的区别仅仅 在于如何加载配置
 
-> 应用切面(AOP)
+###### 应用切面(AOP)
 
 * 作用：允许你把遍布应用各处的功能分离出来形成可重用的组件
 * 组成：横切关注点+切点+切面+通知
@@ -28,17 +28,17 @@ tags: spring
 * 切点：业务组件对象中需要引入切面定义的系统服务，增强原先业务组件对象的方法服务，即业务组件原先的服务方法称为切点
 * 通知：即在切点前后以及抛出异常时捕获住的切面方法
 
-> 使用模板消除样板式代码
+###### 使用模板消除样板式代码
 
 * 通常为了实现通用的和简单的任务，你不得不一遍遍地重 复编写这样的代码，如使用JDBC访问查询数据的操作（打开连接+拼接sql+发送sql+解析结果集+关闭连接），其中样板式代码就是打开连接+发送sql+关闭连接，这些都可以通过模板来消除进而实现只关注核心的业务代码的编写
 	
-> Spring容器
+###### Spring容器
 
 * 作用：Spring容器负责创建对象，装配它们，配置它们并管理它们的整个生命周期，从生存到死亡(在这里，可能 就是new到finalize()）
 * bean工厂：org.springframework.beans.factory.BeanFactory，最简单的容器，提供基本的DI支持
 * 应用上下文：org.springframework.context.ApplicationContext，基于BeanFactory构建，并提供应用框架级别的服务，例如从属性文件解析文本信息以及发布应用事件 给感兴趣的事件监听者
 
-> Spring应用上下文
+###### Spring应用上下文
 
 * AnnotationConfigApplicationContext:从一个或多个基于Java的配置类中加载 Spring应用上下文
 * AnnotationConfigWebApplicationContext:从一个或多个基于Java的配置类中加 载Spring Web应用上下文
@@ -47,7 +47,7 @@ tags: spring
 * XmlWebApplicationContext:从Web应用下的一个或多个XML配置文件中加载上下文定义
 **FileSystemXmlApplicationContext在指定的文件系统 路径下查找knight.xml文件;ClassPathXmlApplicationContext是在所有的类路径(包含 JAR文件)下查找 knight.xml文件**
 
-> Spring 管理bean的生命周期
+###### Spring 管理bean的生命周期
 
 1. Spring对bean进行实例化
 2. Spring将值和bean的引用注入到bean对应的属性中
@@ -60,7 +60,7 @@ tags: spring
 9. 此时，bean已经准备就绪，可以被应用程序使用了，它们将一直驻留在应用上下文中，直到该应用上下文被销毁
 10. 如果bean实现了DisposableBean接口，Spring将调用它的destroy()接口方法。同样， 如果bean使用destroy-method声明了销毁方法，该方法也会被调用
 
-> Spring 模块
+###### Spring 模块
 
 * 核心容器：管理着Spring应用中bean的创建、配置和管理；在该模块中， 包括了Spring bean工厂，它为Spring提供了DI的功能，同时也提供了许多企业服务，例如E-mail、JNDI访问、EJB集成和调度
 * AOP模块：AOP可以帮助应用对象解耦，借助于AOP，可以将遍布系统的关注点(例如 事务和安全)从它们所应用的对象中解耦出来
@@ -71,7 +71,7 @@ tags: spring
 * Instrumentation：提供了为JVM添加代理(agent)的功能。具体来讲，它为Tomcat提供了一个织入代理，能够为Tomcat传递类文件，就像这些文件是被类加载器加载的一样
 * 测试：Spring为使用JNDI、Servlet和Portlet编写单元测试提供了一系列的mock对 象实现。对于集成测试，该模块为加载Spring应用上下文中的bean集合以及与Spring上下文中的 bean进行交互提供了支持
 
-> Spring Portfolio
+###### Spring Portfolio
 
 * Spring Web Flow：为基于流程的会话式Web应用(可以想一下购物 车或者向导功能)提供了支持，[参考Spring WebFlow](http://projects.spring.io/spring-webflow/)
 * Spring Web Service：提供了契约优先的Web Service模型，服务的实现都是为了满 足服务的契约而编写的，[参考Spring WebService](http://docs.spring.io/spring-%20ws/site/)
@@ -84,7 +84,7 @@ tags: spring
 * Spring for Android：旨在通过Spring框架为开发基于 Android设备的本地应用提供某些简单的支持，[参考Spring Android](http://projects.spring.io%20/spring-android/)
 * Spring Boot：Spring Boot大量依赖于自动配置技术，它能够消除大部分(在很多场景中，甚至是全部)Spring 配置。它还提供了多个Starter项目，不管你使用Maven还是Gradle，这都能减少Spring工程构建文件的大小
 
-> 耦合的两面性
+###### 耦合的两面性
 
 * 一方面，紧密耦合的代码难以测试、难以复用、难以理解，并且典型地表现出“打地鼠”式的bug特性(修复一个bug，将会出现一个或者更多新的bug)。
 *  另一方面，一定程度的耦合又是必须的——完全没有耦合的代码什么也做不了。为了完成有实际意 义的功能，不同的类必须以适当的方式进行交互。总而言之，耦合是必须的，但应当被小心谨慎地管理
