@@ -1,0 +1,77 @@
+# site name
+siteName: 疾风先生
+shortName: 疾风
+
+
+# full https model which means #Content-Security-Policy = upgrade-insecure-requests# in meat tag
+fullHttps: true
+
+# favicon
+favicon: /images/icon.jpg
+# unique avatar
+avatarShow: false
+avatarImage: /images/icon.jpg
+
+# Home page sort type: -1: newer first，1: older first.
+homePageSortType: -1
+# Home page article shown number)
+homeArticleShown: 15
+
+
+# your site build time or domain buy time
+siteBuildingTime: 10/01/2018
+
+
+# Top navigate menu name
+## Notice:
+## Name order decide show index.The name also called category alias,so you must set category alias before start server.
+## BTW,'category_map' and 'tag_map' field in site '_config.yml' file must one to one correspondence with menus below.
+menu:
+   前端: front
+   后台: server
+   设计: design
+   运维: operator
+   资源: resource
+
+# Left menu of single pages settings
+## Notice: faName is FontAwesome style name
+leftPagesMenu:
+- uri: help
+  title: 帮助
+  faName: fa-question-circle
+
+
+# cover info config
+coverTitle:
+coverDescription:
+
+# sns url
+sns:
+  facebook: https://www.facebook.com/xiaokun.liu.98
+  twitter: https://twitter.com/liuxkmail
+  github: https://github.com/xiaokunliu
+
+# your article copyright or content declare
+postDeclare: 分享积累的技术知识
+
+# Git-pages server info
+pageServerName: Coding
+pageServerUrl:
+
+
+# Gitment
+# Introduction: https://imsun.net/posts/gitment-introduction/
+gitment:
+  enable: false
+  githubID:
+  repo:
+  ClientID:
+  ClientSecret:
+  lazy: true
+
+## Comments settings.You can choose only ONE to display.
+# disqus shortName,
+disqus_shortname: keithl
+
+# Analytics
+tentcentAnalyticsId: 1248237617
