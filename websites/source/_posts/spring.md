@@ -4,7 +4,7 @@ date: 2018-10-01 19:27:56
 tags: spring
 ---
 
-spring小结（1）
+#### spring小结（1）
 <!-- more -->
 
 ##### Spring降低Java开发成本，采取以下4种关键策略
