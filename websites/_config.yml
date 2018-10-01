@@ -3,12 +3,12 @@
 ## Source: https://github.com/hexojs/hexo/
 
 # Site
-title: 疾风先生博客
-subtitle:
-description:
-keywords:
+title: 疾风先生
+subtitle: 技术小结
+description: 积累学习和工作技术知识
+keywords: 疾风先生
 author: keithl
-language:
+language: zh-CN
 timezone:
 
 # URL
@@ -76,7 +76,7 @@ pagination_dir: page
 # Extensions
 ## Plugins: https://hexo.io/plugins/
 ## Themes: https://hexo.io/themes/
-theme: jsimple
+theme: xoxo
 
 # Deployment
 ## Docs: https://hexo.io/docs/deployment.html
