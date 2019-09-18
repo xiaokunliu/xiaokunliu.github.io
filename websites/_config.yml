@@ -40,7 +40,7 @@ lcoal_search:
   enable: true
 
 # Writing
-new_post_name: :title.md # File name of new posts
+new_post_name: :categories/:title.md # File name of new posts
 default_layout: post
 titlecase: false # Transform title into titlecase
 external_link: true # Open external links in new tab

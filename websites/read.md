@@ -36,3 +36,17 @@ $ hexo deploy
 ```
 
 More info: [Deployment](https://hexo.io/docs/deployment.html)
+
+
+```bash
+# 生成新的文章 -- 当前websites目录下执行
+hexo new post title_name --categories category_name
+
+# 发布到远程
+hexo clean && hexo g && hexo d
+```
+
+
+
+
+
