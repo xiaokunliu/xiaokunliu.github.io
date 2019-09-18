@@ -1,10 +1,12 @@
 ---
 title: spring基础
 date: 2018-10-01 19:27:56
-tags: spring
+categories: 
+- spring
+tags: 
+- spring基础
 ---
 
-#### spring基础
 <!-- more -->
 
 > Spring降低Java开发成本，采取以下4种关键策略

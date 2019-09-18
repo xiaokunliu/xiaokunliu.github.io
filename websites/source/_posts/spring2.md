@@ -1,9 +1,12 @@
 ---
 title: Spring装配Bean
 date: 2019-07-24 10:51:03
-tags: spring
+categories: 
+- spring
+tags: 
+- spring装配Bean
 ---
-#### Spring装配Bean
+
 <!-- more -->
 
 创建应用对象之间协作关系的行为通常称为装配(wiring)，这也是依赖注入(DI)的本质
