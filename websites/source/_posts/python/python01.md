@@ -1,5 +1,5 @@
 ---
-title: Python基础
+title: 搭建python环境
 category: python
 date: 2019-12-31 23:21:11
 tags: Python基础
@@ -18,6 +18,7 @@ win7平台：https://www.docker.com/products/docker-toolbox
 
 ##### 构建Docker镜像
 > 基于Dockerfile构建镜像
+
 ```
 ## 参考链接：https://docs.docker.com/engine/examples/running_ssh_service/#build-an-eg_sshd-image
 FROM ubuntu:16.04
@@ -34,6 +35,7 @@ CMD ["/usr/sbin/sshd", "-D"]
 ```
 
 > 构建镜像
+
 ```
 ## 进入本地自己的dockerfile所在目录，当前目录是在 ~/mywork/docker/docker
 docker build -t 自定义镜像名称:tag标签名 .
@@ -41,6 +43,7 @@ docker build -t docker-ssh:v1 .
 ```
 
 > 查看docker镜像
+
 ```
 docker images
 ```

@@ -1,10 +1,10 @@
 ---
-title: Spring装配Bean
+title: Spring小结(2)
 date: 2019-07-24 10:51:03
 categories: 
-- spring
+- Spring
 tags: 
-- spring装配Bean
+- Spring小结(2)
 ---
 
 <!-- more -->
