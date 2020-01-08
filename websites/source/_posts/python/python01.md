@@ -1,8 +1,8 @@
 ---
 title: 搭建python环境
-category: python
+category: Python
 date: 2019-12-31 23:21:11
-tags: Python基础
+tags: Python
 ---
 
 <!-- more -->
