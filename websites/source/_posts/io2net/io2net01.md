@@ -723,13 +723,14 @@ static int ep_poll(struct eventpoll *ep, struct epoll_event __user *events,
     - socket接收数据的缓冲区不为空的时候，则一直触发读事件，相当于"不断地询问是否数据是否可读"
     - socket发送数据的缓冲区不全满的时候，则一直触发写事件，相当于"不断地询问是否有区域可以让数据写入"
 本质上就是一个不断进行交流的过程，如下图所示：
-![水平触发](https://raw.githubusercontent.com/xiaokunliu/xiaokunliu.github.io/feature/writing/websites/writing2images/io/level_trigger.jpg)
+![水平触发](https://www.wailian.work/image/58Oint)
+
 
 - 边缘触发
     - socket接收数据的缓冲区发生变化，则触发读取事件，也就是当空的接收数据的socket缓冲区这个时候有数据传送过来的时候触发
     - socket发送数据的缓冲区发生变化，则触发写入事件，也就是当满的发送数据的socket缓冲区这个时候刚刷新数据初期的时候触发
 本质上就是socket缓冲区变化而触发，如下图所示：
-![边缘触发](https://raw.githubusercontent.com/xiaokunliu/xiaokunliu.github.io/feature/writing/websites/writing2images/io/edage_triigger.jpg)
+![边缘触发](https://www.wailian.work/image/edage-triigger.58OfvO)
 
 - 上述的触发事件会调用epoll_wait方法，也就是
     - 水平触发会多次调用epoll_wait
