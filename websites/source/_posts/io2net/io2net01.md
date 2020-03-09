@@ -723,7 +723,7 @@ static int ep_poll(struct eventpoll *ep, struct epoll_event __user *events,
     - socket接收数据的缓冲区不为空的时候，则一直触发读事件，相当于"不断地询问是否数据是否可读"
     - socket发送数据的缓冲区不全满的时候，则一直触发写事件，相当于"不断地询问是否有区域可以让数据写入"
 本质上就是一个不断进行交流的过程，如下图所示：
-![水平触发](https://www.wailian.work/image/58Oint)
+![水平触发](https://www.wailian.work/image/58O9sL)
 
 
 - 边缘触发
