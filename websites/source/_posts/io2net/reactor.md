@@ -15,7 +15,7 @@ https://en.wikipedia.org/wiki/Event_loop
 https://en.wikipedia.org/wiki/Proactor_pattern
 https://en.wikipedia.org/wiki/Event-driven_architecture
 ```
-![](https://github.com/xiaokunliu/xiaokunliu.github.io/blob/feature/writing/websites/zimages/reactor/pattern_title.jpg)
+![](https://raw.githubusercontent.com/xiaokunliu/xiaokunliu.github.io/feature/writing/websites/zimages/reactor/pattern_title.jpg)
 
 首先,在讲述高性能IO编程设计的时候,我们先思考一下何为“高性能”呢,如果自己来设计一个web体系服务,选择BIO还是NIO的编程方式呢?其次,我们可以了解下构建一个web体系服务中,为了能够支撑更多的并发连接数,一般会有两种web架构设计方案,即线程架构以及事件驱动设计,在Java的IO设计演进文章已对线程架构设计方案进行详细的阐述,本文主要以事件驱动设计具体实现技术展开讨论.
 #### web体系设计
@@ -32,7 +32,7 @@ https://en.wikipedia.org/wiki/Event-driven_architecture
 
 > 异步web与同步web的吞吐量
 
-![](https://github.com/xiaokunliu/xiaokunliu.github.io/blob/feature/writing/websites/zimages/reactor/io_straight.jpg)
+![](https://raw.githubusercontent.com/xiaokunliu/xiaokunliu.github.io/feature/writing/websites/zimages/reactor/io_straight.jpg)
 
 通过上述可知,在相同的操作系统环境下,同步web的IO吞吐量更高,主要包含以下方面:
 同步Web的IO模型吞吐量性能要比NIO高出25%-35%,即使使用多个selector的NIO实现方式也无法比基于Linux的NPLT实现同步操作的性能更快
@@ -90,23 +90,23 @@ while(true){
 
 linux在内核2.6版本之后使用NPTL的规范实现线程技术，空闲的线程成本接近为0，同时线程上下文能够实现更快切换以及尽可能地运行更多线程，如下图所示:
 
-![](https://github.com/xiaokunliu/xiaokunliu.github.io/blob/feature/writing/websites/zimages/reactor/thread_context_switch.jpg)
+![](https://raw.githubusercontent.com/xiaokunliu/xiaokunliu.github.io/feature/writing/websites/zimages/reactor/thread_context_switch.jpg)
 
 通过上述可知,多线程环境下使用同一个类库进行测试的性能,1000个与1个线程执行的性能效率上相差不大,因此线程上下文切换的成本其实不高
 然而对于多线程环境的同步操作如下图:
 
-![](https://github.com/xiaokunliu/xiaokunliu.github.io/blob/feature/writing/websites/zimages/reactor/thread_context_switch2.jpg)
+![](https://raw.githubusercontent.com/xiaokunliu/xiaokunliu.github.io/feature/writing/websites/zimages/reactor/thread_context_switch2.jpg)
 
 通过上述可知,syncHashMap与HashTable随着增加的线程数,其执行的性能耗时更高,因为同步操作的hashtable和syncHashMap是在线程级别加锁实现顺序的写操作,因此需要等待其他线程执行完成才能被唤醒执行,对于具备“异步”特性的类库则是通过多线程并发方式对容器实现写操作,即同一个时刻可以有多个线程对容器实现写操作.
 多核环境下的同步与异步性能对比
 
 > 单核环境
 
-![](https://github.com/xiaokunliu/xiaokunliu.github.io/blob/feature/writing/websites/zimages/reactor/core1.jpg)
+![](https://raw.githubusercontent.com/xiaokunliu/xiaokunliu.github.io/feature/writing/websites/zimages/reactor/core1.jpg)
 
 > 多核环境
 
-![](https://github.com/xiaokunliu/xiaokunliu.github.io/blob/feature/writing/websites/zimages/reactor/core2.jpg)
+![](https://raw.githubusercontent.com/xiaokunliu/xiaokunliu.github.io/feature/writing/websites/zimages/reactor/core2.jpg)
 
 通过上述可知,具备‘异步‘的并发类库不论是在单核还是多核环境下性能基本差不多,但是对于实现同步hashtable的性能在多核环境充分利用cpu核数提升性能,但是在上述我们注意到SyncHashMap执行的性能会更差,为什么?个人理解上述的map类库都是放在相同环境并发执行,而并发环境必然存在资源的竞争,因此对于在激烈的并发竞争环境中,同步操作的成本会更高.
 
@@ -129,9 +129,9 @@ linux在内核2.6版本之后使用NPTL的规范实现线程技术，空闲的�
 
 > 线程与连接1:1模式
 
-![](https://github.com/xiaokunliu/xiaokunliu.github.io/blob/feature/writing/websites/zimages/reactor/1_1_thread.jpg)
-![](https://github.com/xiaokunliu/xiaokunliu.github.io/blob/feature/writing/websites/zimages/reactor/1_1_thread2.jpg)
-![](https://github.com/xiaokunliu/xiaokunliu.github.io/blob/feature/writing/websites/zimages/reactor/1_1_thread3.jpg)
+![](https://raw.githubusercontent.com/xiaokunliu/xiaokunliu.github.io/feature/writing/websites/zimages/reactor/1_1_thread.jpg)
+![](https://raw.githubusercontent.com/xiaokunliu/xiaokunliu.github.io/feature/writing/websites/zimages/reactor/1_1_thread2.jpg)
+![](https://raw.githubusercontent.com/xiaokunliu/xiaokunliu.github.io/feature/writing/websites/zimages/reactor/1_1_thread3.jpg)
 
 - 上述每一个连接请求都需要创建相应的线程资源来处理对应的每个连接任务
 - 如果需要支撑的连接成千上万,将会导致创建的线程资源个数达到瓶颈,无法满足每连接每线程的目标
@@ -139,9 +139,9 @@ linux在内核2.6版本之后使用NPTL的规范实现线程技术，空闲的�
 
 > 线程与连接N:M模式
 
-![](https://github.com/xiaokunliu/xiaokunliu.github.io/blob/feature/writing/websites/zimages/reactor/m_n_thread.jpg)
-![](https://github.com/xiaokunliu/xiaokunliu.github.io/blob/feature/writing/websites/zimages/reactor/m_n_thread2.jpg)
-![](https://github.com/xiaokunliu/xiaokunliu.github.io/blob/feature/writing/websites/zimages/reactor/m_n_thread3.jpg)
+![](https://raw.githubusercontent.com/xiaokunliu/xiaokunliu.github.io/feature/writing/websites/zimages/reactor/m_n_thread.jpg)
+![](https://raw.githubusercontent.com/xiaokunliu/xiaokunliu.github.io/feature/writing/websites/zimages/reactor/m_n_thread2.jpg)
+![](https://raw.githubusercontent.com/xiaokunliu/xiaokunliu.github.io/feature/writing/websites/zimages/reactor/m_n_thread3.jpg)
 
 - 对于线程池技术,如果创建的线程无法来得及处理连接请求那么此时将会把还未处理的连接添加到阻塞队列中,如果是有界队列,那么超出的连接怎么处理,如果是无界队列,那么连接堆积,内存资源以及cpu资源都会成为瓶颈,这些都无法满足我们对于一个高性能web服务的要求,即阻塞队列要应该设置多大才合适?
 - 如果线程池所有的线程处理的连接都保持"keep alive"却没有任何其他业务操作,这个时候也会造成线程空闲,也会导致阻塞队列上的连接一直没有被执行而处于等待状态,出现"假死"状态,即线程池调整的线程数量应当设置多大才能保证被充分利用?
@@ -177,7 +177,7 @@ login.click(function(){
 
 至此,我们对事件的定义有了基本认知之后,那么对于上述的一个完整的点击事件流程是如何进行运作的呢,现如下图所示:
 
-![](https://github.com/xiaokunliu/xiaokunliu.github.io/blob/feature/writing/websites/zimages/reactor/login_event.jpg)
+![](https://raw.githubusercontent.com/xiaokunliu/xiaokunliu.github.io/feature/writing/websites/zimages/reactor/login_event.jpg)
 
 对于EDA的NIO而言,相比上述事件设计是运用相同的思路,但是具体实现的技术方案略有不同,EDA的NIO技术实现是基于Reactor模式,现展开NIO编程的Reactor模式进行分析.
 
@@ -190,7 +190,7 @@ login.click(function(){
 
 一般地,对于经典的TBA架构的web服务如下图:
 
-![](https://github.com/xiaokunliu/xiaokunliu.github.io/blob/feature/writing/websites/zimages/reactor/classic.jpg)
+![](https://raw.githubusercontent.com/xiaokunliu/xiaokunliu.github.io/feature/writing/websites/zimages/reactor/classic.jpg)
 
 
 在上述图中看到每个线程处理每个handler,且不讨论先前TBA存在的问题,就可扩展性而言就存在局限性,尤其是针对部分线程执行decode-compute-encode过程中出现耗时缓慢情况时,很难对其进行优化操作,甚至无法通过服务进行配置调优,没有达到高性能的可伸缩性要求.
@@ -228,7 +228,7 @@ login.click(function(){
 
 Reactor设计示意图如下
 
-![](https://github.com/xiaokunliu/xiaokunliu.github.io/blob/feature/writing/websites/zimages/reactor/reactor_design.jpg)
+![](https://raw.githubusercontent.com/xiaokunliu/xiaokunliu.github.io/feature/writing/websites/zimages/reactor/reactor_design.jpg)
 
 通过上述示意图可知,Reactor模式在应用程序级别代码交由handler进行处理,而对于整个网络的复用操作交由多路复用器进行处理,实现反应堆的复用与应用程序业务逻辑的解耦,同时可以针对handler处理器进行调优处理以达到handler能够更快速地响应真正的IO事件并返回给客户端程序响应结果.
 
@@ -282,19 +282,19 @@ Reactor设计示意图如下
 接下来以图解的方式来查看Reactor与多线程技术的演进过程.以下图解均来自《Scale IO in Java》以及github上的gnet库来演示.
 单Reactor + 单线程模式
 
-![](https://github.com/xiaokunliu/xiaokunliu.github.io/blob/feature/writing/websites/zimages/reactor/single_reactor.jpg)
+![](https://raw.githubusercontent.com/xiaokunliu/xiaokunliu.github.io/feature/writing/websites/zimages/reactor/single_reactor.jpg)
 
 单Reactor + 多线程模式
 
-![](https://github.com/xiaokunliu/xiaokunliu.github.io/blob/feature/writing/websites/zimages/reactor/single_reactor_workers.jpg)
+![](https://raw.githubusercontent.com/xiaokunliu/xiaokunliu.github.io/feature/writing/websites/zimages/reactor/single_reactor_workers.jpg)
 
 多Reactor + 多线程模式
 
-![](https://github.com/xiaokunliu/xiaokunliu.github.io/blob/feature/writing/websites/zimages/reactor/multiple_reactors.jpg)
+![](https://raw.githubusercontent.com/xiaokunliu/xiaokunliu.github.io/feature/writing/websites/zimages/reactor/multiple_reactors.jpg)
 
 gnet库实现的一种Reactors模式
 
-![](https://github.com/xiaokunliu/xiaokunliu.github.io/blob/feature/writing/websites/zimages/reactor/multiple_reactors2.jpg)
+![](https://raw.githubusercontent.com/xiaokunliu/xiaokunliu.github.io/feature/writing/websites/zimages/reactor/multiple_reactors2.jpg)
 
 
 最后,我们单从Reactor技术变化来看,其设计的目的无非包含以下几个方面:
