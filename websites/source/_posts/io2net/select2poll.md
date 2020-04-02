@@ -1,6 +1,6 @@
 ---
 title: 深入分析Select/Epoll原理
-category: 网络IO
+category: 网络IO编程
 date: 2020-03-08 17:09:09
 tags: 网络IO编程
 ---

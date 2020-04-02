@@ -1,8 +1,8 @@
 ---
 title: proactor模式
-category: IO
+category: 网络IO编程
 date: 2020-04-02 20:47:28
-tags: IO
+tags: 网络IO编程
 ---
 
 <!-- more -->
@@ -32,4 +32,3 @@ Proactor是一种用于事件处理的软件设计模式，其中长时间运行
 > 流程示意图
 
 ![在这里插入图片描述](https://img-blog.csdnimg.cn/20200322155750624.jpg?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dpbmRfNjAy,size_16,color_FFFFFF,t_70)
-###### Reactor与Proactor模式对比
