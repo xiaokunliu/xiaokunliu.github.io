@@ -31,6 +31,7 @@ tags: 并发编程
 	- 指向后一个节点Node的next
 	- 节点所处状态信息,即waiter status
 	- 指向下一个处于condition的等待队列的节点nextWaiter
+
 ```java
 // Node 部分代码,在AQS内部中定义
 static final class Node{
@@ -77,10 +78,12 @@ static final class Node{
 	}
 }
 ```
+
 - ConditionObject: 自定义接口Condition的实现,业务线程可以创建对应的锁条件来完成线程之间的通信.即线程唤醒与等待,其核心要素如下:
 	- 自定义条件队列,即使拥有属性firstWaiter与lastWaiter
 	- 实现接口await/signal/signalAll等方法
 	- ConditionObject内部实现的核心方法
+
 ```java
 // ConditionObject部分代码,在AQS内部中定义
 public class ConditionObject implements Condition,Serializable {
@@ -122,6 +125,7 @@ public class ConditionObject implements Condition,Serializable {
 	- exclusiveOwnerThread,即当前线程持有独占锁,独占线程
 	- Unsafe,即借助CAS技术来完成同步状态以及等待池队列节点的更新操作等
 	- LockSupport工具类,借助LockSupport来完成线程的加锁与解锁操作
+
 ```java
 // AQS.java
 public abstract class AbstractQueuedSynchronizer

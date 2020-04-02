@@ -93,30 +93,38 @@ after reverse
 
 ###### 2. 反转算法图解分析
 > 执行反转的初始化状态代码与图解如下
+
 ```java
 LinkedNode prev = null;
 LinkedNode next = null;
 LinkedNode cur = head;
 ```
 ![在这里插入图片描述](https://img-blog.csdnimg.cn/20200207215728963.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dpbmRfNjAy,size_16,color_FFFFFF,t_70)
+
 > 第一次循环执行的代码与图解
+
 ```java
 next = cur.next;		// 1
 cur.next = prev;		// 2
 prev = cur;				// 3
 cur = next;				// 4
 ```
+
 ![在这里插入图片描述](https://img-blog.csdnimg.cn/20200207220216370.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dpbmRfNjAy,size_16,color_FFFFFF,t_70)
+
 - 说明:
 	- 执行1的代码之后,next的指针指向node1
 	- 执行2的代码之后,head的next指针指向null
 	- 执行3的代码之后,pre的指针指向head
 	- 执行4的代码之后current的指针指向node1
+
 - 于是最终结果为
 ![在这里插入图片描述](https://img-blog.csdnimg.cn/20200207220439761.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dpbmRfNjAy,size_16,color_FFFFFF,t_70)
+
 - 最后不断的循环,重复上述的动作,其过程以及最后的结果为:
 ![在这里插入图片描述](https://img-blog.csdnimg.cn/20200207220704888.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dpbmRfNjAy,size_16,color_FFFFFF,t_70)
 ![在这里插入图片描述](https://img-blog.csdnimg.cn/20200207220916455.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dpbmRfNjAy,size_16,color_FFFFFF,t_70)
+
 - 小结
 	- 上述的算法时间复杂度为O(n),空间复杂度为O(1)
 	- 时间复杂度在于while循环,空间复杂度基本没有开辟内存空间,都是用指针引用现有的数据内存区域地址

@@ -10,13 +10,18 @@ tags: 并发编程
 
 ###### 1. synchronized的锁存储以及锁分类
 > synchronized的存储位置: 对象MarkWork
+
 * JVM的ObjectHeader信息
-	* MarkWord: hashcode(哈希code) + age(分代年龄age) + biased_lock(偏向锁标志) + lock (锁标志)
-	* Class Metadata Address(类元信息地址)
-	* Array Length: 如果对象是一个数组类型,则存储数组长度
+    * MarkWord: hashcode(哈希code) + age(分代年龄age) + biased_lock(偏向锁标志) + lock (锁标志)
+    * Class Metadata Address(类元信息地址)
+    * Array Length: 如果对象是一个数组类型,则存储数组长度
+
 ![在这里插入图片描述](https://img-blog.csdnimg.cn/20200114151521308.jpg?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dpbmRfNjAy,size_16,color_FFFFFF,t_70)
+
+
 * MarkWord信息
 ![在这里插入图片描述](https://img-blog.csdnimg.cn/20200114151647395.jpg?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dpbmRfNjAy,size_16,color_FFFFFF,t_70)
+
 * JVM中synchronized使用的锁
 	* 无锁: 严格意义上应该说是正常对象,包含hashcode + 分代年龄age + 无偏向锁标志 + 锁状态标志
 	* 轻量级锁: 栈记录的地址 + 锁状态
@@ -56,12 +61,15 @@ class BasicObjectLock   // 对象or监视器锁
 ```
 
 > synchronized的锁细节问题说明
+
 * 偏向锁: JVM创建对象如果没有发生竞争,则默认开启偏向锁,即偏向锁标志+无锁状态,如果创建对象多次(JVM经过统计)之后发现处于竞争状态将会关闭偏向锁,这是在JVM底层实现的,在JVM源码中显示为BiasedLock
 * 轻量级锁:JVM启动并创建线程的时候,会在栈帧中为线程分配内存栈空间信息,此时线程栈会开辟一个锁记录(Lock Record)空间,并且会将锁定对象的mark word复制到锁记录空间中,jvm称锁记录的mark word为displaced_mark_word,线程将通过CAS完成对象的mark word复制操作,成功则获得锁,失败表示有其他锁竞争,将会通过自旋锁的方式获取(不断CAS循环获取)
 * 重量级锁:如果上述的轻量级锁自旋一定次数之后仍然获取锁失败,便会升级称为重量级锁,使用重量级锁的时候锁将无法降级,这时候jvm提供使用快速获取锁的方式来实现,比如quick_enter/reenter/complete_exit,直接绕过slow-path的路径,jvm称重量级锁为heavy weight monitor
 
 ###### 2. synchronized加锁原理
+
 > synchronized的enter加锁源码
+
 ```c++
 // synchronizer.hpp
 // This is the "slow path" version of monitor enter and exit.
@@ -112,12 +120,15 @@ if (UseBiasedLocking) {
 > synchronized偏向锁的加锁与撤销流程
 
 ![在这里插入图片描述](https://img-blog.csdnimg.cn/20200115103837344.jpg?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dpbmRfNjAy,size_16,color_FFFFFF,t_70)
+
 > synchronized锁升级流程(轻量级锁升级到重量级锁过程)
 
 ![在这里插入图片描述](https://img-blog.csdnimg.cn/20200115102655297.jpg?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dpbmRfNjAy,size_16,color_FFFFFF,t_70)
  
 ###### 3.synchronized解锁过程
+
 > synchronized的exit源码
+
 ```c++
 // synchronizer.hpp
 static void exit(oop obj, BasicLock* lock, Thread* THREAD);
@@ -147,13 +158,16 @@ void ObjectSynchronizer::exit(oop object, BasicLock* lock, TRAPS) {
 > synchronized解锁的流程
 
 ![在这里插入图片描述](https://img-blog.csdnimg.cn/20200115105113844.jpg?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dpbmRfNjAy,size_16,color_FFFFFF,t_70)
+
 ###### 4. 小结:JVM对synchronized的优化策略
 > 锁优化目的
+
 * 提升响应时间
 * 增加程序的吞吐量
 * 基于上述代码中,jvm底层代码存在缓慢路径加锁,说明也存在更快速地加锁方式,避免更多的加锁处理流程,提供锁升级的方式来走“**捷径**”调用加锁方法
 
 > 优化手段
+
 * 使用偏向锁,如果使用资源没有存在竞争状态,那么将开启偏向锁的方式进行加锁,通过上述可以看到偏向锁的流程,并无需消耗过多的资源,仅操作使用资源的markword信息,适用于单线程或者是并发量不多的场景下
 * 轻量级锁:如果使用资源存在竞争状态(有一定的并发基础),那么jvm底层就会关闭偏向锁的设置,开启使用轻量级锁,通过将在线程已经开启Lock Record记录使用资源对象的markword信息,同时将markword的bitfields设置为栈帧引用地址,但是轻量级锁会出现CAS自旋消耗CPU资源,使用轻量级锁可以在并发条件下提升响应速度
 * 重量级锁:线程不自旋转,不消耗CPU资源,jvm底层同时在锁升级之后会直接使用重量级锁对应的加锁和解锁方式,也就是走“捷径”方式调用,但是会阻塞线程

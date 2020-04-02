@@ -57,6 +57,7 @@ run(){
 
 - 生产者开始对数据进行写操作,基于volatile语义可以看到写操作之后是刷新到主内存中
 ![在这里插入图片描述](https://img-blog.csdnimg.cn/20200123112223315.jpg?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dpbmRfNjAy,size_16,color_FFFFFF,t_70)
+
 - 运行结果
 	- 使用volatile修饰的消费者线程退出循环完成程序的正常执行
 	- 不使用volatile修饰的消费者线程由于读取工作内存的数据将会处于不断循环中,没有退出程序
@@ -67,6 +68,7 @@ run(){
 
 ###### 3. volatile内存屏障实现
 内存屏障是处理器层面进行的,因此这里直接查阅jvm下的cpu架构源码对volaitle的内存屏障进行说明
+
 > 关于ARM(指令集机器指令)参考说明
 
 - dmb: Data Memory Barrier

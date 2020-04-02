@@ -104,6 +104,7 @@ public void addAmount(){
 	// not shared data operation
 }
 ```
+
 ###### 2. synchronized同步代码块
 * 作用在同步代码块上,做到尽可能在方法中仅针对共享变量进行同步加锁的操作
 * 同步块的锁监视器对象可以为this/当前Class的对象/类实例属性/类对象属性等等,只需要保证在同步代码块的监视器是唯一的即可
@@ -199,8 +200,11 @@ public class TicketMain {
     }
 }
 ```
+
 ###### 3. 线程通信
+
 > 与线程wait()/notify()/notifyAll()的使用
+
 * q1: 为什么需要使用监视器锁来完成线程通信?
 * q2: 代码中使用while而不使用if的原因是什么?
 * q3: wait与notify在代码中分别起到的作用是什么?
@@ -278,6 +282,7 @@ public class SyncMain {
 ![在这里插入图片描述](https://img-blog.csdnimg.cn/20200107102203945.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dpbmRfNjAy,size_16,color_FFFFFF,t_70)
 
 > **q1: 需要使用监视器锁完成通信原因**
+
 ```java
 // 将上述的代码的synchronized去掉
 // 执行main方法
@@ -287,6 +292,7 @@ public class SyncMain {
 **结论: 调用wait方法之前需要通过synchronized来添加监视器锁完成线程通信,否则会抛出异常:Exception in thread "Thread-1" java.lang.IllegalMonitorStateException**
 
 > **q2: 代码中使用while而不使用if的原因是什么?**
+
 ```java
 // 将while更改为if
 // 执行main方法
@@ -299,6 +305,7 @@ public class SyncMain {
 	* 从执行结果看,使用if一次性条件判断无法保证队列完全为空或者为满的情况才进行消费,因此需要在调用wait方法的时候需在while循环中不断检查队列的情况
 
 > q3: 针对上述情况对wait以及notify进行小结
+
 * wait方法
 	* 当前线程是通过共享变量调用wait方法,并且调用该线程的时候将会被挂起阻塞
 	* 其他线程调用该共享变量的notify/notifyAll方法时将有机会重新获取锁

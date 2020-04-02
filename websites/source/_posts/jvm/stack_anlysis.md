@@ -150,11 +150,13 @@ Constant pool:                              // 常量池
 
 ###### 2. java运行堆栈分析
 > 类执行分析准备
+
 - 定义的class文件编译为二进制.class的时候,产生幻数标识,访问标识
 - 执行main的时候先执行当前类的init构造器完成初始化
 - 线程执行包含程序计数器以及虚拟机栈(多个栈帧[操作数栈 + 局部变量表 + 动态链接 + 方法返回])
 
 > JVM的int入栈操作指令参考
+
 ```text
 ## 参考链接
 https://en.wikipedia.org/wiki/Java_bytecode_instruction_listings
@@ -166,6 +168,7 @@ ldc				超过两个字节的int数据
 ```
 
 > main方法执行分析
+
 - `int balance = 500` 分析
 ```java
  // source.java

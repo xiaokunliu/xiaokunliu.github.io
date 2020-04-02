@@ -30,6 +30,7 @@ tags: 并发编程
 > final的线程安全性
 
 - 源代码
+
 ```java
 // FinalClass.java
 public class FinalClass {
@@ -76,6 +77,7 @@ public class FinalClass {
     }
 }
 ```
+
 - 代码分析
 	- 在构造器中,对于final修饰的基本类型/引用类型变量编译器不允许在try中对`i=4`进行写操作,会出现编译报错,对于没有使用final修饰的变量j进行写操作的`j=9`则没有出现编译报错
 	- 其次,在对`i=4`执行的写操作之前,编译器不允许对final修饰的基本/引用变量进行读操作,否则编译报错
@@ -84,6 +86,7 @@ public class FinalClass {
 	- 最后一点就是,final必须是在构造器中完成初始化,同时根据Happen-Before原则,线程访问final的数据一定是在完成初始化后的最终数据且无法再进行修改(引用类型是可以修改其属性信息),从而保证了线程对final修饰的变量是属于线程安全的共享数据
 
 > final与static使用分析
+
 - 源代码
 ```java
 // FinalSharedClass.java
@@ -134,12 +137,15 @@ public class FinalSharedClass {
 	- final且为静态的类对象变量时,final将会在类的静态代码块中完成初始化(优先于对象构造器执行),且不能在静态代码之外完成初始化操作,由于JVM加载类的信息的时候是优先于创建线程的,因此当线程访问的时候final的static数据已经完成初始化赋值操作,因此也不存在线程安全问题
 
 ###### 2. final的内存语义与实现
+
 > final的遵循的规则
+
 - 对于final领域修饰的非static变量,对象的final领域变量的写操作优先于该对象构造器完成初始化之后的引用赋值操作,即`i=4`优先于`finalClass = new FinalClass();`,也就是两个操作不能重排序,final修饰的为引用类型也是一样遵循这个规则
 - 对于final领域修饰的非static变量,对象的final领域变量在构造器初始化的读操作优先于所有线程对该对象的final数据的读操作,也就是构造器执行默认值`i 为默认值 0`的操作优先于其他线程对`i 为 4`的读操作,也就是两者不能重排序,同理final修饰的引用变量也是遵循这个规则
 - 另外,对于final修饰且为static的变量,在java程序中静态代码只执行一次,且静态代码完成final领域的数据变量初始化操作优先于所有线程对该变量的读操作,相当于“写一次读多次”,并且写一次是在JVM第一次创建该对象实例的时候加载的,且优先于所有线程的其他行为动作,对此是保证写在前读在后的一个逻辑顺序
 
 > final的内存语义是如何实现的
+
 - aarch架构内存屏障指令
 ```C++
 // A more convenient access to dmb for our purposes
@@ -161,6 +167,7 @@ public class FinalSharedClass {
 if (_desc->bytecode() == Bytecodes::_return)
   __ membar(MacroAssembler::StoreStore);
 ```
+
 - 分析
 	- 根据上述可知,jvm在实现中由于不清楚对象什么时候会调用finalizer方法进行回收,因此会在任何对象的构造器返回前插入内存屏障对final修饰的变量执行写操作
 	- 其次,可以看到final插入的内存屏障为StoreStore类型,也就是在构造器返回之前插入StoreStore的内存屏障,也就是说final对变量的写操作的可利用结果在内存屏障之前的代码是不可用的,也就是对`final x = 9`的写操作之前是看不到`x=9`的结果
@@ -197,11 +204,13 @@ if (_desc->bytecode() == Bytecodes::_return)
   __ bind(notVolatile2);
   volatile_barrier(MacroAssembler::StoreStore, Rtemp);
 ```
+
 - 分析
 	- 从上面可以看到volatile的写操作内存屏障是使用StoreLoad方式,final使用的内存屏障是StoreStore方式
 	- 在aarch64处理器架构中,final也可以使用与volatile相同的内存屏障
 
 - volatile与final内存屏障伪代码
+
 ```c++
 // 针对写操作
 // Store为写屏障,作用就是防止重排序,同时让数据刷新到主内存
@@ -220,18 +229,22 @@ if (_desc->bytecode() == Bytecodes::_return)
 //   dmb ishst		// store内存屏障		-- 防止重排序
 // other codes ...
 ```
+
 - 结果
 	- 可以看到上述描述中使用内存屏障的技术是非常昂贵的,为了适应对应的使用场景,在java中对于volatile与final不能同时存在,同时volatile的使用场景是读写多,而final是一次性写多次读的场景,对此使用的内存屏障技术也会有所不同
 	- final建议使用为StoreStore而不使用与volatile相同的StoreLoad内存屏障是根据使用场景来的,final实现写一次,那么在创建线程的时候工作内存会copy一份相同的数据作为缓存,不需要读取主内存的数据,同时final的写是在构造器中完成,也就是在构造器中添加内存屏障,也保证了在对象构造器之外不能再对final的数据进行修改的操作
 	- 同理,对于static的final数据,是在static代码块实现StoreStore内存屏障,作用和对象构造器类似
 
 ###### 3. final规范小结
+
 > Java语言规范
+
 - final在构造器中执行赋予值的写操作,因此当线程访问的时候会看到当前final修饰的变量为最新版本的数据
 - 如果在构造器函数中执行final变量的读操作在写操作之后,那么会看到final分配给变量的最新数据,不存在缓存读取
 - 读取共享变量里的final数据,则必须先要访问这个共享变量的引用对象然后再读取final数据
 - 通常static final表示为常量,然而System.in/System.err/System.out也是属于static final,是属于遗留的原因,可通过 System.setIn, System.setOut, and System.setErr来完成赋值操作,java规范中称之为“写保护”
 - 对应部分源码说明如下
+
 ```c++
 //ciField.cpp
 // 源码中注释说明

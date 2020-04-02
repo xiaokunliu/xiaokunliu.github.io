@@ -200,6 +200,7 @@ public void execute(Runnable command) {
 ```
 - ThreadPoolExecutor内部执行示意图
 ![在这里插入图片描述](https://img-blog.csdnimg.cn/20200206122007466.jpg?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dpbmRfNjAy,size_16,color_FFFFFF,t_70)
+
 - ThreadPoolExecutor示意图说明
 	- 主线程提交任务给线程池之后,线程池的corePool未满则创建线程执行任务(1,2)
 	- 若corePool已经满了,则将任务提交到阻塞队列中(3)
@@ -208,8 +209,10 @@ public void execute(Runnable command) {
 	- 对于非corePool下的线程,若存在空闲线程超过单位未unit的keepalive的时间,将销毁线程
 	- 同时对于corePool下的空闲线程,将会从阻塞队列中获取任务并执行任务
 	- 从线程创建流程知道,添加的工作线程将由一个基于HashSet的集合来维护,只有添加到set成功之后才会执行任务,如果检测到工作线程已经是启动过了,将不会再次添加到set集合中
+
 - execute核心执行流程
 ![在这里插入图片描述](https://img-blog.csdnimg.cn/20200206113502986.jpg?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dpbmRfNjAy,size_16,color_FFFFFF,t_70)
+
 - execute核心流程小结
 	- 如果当前线程池中的线程数num < corePoolSize, 则创建新线程执行任务,需要获取全局锁
 	- 如果当前线程池中的线程数num >= corePoolSize, 则将任务加入BlockingQueue中

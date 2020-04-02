@@ -25,6 +25,7 @@ tags: 并发编程
 	- 上述就是一个伪共享的现象,即在CPU多写的情况下,CPU高速缓存对内存地址不连续的数据变量并没有真正起到缓存的作用
 
 - 读取数据伪共享代码演示
+
 ```java
 // FalseShared.java
 public class FalseShared {
@@ -89,6 +90,7 @@ public class FalseShared {
 ```
 
 - 代码结果
+
 ```text
 ## case 1
 read arr by continuous with time : 12
@@ -109,7 +111,9 @@ read arr by not continuous with time : 19
 
 - 结果示意图演示(便于理解)
 ![在这里插入图片描述](https://img-blog.csdnimg.cn/20200129164400909.jpg?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dpbmRfNjAy,size_16,color_FFFFFF,t_70)
+
 - 写数据产生伪共享
+
 ```java
 // shared.java
 int x = 10;
@@ -157,6 +161,7 @@ run(){
 ```
 
 - 修饰类
+
 ```java
 @sun.misc.Contended
 public class ForkJoinPool extends AbstractExecutorService {
@@ -172,6 +177,7 @@ public class ForkJoinPool extends AbstractExecutorService {
 	- 按照这个思路,也可以根据实际场景有针对性地对数据进行划分,比如热点数据以及冷数据,即可以根据数据的读写场景情况来分配变量在缓存段的存储位置,这样能够有效地提升CPU利用缓存的特点来提升响应速度
 
 - 参考外链文档代码以及输出字段
+
 ```java
 // source.java
  public static class ContendedTest1 {

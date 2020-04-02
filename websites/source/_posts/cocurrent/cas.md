@@ -47,6 +47,7 @@ int cas_adder(Object ref, int incr){
 > java原子操作类Atomic*实现
 
 - 比如AtomicBoolean的实现源代码
+
 ```java
 // AtomicBoolean.java 摘取核心代码
 public class AtomicBoolean implements java.io.Serializable {
@@ -115,6 +116,7 @@ public class AtomicDefineInt {
 ```
 
 > Unsafe源码以及实现
+
 ```java
 // java代码
 public final class Unsafe {
@@ -178,6 +180,7 @@ UNSAFE_ENTRY(jboolean, Unsafe_CompareAndSetInt(JNIEnv *env, jobject unsafe, jobj
 > ABA问题
 
 - java源码示例
+
 ```java
 // AtomicDefineObject
 public final class AtomicDefineObject implements Serializable {
@@ -214,6 +217,7 @@ public final class AtomicDefineObject implements Serializable {
 ```
 
 - 对应执行的main方法
+
 ```java
 main(){
 		final AtomicDefineObject atomicDefineObject = new AtomicDefineObject();
@@ -262,6 +266,7 @@ main(){
 ```
 
 - 执行结果
+
 ```text
 Thread[main,5,main] --- set value to A----
 Thread[thread1,5,main] --- set value to B----

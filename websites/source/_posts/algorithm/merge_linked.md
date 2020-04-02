@@ -91,6 +91,7 @@ LinkedNode max_cur =  min_cur == head1?head2:head1;
 ```
 - 其初始化图解如下
 ![在这里插入图片描述](https://img-blog.csdnimg.cn/20200208132522917.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dpbmRfNjAy,size_16,color_FFFFFF,t_70)
+
 > 第一次循环遍历
 - 此时执行的代码
 ```java
@@ -108,7 +109,9 @@ if(min_cur.item <= max_cur.item){
 - min_cur,即当前的指针指向min链表中值为2的节点
 
 > 循环执行到else的语句分析
+
 - 执行代码
+
 ```java
 // 因为以min为基准,因此第一次循环的时候会在上面的if获取到min_pre的值
 min_pre.next = max_cur;			// 1
@@ -121,10 +124,13 @@ min_pre = max_cur;				// 4
 // 	循环遍历下一个max的节点
 max_cur = next;					// 5
 ```
+
 - 执行代码前的图解
 ![在这里插入图片描述](https://img-blog.csdnimg.cn/20200208133035167.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dpbmRfNjAy,size_16,color_FFFFFF,t_70)
+
 - 执行代码过程图解
 ![在这里插入图片描述](https://img-blog.csdnimg.cn/20200208141819843.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dpbmRfNjAy,size_16,color_FFFFFF,t_70)
+
 - min_pre此时的指针为**min链表中值为2的节点**
 - 执行1的代码之后,min_prev的next指针指向max当前的节点,也就是**值为2的max链表的节点**
 - 执行2的代码之后,max_next的指针**指向max当前节点的下一个节点,也就是值为4的节点**
@@ -133,8 +139,10 @@ max_cur = next;					// 5
 - 执行5的代码之后,**max_cur当前指针指向max值为4的节点**
 - 执行代码后的图解
 ![在这里插入图片描述](https://img-blog.csdnimg.cn/20200208142012862.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dpbmRfNjAy,size_16,color_FFFFFF,t_70)
+
 - 根据上述代码以及图解的节点值再执行else代码
 ![在这里插入图片描述](https://img-blog.csdnimg.cn/20200208142457416.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dpbmRfNjAy,size_16,color_FFFFFF,t_70)
+
 - 此时的min_prev的指针**指向max链表值为2的节点**
 - 执行1代码之后,min_prev的**next指针指向max_cur节点,也就是值为4的max节点**
 - 执行2代码之后,max_next的**指针指向值为6的max节点**
@@ -143,16 +151,18 @@ max_cur = next;					// 5
 - 执行5代码之后,**max指针指向max_next的节点,也就是当前值为6的max节点**
 ![在这里插入图片描述](https://img-blog.csdnimg.cn/20200208142613319.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dpbmRfNjAy,size_16,color_FFFFFF,t_70)
 - 此时再次循环,min_cur.item < max_cur.item,执行流程如下
+
 ```java
 prev = min_cur; //1
 min_cur = min_cur.next; //2
 ```
+
 执行过程
 ![在这里插入图片描述](https://img-blog.csdnimg.cn/20200208145218834.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dpbmRfNjAy,size_16,color_FFFFFF,t_70)
+
 执行结果
 ![在这里插入图片描述](https://img-blog.csdnimg.cn/20200208145313288.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dpbmRfNjAy,size_16,color_FFFFFF,t_70)
+
 接下来动作重复上述流程,可以看到**prev 始终跟在min_cur之后**,在经历整个循环之后,说明至少有一个链表已经遍历完成,最后只需要将prev的next节点与剩下的节点连接即可,最后max所有节点都将有序地合并到min中
 
-
-- 小结
-	- 使用的时间复杂度为O(n),空间复杂度为O(1)
+- 小结:使用的时间复杂度为O(n),空间复杂度为O(1)
