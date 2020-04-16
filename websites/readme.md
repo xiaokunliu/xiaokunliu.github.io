@@ -8,8 +8,9 @@ hexo new title --path /path/filesaved --category ca_name
 hexo clean && hexo g && hexo d
 ```
 
-#### 图片前缀地址
+##### github图片地址
 
 ```text
-https://github.com/xiaokunliu/xiaokunliu.github.io/blob/feature/writing/websites/
+https://github.com/xiaokunliu/xiaokunliu/xiaokunliu.github.io/feature/writing/websites/zimages/reactor/pattern_title.jpg?raw=true
+https://raw.githubusercontent.com/xiaokunliu/xiaokunliu.github.io/feature/writing/websites/zimages/reactor/pattern_title.jpg
 ```
