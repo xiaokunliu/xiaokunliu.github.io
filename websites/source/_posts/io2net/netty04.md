@@ -9,7 +9,7 @@ tags: 网络IO编程
 
 ### 深入分析Netty高性能特性
 
-![](/Users/keithl/docker/dev/data/xiaokunliu.github.io/websites/zimages/netty/feature/netty_title.jpg)
+![](https://raw.githubusercontent.com/xiaokunliu/xiaokunliu.github.io/feature/writing/websites/zimages/netty/feature/netty_title.jpg)
 
 在讲述Netty的高性能特性之前,基于之前的epoll技术分析中谈到C10K问题与高性能IO设计文章的认知,对于C10K问题其实是属于一个优化问题,目的是为了能够在单台机器上支撑更多的并发连接调度所做的性能优化,为了达到上述目标,需要要求我们设计的web服务采用合理的IO模型,并在对应的IO模型基础上引入多线程与并发库技术的使用来支撑更多的连接调度,同时考虑到计算机资源的限制,我们需要在设计web服务的时候合理对资源进行分配优化,比如内存,网络带宽以及CPU核数的充分利用,也就是说我们还需要考虑到可伸缩性的问题,通过增加资源来使得我们的web服务能够得到线性提升效果.接下来我们就来结合源码分析Netty技术是如何体现高性能这一个特性.
 
@@ -64,7 +64,7 @@ tags: 网络IO编程
 
 基于上述的高并发指标的理解,现将并发连接/QPS/TPS的区分通过以下图解的方式展开:
 
-![](/Users/keithl/docker/dev/data/xiaokunliu.github.io/websites/zimages/netty/feature/connections_qps_tps.jpg)
+![](https://raw.githubusercontent.com/xiaokunliu/xiaokunliu.github.io/feature/writing/websites/zimages/netty/feature/connections_qps_tps.jpg)
 
 - 并发连接: 主要体现在服务端程序高效的连接调度机制上,也就是说服务端能够在一定的时间段内能够正确地响应给每个连接的请求即可,至于何时响应以及如何响应不是并发连接关注的事情.
 - QPS/TPS: 主要体现在处理速度上,要求能够正常完成对请求响应的处理,不仅是要对请求结果正确响应,同时还要求处理能力能够尽可能快速.
@@ -105,15 +105,15 @@ tags: 网络IO编程
 
 关于Netty框架的线程模式架构设计图如下所示:
 
-![](/Users/keithl/docker/dev/data/xiaokunliu.github.io/websites/zimages/netty/feature/netty_thread_model.jpg)
+![](https://raw.githubusercontent.com/xiaokunliu/xiaokunliu.github.io/feature/writing/websites/zimages/netty/feature/netty_thread_model.jpg)
 
-![](/Users/keithl/docker/dev/data/xiaokunliu.github.io/websites/zimages/netty/feature/netty_thread_model2.jpg)
+![](https://raw.githubusercontent.com/xiaokunliu/xiaokunliu.github.io/feature/writing/websites/zimages/netty/feature/netty_thread_model2.jpg)
 
 现在我们基于宏观上对Netty的线程模型有一个基本认知之后,结合先前文章对Netty组件源码以及事件流程的分析可知,在Netty中存在EventLoopGroup,通过EventLoopGroup来分配EventLoop,而每一个EventLoop既具备线程池的功能又承担着事件轮询的工作,同时每个EventLoop都分配对应的一个FastThread专有线程来负责对处理当前EventLoop的pipeline的流水工作,由于每一个启动EventLoop都绑定专有的一个线程FastThread,那么对于EventLoop处理的一系列流水工作也将会在当前的线程执行,从而保证了单线程资源无竞争高效串行化流水任务的执行,简单点就是无锁流水工作,这个在我们上述讲到的C10M优化方案中体现的一个多核扩展问题,Netty框架很好地运用这一理念来提升我们web服务支撑高并发连接的调度处理.
 
 关于Netty处理的单线程无锁串行化的流水工作流程示意图如下:
 
-![](/Users/keithl/docker/dev/data/xiaokunliu.github.io/websites/zimages/netty/feature/netty_safe_pipeline.jpg)
+![](https://raw.githubusercontent.com/xiaokunliu/xiaokunliu.github.io/feature/writing/websites/zimages/netty/feature/netty_safe_pipeline.jpg)
 
 在了解上述的无锁串行化任务执行流程之后,我们还需要关注Netty另一个问题,即在多Reactor模式中,我们看到服务端channel其实只完成一次创建,初始化以及注册,相比客户端channel,提供给客户端的EventLoopGroup由于在客户端有新连接进来的时候就会在Acceptor进行注册,而我们也分析channel的注册流程,注册的时候会在EventLoopGroup根据选举策略分配一个EventLoop来完成channel到EventLoop的绑定,对此,我们知道对于客户端channel而言,EventLoopGroup的作用是类似于我们分布式的“集群”机器服务来对外提供服务的,分担高并发的连接压力,那么对于服务端channel而言呢,提供EventLoopGroup如果指定的线程数量大于1,这个时候EventLoopGroup又起到什么作用呢?其实对于服务端的channel,我们很多时候并不仅仅是处理连接的接收,还要在处理连接之前做一些鉴权校验抑或是风控等安全措施的处理,如果这些过程会比较耗时,那么就需要在我们处理的handler上添加从Group选举一个新的EventLoop事件轮询活动来缓解我们并发连接调度处理能力,其实说到底Group还是类似于分布式系统中的“集群”来缓解并发调度的压力.
 
@@ -129,11 +129,11 @@ tags: 网络IO编程
 
 对于linux操作系统读取数据块一般流程是:先从硬件设备将数据块加载数据到内核缓冲区,然后由内核将内核缓冲区的数据复制到用户空间的缓冲区,最后唤醒应用程序读取用户空间的缓冲区,对于Java程序而言,其无法直接操作OS系统内存区域,必须通过JVM堆申请内存区域来存放数据块,于是需要再从OS内存中的数据缓冲区将数据块复制到JVM堆中才能够进行操作数据,于是对于JVM操作socket的数据包,数据包拷贝的路径如下图示:
 
-![](/Users/keithl/docker/dev/data/xiaokunliu.github.io/websites/zimages/netty/feature/netty_direct_bytebuf.jpg)
+![](https://raw.githubusercontent.com/xiaokunliu/xiaokunliu.github.io/feature/writing/websites/zimages/netty/feature/netty_direct_bytebuf.jpg)
 
 网卡设备接收到数据包流量事件,内核将数据块加载到内核缓冲区中,并且通过socket传输数据到用户空间的缓冲区,最后JVM要操作socket缓冲区的数据,需要将其读取到JVM堆中存储,这个时候需要再JVM堆中申请一个内存区域用于存放数据包数据,而如果直接通过堆外内存读取数据,则可以减少一次数据的拷贝以及内存资源的损耗,如下图所示:
 
-![](/Users/keithl/docker/dev/data/xiaokunliu.github.io/websites/zimages/netty/feature/netty_direct_references.jpg)
+![](https://raw.githubusercontent.com/xiaokunliu/xiaokunliu.github.io/feature/writing/websites/zimages/netty/feature/netty_direct_references.jpg)
 
 Netty的堆外内存操作通过底层操作系统Unsfe的方式获取其内存位置来直接操作内存,相比使用堆内存分配更为高性能便利,同时也减少了数据拷贝,直接通过Unsafe指向的堆外内存引用来进行操作.
 
@@ -149,7 +149,7 @@ ByteBuf http = ChannelBuffers.wrappedBuffer(httpHeader, httpBody);
 
 上述的零拷贝机制示意图如下:
 
-![](/Users/keithl/docker/dev/data/xiaokunliu.github.io/websites/zimages/netty/feature/zero_copy.jpg)
+![](https://raw.githubusercontent.com/xiaokunliu/xiaokunliu.github.io/feature/writing/websites/zimages/netty/feature/zero_copy.jpg)
 
 这个时候在应用程序中可以直接通过http的ByteBuf操作合并之后的header+body的ByteBuf缓冲区,http的byteBuf是属于逻辑上的合并,实际上并没有发生数据拷贝,只是在JVM中创建一个http的ByteBuf引用指向并操作合并之后的bytebuf.
 
@@ -275,7 +275,7 @@ public DefaultChannelConfig(Channel channel) {
 
 上述的DefaultChannelConfig类图如下:
 
-![](/Users/keithl/docker/dev/data/xiaokunliu.github.io/websites/zimages/netty/feature/config_class.jpg)
+![](https://raw.githubusercontent.com/xiaokunliu/xiaokunliu.github.io/feature/writing/websites/zimages/netty/feature/config_class.jpg)
 
 其次,我们关注socket的读写事件,也就是NioSocketChannel的相关事件,在NioEventLoop下的run方法定位到对应的unsafe的read方法,如下:
 
@@ -570,27 +570,27 @@ void free(PoolChunk<T> chunk, ByteBuffer nioBuffer, long handle, int normCapacit
 
 至此,Netty从分配到回收一个池化的ByteBuf工作流程如下:
 
-![](/Users/keithl/docker/dev/data/xiaokunliu.github.io/websites/zimages/netty/feature/netty_cache_flow.jpg)
+![](https://raw.githubusercontent.com/xiaokunliu/xiaokunliu.github.io/feature/writing/websites/zimages/netty/feature/netty_cache_flow.jpg)
 
 Netty内存分配逻辑结构视图:
 
 1) 从宏观上看,线程与Arena之间的关系:
 
-![](/Users/keithl/docker/dev/data/xiaokunliu.github.io/websites/zimages/netty/feature/netty_thread_arena.jpg)
+![](https://raw.githubusercontent.com/xiaokunliu/xiaokunliu.github.io/feature/writing/websites/zimages/netty/feature/netty_thread_arena.jpg)
 
 2) 从微观上看每个arena存储数据过程,在上述源码中我们看到在没有使用线程缓存的时候,会创建一个PoolChunk对象,在这个PoolChunk中对于小于8kb的数据会通过维护着一个subpage类型的数组来组成一个page,我们可以认为把存储数据的buffer存放在一个chunk的一个page,并且每个page的容量都是2幂次方且单位为byte,在chunk为了便于搜索可用的page,于是在逻辑上将page以完全二叉树的数据结构进行存储,方便进行搜索查询,每个二叉树节点存储对应一个可分配的容量,根容量为16M,深度每增加1,容量就减半.如下图所示:
 
-![](/Users/keithl/docker/dev/data/xiaokunliu.github.io/websites/zimages/netty/feature/netty_chunk.jpg)
+![](https://raw.githubusercontent.com/xiaokunliu/xiaokunliu.github.io/feature/writing/websites/zimages/netty/feature/netty_chunk.jpg)
 
 3) 最后我们看下线程缓存存储的逻辑结构(基于可伸缩性的jemalloc算法):
 
-![](/Users/keithl/docker/dev/data/xiaokunliu.github.io/websites/zimages/netty/feature/netty_thread_cache.jpg)
+![](https://raw.githubusercontent.com/xiaokunliu/xiaokunliu.github.io/feature/writing/websites/zimages/netty/feature/netty_thread_cache.jpg)
 
 上述的Tiny MemoryRegionCache对应于TinySubPageCache,Small MemoryRegionCache对应于SmallSubPageCache,而Normal MemoryRegionCache对应于NormalCache.
 
 最后,我们根据源码将内存分配策略如下:
 
-![](/Users/keithl/docker/dev/data/xiaokunliu.github.io/websites/zimages/netty/feature/netty_cache_memory.jpg)
+![](https://raw.githubusercontent.com/xiaokunliu/xiaokunliu.github.io/feature/writing/websites/zimages/netty/feature/netty_cache_memory.jpg)
 
 #### Netty高效处理机制
 
@@ -648,13 +648,13 @@ private boolean unexpectedSelectorWakeup(int selectCnt) {
 
 基于事件轮询器的源码与线程模型可知,分配给每个EventLoop的专属线程都会负责处理select之后的就绪事件集合以及所有在阻塞队列中的任务,且线程与EventLoop通过FastThreadLocal进行绑定,也就是说所有事件的处理与任务的执行都是处于一个线程中,从而保证事件处理与任务处理都是保持在同一个线程中,同时与了保持一个channelHandler实例能够共享于多个pipeline中,需要通过注解@Shareble方式来保证线程安全.于是对于Netty处理的任务还是channelHandler下的完成事件处理都是能够得到线程安全的保证,于是对于无锁串行化的描述如下图:
 
-![](/Users/keithl/docker/dev/data/xiaokunliu.github.io/websites/zimages/netty/feature/netty_unlock_pipeline.jpg)
+![](https://raw.githubusercontent.com/xiaokunliu/xiaokunliu.github.io/feature/writing/websites/zimages/netty/feature/netty_unlock_pipeline.jpg)
 
 ##### 使用并发库
 
 在先前的高性能IO设计一文中有说到,在资源竞争的环境下,使用并发库甚至是无锁编程能够提升程序的性能,避免锁的争抢与等待.
 
-![](/Users/keithl/docker/dev/data/xiaokunliu.github.io/websites/zimages/netty/feature/netty_java_cocurrent.jpg)
+![](https://raw.githubusercontent.com/xiaokunliu/xiaokunliu.github.io/feature/writing/websites/zimages/netty/feature/netty_java_cocurrent.jpg)
 
-![](/Users/keithl/docker/dev/data/xiaokunliu.github.io/websites/zimages/netty/feature/netty_java_cocurrent1.jpg)
+![](https://raw.githubusercontent.com/xiaokunliu/xiaokunliu.github.io/feature/writing/websites/zimages/netty/feature/netty_java_cocurrent1.jpg)
 
