@@ -1,7 +1,7 @@
 ---
 title: python新式类 
 category: Python
-date: 2020-04-01 23:21:11
+date: 2018-04-01 23:21:11
 tags: Python
 ---
 

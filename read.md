@@ -10,4 +10,9 @@ https://hexo.io/zh-cn/docs/
 
 ```text
 https://hexo.io/themes/
+
+## 使用主题
+https://github.com/litten/hexo-theme-yilia
+https://github.com/iissnan/hexo-theme-next
+https://github.com/liuyib/hexo-theme-stun
 ```

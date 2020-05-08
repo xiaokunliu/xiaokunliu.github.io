@@ -1,7 +1,7 @@
 ---
 title: python使用bump管理版本号和打包
 category: Python
-date: 2019-12-31 23:21:11
+date: 2017-12-31 23:21:11
 tags: Python
 ---
 

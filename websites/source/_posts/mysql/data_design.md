@@ -1,7 +1,7 @@
 ---
 title: MySQL数据类型设计
 category: MySQL技术
-date: 2020-04-02 20:47:28
+date: 2018-04-02 20:47:28
 tags: MySQL技术
 ---
 

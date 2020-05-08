@@ -1,7 +1,7 @@
 ---
 title: mysql存储过程案例
 category: MySQL技术
-date: 2020-04-02 20:47:28
+date: 2018-04-06 20:47:28
 tags: MySQL技术
 ---
 

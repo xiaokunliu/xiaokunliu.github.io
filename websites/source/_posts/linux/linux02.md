@@ -1,7 +1,7 @@
 ---
 title: linux工作常用命令小结2
 category: Linux技术小结
-date: 2020-04-02 20:47:28
+date: 2019-06-08 20:47:28
 tags: Linux技术小结
 ---
 
