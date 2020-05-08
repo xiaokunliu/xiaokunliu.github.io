@@ -155,51 +155,53 @@ ByteBuf http = ChannelBuffers.wrappedBuffer(httpHeader, httpBody);
 
 ##### 动态扩容
 
+> 核心源代码
+
 ```java
 @Override
-public ByteBuf writeBytes(byte[] src) {
-  writeBytes(src, 0, src.length);
-  return this;
-}
+    public int calculateNewCapacity(int minNewCapacity, int maxCapacity) {
+        checkPositiveOrZero(minNewCapacity, "minNewCapacity");
+        if (minNewCapacity > maxCapacity) {
+            throw new IllegalArgumentException(String.format(
+                    "minNewCapacity: %d (expected: not greater than maxCapacity(%d)",
+                    minNewCapacity, maxCapacity));
+        }
+        final int threshold = CALCULATE_THRESHOLD; // 4 MiB page
 
-@Override
-public ByteBuf writeBytes(byte[] src, int srcIndex, int length) {
-  ensureWritable(length);
-  setBytes(writerIndex, src, srcIndex, length);
-  writerIndex += length;
-  return this;
-}
+        if (minNewCapacity == threshold) {
+            return threshold;
+        }
 
-// minWritableBytes = byte.length
-final void ensureWritable0(int minWritableBytes) {
-  final int writerIndex = writerIndex();
-  final int targetCapacity = writerIndex + minWritableBytes;
-  if (targetCapacity <= capacity()) {
-    ensureAccessible();
-    return;
-  }
-  if (checkBounds && targetCapacity > maxCapacity) {
-    ensureAccessible();
-    throw new IndexOutOfBoundsException(String.format(
-      "writerIndex(%d) + minWritableBytes(%d) exceeds maxCapacity(%d): %s",
-      writerIndex, minWritableBytes, maxCapacity, this));
-  }
+        // If over threshold, do not double but just increase by threshold.
+        //  > 4M
+        // cap / 4 * 4 + 4
+        if (minNewCapacity > threshold) {
+            int newCapacity = minNewCapacity / threshold * threshold;
+            if (newCapacity > maxCapacity - threshold) {
+                newCapacity = maxCapacity;
+            } else {
+                newCapacity += threshold;
+            }
+            return newCapacity;
+        }
 
-  // Normalize the target capacity to the power of 2.
-  final int fastWritable = maxFastWritableBytes();
-  
-  // 动态扩容
-  // 需要在java中配置io.netty.buffer.checkBounds=false
-  // 默认为4M
-  // > 4M进行扩容, 
-  // < 4M的话要进行扩容为3072byte
-  int newCapacity = fastWritable >= minWritableBytes ? writerIndex + fastWritable
-    : alloc().calculateNewCapacity(targetCapacity, maxCapacity);
+        // Not over threshold. Double up to 4 MiB, starting from 64.
+        // < 4M 进行以2的倍数进行增长
+        // 2096，此时分配的内存为3072byte
+        int newCapacity = 64;
+        while (newCapacity < minNewCapacity) {
+            newCapacity <<= 1;
+        }
 
-  // Adjust to the new capacity.
-  capacity(newCapacity);
-}
+        return Math.min(newCapacity, maxCapacity);
+    }
 ```
+
+> 通过上述源码可知:
+
+- 当写出的数据不足4M的时候,将以64byte为起始值,以2的倍数进行增长扩容
+- 当写出的数据大于4M的时候,将以一个公式`newCapacity = capacity/4*4+4`进行计算
+- 当写出的数据为4M的时候,直接返回4M预定的默认空间大小
 
 ##### 引用计数与资源管理
 
@@ -592,6 +594,28 @@ Netty内存分配逻辑结构视图:
 
 ![](https://raw.githubusercontent.com/xiaokunliu/xiaokunliu.github.io/feature/writing/websites/zimages/netty/feature/netty_cache_memory.jpg)
 
+
+> jemalloc算法
+
+- 工作原理
+1. 按照对象的大小划分存储对象等级区域,比如tiny对象,Small对象,Normal对象以及Large对象等
+2. 划分尺寸等级,根据传递分配对象大小来技计算合适当前对象存储的区域,比如7kb与5kb的数据都会存储在一个大小为8kb的chunk的内存区域,且每个chunk的内存区域都是连续并且组成一个page.
+3. 控制分配器元数据的开销并严格限制为少于总内存的2%
+4. 最小化活动页面集,在操作系统内核中,通常是4kb来管理虚拟内存,即将所有数据集中到尽可能少地页存储,好比上述第2点所讲的,多个chunk组成一个page.
+5. 最小化锁争用,为了保证并发读写数据的效率,需要为执行的线程指定特定的线程缓存,避免线程操作同一个内存区域时竞争锁导致性能下降.
+6. 能够提供可扩展性的分配器,即可以有开发人员指定也可以由部分技术框架默认提供.
+
+- 数据大小类别
+1. Small: [8], [16, 32, 48, ..., 128], [192, 256, 320, ..., 512], [768, 1024, 1280, ..., 3840]
+2 .Large: [4 KiB, 8 KiB, 12 KiB, ..., 4072 KiB]
+3. Huge: [4 MiB, 8 MiB, 12 MiB, ...]
+
+- 逻辑视图:
+
+![](https://raw.githubusercontent.com/xiaokunliu/xiaokunliu.github.io/feature/writing/websites/zimages/netty/feature/jemalloc_arean.jpg)
+![](https://raw.githubusercontent.com/xiaokunliu/xiaokunliu.github.io/feature/writing/websites/zimages/netty/feature/thread_cache_arena.jpg)
+
+
 #### Netty高效处理机制
 
 ##### 解决空轮询的源码
@@ -658,3 +682,19 @@ private boolean unexpectedSelectorWakeup(int selectCnt) {
 
 ![](https://raw.githubusercontent.com/xiaokunliu/xiaokunliu.github.io/feature/writing/websites/zimages/netty/feature/netty_java_cocurrent1.jpg)
 
+
+##### 参考资料
+
+> C10K & C10M
+
+- http://highscalability.com/blog/2013/5/13/the-secret-to-10-million-concurrent-connections-the-kernel-i.html
+- https://en.wikipedia.org/wiki/C10k_problem
+
+> 高性能
+
+- http://pl.atyp.us/content/tech/servers.html
+
+> 基于可伸缩性的jemalloc算法
+
+- http://people.freebsd.org/~jasone/jemalloc/bsdcan2006/jemalloc.pdf
+- https://www.facebook.com/notes/facebook-engineering/scalable-memory-allocation-using-jemalloc/480222803919
