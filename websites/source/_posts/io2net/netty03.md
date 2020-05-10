@@ -6,7 +6,6 @@ tags: 网络IO编程
 ---
 
 <!-- more -->
-
 ![title2](https://raw.githubusercontent.com/xiaokunliu/xiaokunliu.github.io/feature/writing/websites/zimages/netty/event2/title2.jpg)
 
 继上篇Netty事件分析,本文主要讲述Netty的责任链流程,Channel与Handler生命周期以及网络IO事件分析流程,最后对Netty事件流程进行一个总结梳理.

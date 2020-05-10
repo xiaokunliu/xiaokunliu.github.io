@@ -7,19 +7,19 @@ tags: 网络IO编程
 
 <!-- more -->
 
-#### 事件驱动架构EDA
-##### EDA组件
+### 事件驱动架构EDA
+#### EDA组件
 - 事件源/发起器(event emitters): 负责轮询检测事件状态的变化
 - 解复用器(Demultiplexer): 等待从事件源上获取就绪事件的集合,并将就绪事件通过转发器分发给响应就绪事件的处理器进行回调处理
 - 事件处理引擎(event handlers): 响应就绪事件发生的处理程序,由开发人员在应用程序上进行定义并针对就绪事件发生的状态进行注册绑定
 - 事件队列(event queue): 或者称为事件通道,可以理解为注册绑定对应的事件存储的位置,一旦就绪事件发生,解复用器就会从事件队列中检测并返回对应的就绪事件
 
-##### EDA组件运作与设计
-> 简要流程
+#### EDA组件运作与设计
+##### 简要流程
 
 ![在这里插入图片描述](https://img-blog.csdnimg.cn/20200410121142540.jpg?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dpbmRfNjAy,size_16,color_FFFFFF,t_70)
 
-> AWT完整事件流程
+##### AWT完整事件流程
 
 ![在这里插入图片描述](https://img-blog.csdnimg.cn/20200410121157805.jpg?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dpbmRfNjAy,size_16,color_FFFFFF,t_70)
 对于AWT事件的设计需要有客户端,事件源(发生器),事件通道,事件处理器以及事件对象组件一起配合完成完整的点击事件流程,基于监听者模式的设计思路如下:
@@ -115,9 +115,10 @@ class ActionEvent{
 }
 ```
 
-最后,关于编程设计的一个思考,就是在推导设计的时候,可以尝试借用TDD的方式进行编程设计,先预先定义自己想要实现的效果,一步步从最简单的目标效果思考逼近最终的设计,最后言归正传,通过上述的一个设计思路,我们接下来要思考如何实现一个IO事件驱动设计呢?对此,先从简单的网络NIO事件处理流程开始.
+最后,关于编程设计的一个思考,就是在推导设计的时候,可以尝试借用TDD的方式进行编程设计,先预先定义自己想要实现的效果,一步步从最简单的目标效果思考逼近最终的设计。
+好了言归正传,通过上述的一个设计思路,我们接下来要思考如何实现一个IO事件驱动设计呢?对此,先从简单的网络NIO事件处理流程开始.
 
-> 网络NIO事件处理流程
+##### 网络NIO事件处理流程
 
 对于web服务设计,主要处理服务端监听连接并接收客户端连接事件以及客户端发起服务端读取事件,这里主要以服务端的设计为准.
 
@@ -140,7 +141,9 @@ class ActionEvent{
 通过上述的NIO事件流程可知,对于web服务端而言,一个是我们需要关注IO轮询就绪事件以及获取就绪事件集合的操作,另一个是关注响应IO就绪事件的处理,主要包含连接的响应处理以及读取请求处理的响应处理,可以从宏观上,引入中间组件分别处理上述事件的轮询监听以及事件响应操作,在Reactor设计中,Reactor组件负责实现事件的轮询监听操作,Handler负责就绪事件的响应操作,对此,一个Reactor模式的简要事件流程如下:
 ![在这里插入图片描述](https://img-blog.csdnimg.cn/2020041012131717.jpg?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dpbmRfNjAy,size_16,color_FFFFFF,t_70)
 
-对此,一个Reactor模式的web服务设计实现需要两个核心组件,即Handler以及Reactor,而一个Handler则需要拆分伪`RequestHandler`以及`Acceptor`两个处理器,而一个Reactor组件中,参与的工作有注册绑定操作,IO事件的监测以及就绪事件的转发操作,同时也可以看到Reactor与系统内核之间都通过socket事件源来感知到事件状态的变化,是系统内核与Reactor之间通信的一个重要渠道,即网络设备接收到连接或者请求操作唤醒socket然后异步回调让Reactor获取CPU执行权,这个时候Reactor获取到socket事件为就绪事件.
+对此,一个Reactor模式的web服务设计实现需要两个核心组件,即:Handler以及Reactor:
+- Handler则需要拆分伪`RequestHandler`以及`Acceptor`两个处理器,
+- Reactor组件中,参与的工作有注册绑定操作,IO事件的监测以及就绪事件的转发操作,同时也可以看到Reactor与系统内核之间都通过socket事件源来感知到事件状态的变化,是系统内核与Reactor之间通信的一个重要渠道,即网络设备接收到连接或者请求操作唤醒socket然后异步回调让Reactor获取CPU执行权,这个时候Reactor获取到socket事件为就绪事件.
 
 ##### Reactor组件具体实现
 
@@ -295,21 +298,21 @@ class Invoker {
 }
 ```
 
-通过上述部分伪代码的设计实现,一个通用的NIO设计组件结构如下所示:
+- 通过上述部分伪代码的设计实现,一个通用的NIO设计组件结构如下所示:
+
 ![在这里插入图片描述](https://img-blog.csdnimg.cn/20200410121338567.jpg?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dpbmRfNjAy,size_16,color_FFFFFF,t_70)
 
-关于Reactor使用Java的NIO实现,后面讲述netty的时候会更为详细,这里主要是说明Reactor设计的实现思路,最后通过实现Reactor时序展示运作流程,以epoll/kqueue为准,如果为select,那么图中的第2步和下面的事件轮询都是合并在同一步操作中
+- 关于Reactor使用Java的NIO实现,后面讲述netty的时候会更为详细,这里主要是说明Reactor设计的实现思路,最后通过实现Reactor时序展示运作流程,以epoll/kqueue为准,如果为select,那么图中的第2步和下面的事件轮询都是合并在同一步操作中
+
 ![在这里插入图片描述](https://img-blog.csdnimg.cn/20200410121352233.jpg?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dpbmRfNjAy,size_16,color_FFFFFF,t_70)
 
 接下来我们可以来了解下IO事件驱动设计的异步实现原理,即Proactor模式实现
 
 #### Proactor设计原理
-
+##### AIO模型以及API
 在IO事件驱动设计实现,还有另一种实现模式,即Proactor模式,以网络AIO模型为基础,面向IO事件编程的一种模式
 
-##### AIO模型以及API
-
-> AIO使用的API
+- AIO使用的API
 
 ```c++
 // 将处理请求入队进行异步读取
@@ -341,7 +344,7 @@ struct aiocb {
   };
 ```
 
-> AIO模型
+- AIO模型
 
 ![在这里插入图片描述](https://img-blog.csdnimg.cn/20200410121416891.jpg?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dpbmRfNjAy,size_16,color_FFFFFF,t_70)
 
@@ -352,13 +355,18 @@ struct aiocb {
 通过上述的AIO模型分析,我们可以类比Proactor与Reactor实现模式,对于Proactor模式而言,只是使用的IO策略不同,因而在设计的实现细节也会有所不同,可以通过Reactor事件流程,我们可以推测Proactor模式的事件流程如下:
 ![在这里插入图片描述](https://img-blog.csdnimg.cn/20200410121433152.jpg?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dpbmRfNjAy,size_16,color_FFFFFF,t_70)
 
-通过上述可以粗略看到Proactor模式与Reactor模式在设计思路上是基本一致,都是基于事件驱动设计实现,同时将Handler与关注的IO事件操作分离,开发者可以更加集中于Handler的业务实现逻辑,重要的区分在于Reactor依赖的是同步IO的复用器,Proactor依赖的是异步IO的复用器实现.同时Proactor的核心操作主要有注册异步操作以及业务处理的Handler,异步接收完成操作的通知以及获取就绪事件和对应的完成结果的集合,而Handler与Reactor模式基本一致.
+通过上述可以粗略看到Proactor模式与Reactor模式在设计思路上是基本一致:
+- 1)都是基于事件驱动设计实现,同时将Handler与关注的IO事件操作分离,
+- 2)开发者可以更加集中于Handler的业务实现逻辑,重要的区分在于Reactor依赖的是同步IO的复用器
+- 3)Proactor依赖的是异步IO的复用器实现.同时Proactor的核心操作主要有注册异步操作以及业务处理的Handler
+- 4)异步接收完成操作的通知以及获取就绪事件和对应的完成结果的集合,而Handler与Reactor模式基本一致.
 
 ##### Proactor组件具体实现
 
 > Proactor组件运作流程
 
 ![在这里插入图片描述](https://img-blog.csdnimg.cn/20200410121448179.jpg?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dpbmRfNjAy,size_16,color_FFFFFF,t_70)
+
 > Proactor组件参与者
 
 - Handle: 可以理解为事件源,在这里表示网络socket对象
@@ -556,9 +564,11 @@ class ReadHandler<Integer, Object> extends Handler{
 - Boost.Asio库: 基于Proactor模式提供同步与异步操作提供并行支持
 - TProactor: 模拟Proactor
 
-一个关于TProactor的性能分析对比如下:
+> 一个关于TProactor的性能分析对比如下
+
 ![在这里插入图片描述](https://img-blog.csdnimg.cn/20200410121706901.jpg?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dpbmRfNjAy,size_16,color_FFFFFF,t_70)
-最后关于Java相关NIO的API
+
+> 最后关于Java相关NIO的API
 
 ```text
 https://docs.oracle.com/javase/7/docs/api/java/nio/package-summary.html

@@ -6,8 +6,6 @@ tags: 并发编程
 ---
 
 <!-- more -->
-
-
 ##### 1. ReentrantLock的基本使用
 > lock使用以及注意事项
 ```java

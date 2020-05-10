@@ -6,8 +6,6 @@ tags: 并发编程
 ---
 
 <!-- more -->
-
-
 ###### 1. synchronized的锁存储以及锁分类
 > synchronized的存储位置: 对象MarkWork
 

@@ -6,7 +6,6 @@ tags: 并发编程
 ---
 
 <!-- more -->
-
 基于[**工作原理一**](https://blog.csdn.net/wind_602/article/details/103873050)可知同步关键字底层是基于JVM操作监视器的同步指令原语monitorenter和monitorexit来实现,这次将会通过抽象的内存语义来说明侧面说明加锁和解锁的方式
 ###### 1. 工作内存与主内存
 > 定义

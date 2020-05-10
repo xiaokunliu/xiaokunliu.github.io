@@ -6,8 +6,6 @@ tags: 并发编程
 ---
 
 <!-- more -->
-
-
 ###### 1. volatile的使用
 > java源代码
 

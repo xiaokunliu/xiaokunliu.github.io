@@ -16,7 +16,7 @@ timezone:
 url: https://xiaokunliu.github.io/
 root: /
 permalink: :year/:month/:day/:title/
-permalink_defaults:
+permalink_defaults: :year/:month/:day/:title/
 
 # support https
 fullHttps: true
@@ -35,9 +35,18 @@ skip_render:
 search:
   path: search.xml
   field: post
+#  format: html
+#  limit: 100
 
-lcoal_search:
+# Local search
+# Dependencies: https://github.com/flashlab/hexo-generator-search
+local_search:
   enable: true
+  # if auto, trigger search by changing input
+  # if manual, trigger search by pressing enter key or search button
+  trigger: auto
+  # show top n results per article, show all results by setting to -1
+  top_n_per_article: -1
 
 # Writing
 new_post_name: :categories/:title.md # File name of new posts
@@ -61,7 +70,7 @@ highlight:
 # order_by: Posts order. (Order by date descending by default)
 index_generator:
   path: ''
-  per_page: 15
+  per_page: 20
   order_by: -date
   
 # Category & Tag
@@ -81,7 +90,7 @@ time_format: HH:mm:ss
 
 # Pagination
 ## Set per_page to 0 to disable pagination
-per_page: 12
+per_page: 20
 pagination_dir: page
 
 # Extensions

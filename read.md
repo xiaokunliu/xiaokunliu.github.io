@@ -15,4 +15,5 @@ https://hexo.io/themes/
 https://github.com/litten/hexo-theme-yilia
 https://github.com/iissnan/hexo-theme-next
 https://github.com/liuyib/hexo-theme-stun
+https://github.com/KevinOfNeu/hexo-theme-xoxo
 ```
