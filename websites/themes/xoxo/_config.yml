@@ -1,0 +1,59 @@
+
+# html lang
+language: zh-CN
+
+# main menu navigation
+menu:
+  home: /
+  archives: /archives
+  tags: /tags
+  categories: /categories
+  search: /search
+  #about: https://0xff000000.com
+  #rss: /atom.xml
+
+feed:
+  type: atom
+  path: atom.xml
+  limit: 20
+  hub:
+  content_limit: 140
+
+# 搜索
+# swiftype_key:
+
+# 设置文章部分内容显示
+auto_excerpt:
+  enable: true
+  length: 100
+
+# Miscelaneous
+favicon: /images/logo.jpg
+
+# stylesheets loaded in the <head>
+stylesheets:
+# - /css/normalize.css
+- //cdn.bootcss.com/pure/1.0.0/pure-min.css
+- /css/xoxo.css
+
+# scripts loaded in the end of the body
+scripts:
+#- //cdn.bootcss.com/zepto/1.2.0/zepto.min.js
+#- /js/xoxo.js
+
+disqus_shortname: xiaokunliu
+
+## google-site-verification=jHdsugby3eyTYyavY1-WUStc2k_SQVq4s0sdTLmG640
+google_site_verification: jHdsugby3eyTYyavY1-WUStc2k_SQVq4s0sdTLmG640
+google_analytics:
+baidu_analytics: c30347884005c44d461794502497a224
+
+# switch
+show_excerpt: true
+show_date: true
+
+#footer
+index_page: https://xiaokunliu.github.io
+main_site: https://xiaokunliu.github.io
+github: https://github.com/xiaokunliu
+
