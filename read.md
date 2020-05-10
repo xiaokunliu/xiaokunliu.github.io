@@ -17,3 +17,5 @@ https://github.com/iissnan/hexo-theme-next
 https://github.com/liuyib/hexo-theme-stun
 https://github.com/KevinOfNeu/hexo-theme-xoxo
 ```
+
+> 后续使用Travis CI自动构建（TODO）
