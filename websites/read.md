@@ -5,6 +5,15 @@ Welcome to [Hexo](https://hexo.io/)! This is your very first post. Check [docume
 
 ## Quick Start
 
+### install hexo 
+
+```bash
+## https://hexo.io/zh-tw/docs/
+apt-get install -y curl
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.34.0/install.sh | bash
+npm install -g hexo-cli
+```
+
 ### Create a new post
 
 ``` bash
