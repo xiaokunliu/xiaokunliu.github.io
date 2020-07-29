@@ -80,11 +80,11 @@ tags:
 * Spring Web Service：提供了契约优先的Web Service模型，服务的实现都是为了满 足服务的契约而编写的，[参考Spring WebService](http://docs.spring.io/spring-%20ws/site/)
 * Spring Security：安全对于许多应用都是一个非常关键的切面。利用Spring AOP，Spring Security为Spring应用提供 了声明式的安全机制，[参考Spring Security](http://projects.spring.io/spring-security/)
 * Spring Integration：许多企业级应用都需要与其他应用进行交互。Spring Integration提供了多种通用应用集成模式的 Spring声明式风格实现，[参考Spring Integration](http://projects.spring.io/spring-integration/)
-* Spring Batch：当我们需要对数据进行大量操作时，没有任何技术可以比批处理更胜任这种场景。如果需要开发一个批处理应用，你可以通过Spring Batch，使用Spring强大的面向POJO的编程模型，[参考Spring Batch](http://projects.spring.io/%20spring-batch/)
+* Spring Batch：当我们需要对数据进行大量操作时，没有任何技术可以比批处理更胜任这种场景。如果需要开发一个批处理应用，你可以通过Spring Batch，使用Spring强大的面向POJO的编程模型，[参考Spring Batch](https://spring.io/projects/spring-batch)
 * Spring Data：不管你使用文档数据库，如MongoDB，图数据库，如Neo4j，还是传统的关系型数据库，Spring Data都为持久化提供了一种简单的编程模型。这包括为多种数据库类型提供了一种自动化的 Repository机制，它负责为你创建Repository的实现
 * Spring Social：Spring的一个社交网络扩展模块，更多的是关注连 接(connect)，而不是社交(social)。它能够帮助你通过REST API连接Spring应用，其中有些 Spring应用可能原本并没有任何社交方面的功能目标，[Spring facebook](https://spring.io/guides/gs/accessing-facebook/)，[Spring twitter](https://spring.io/guides/gs/accessing-twitter/)
 * Spring Mobile：Spring Mobile是Spring MVC新的扩展模块，用于支持移动Web应用开发
-* Spring for Android：旨在通过Spring框架为开发基于 Android设备的本地应用提供某些简单的支持，[参考Spring Android](http://projects.spring.io%20/spring-android/)
+* Spring for Android：旨在通过Spring框架为开发基于 Android设备的本地应用提供某些简单的支持，[参考Spring Android](http://projects.spring.io/spring-android/)
 * Spring Boot：Spring Boot大量依赖于自动配置技术，它能够消除大部分(在很多场景中，甚至是全部)Spring 配置。它还提供了多个Starter项目，不管你使用Maven还是Gradle，这都能减少Spring工程构建文件的大小
 
 ###### 耦合的两面性

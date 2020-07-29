@@ -20,15 +20,16 @@ branches:
 # 在构建之前安装hexo环境
 before_install:
 - npm install -g hexo-cli
+- hexo version
 
 # 启动hexo并构建生命周期
 install:
+- pwd
 - npm install
 - npm install hexo-deployer-git --save
 
 # 执行构建部署
 script:
-- cd $PWD/websites
 - hexo clean
 - hexo generate
 
