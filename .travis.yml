@@ -28,6 +28,7 @@ install:
 
 # 执行构建部署
 script:
+- cd $PWD/websites
 - hexo clean
 - hexo generate
 
