@@ -1,3 +1,5 @@
-theme: jekyll-theme-midnight
-## hexo-build github token
-GH_TOKEN: 534a0f769943f4b906504196088d4899595417fe
+# deploy 节点
+deploy:
+- type: git
+  repo: https://github_token@github.com/xiaokunliu/xiaokunliu.github.io.git
+  branch: master
