@@ -24,12 +24,15 @@ before_install:
 
 # 启动hexo并构建生命周期
 install:
+- git branch -a
 - pwd
+- cd websites
 - npm install
 - npm install hexo-deployer-git --save
 
 # 执行构建部署
 script:
+- pwd
 - hexo clean
 - hexo generate
 
