@@ -35,8 +35,49 @@ https://github.com/settings/tokens
 
 ##上述的两个文件需要在项目的根目录下
 ## 一旦配置好之后就推送到分支上,ci会自动触发构建任务执行
-```
 
+## 需要github的rsa权限
+使用docker的dev的密钥
+cat ~/.ssh/id_rsa.pub
+
+## 安装ruby to 2.6
+## apt-get install gcc libffi-dev make ruby-dev
+## 安装travis的客户端
+https://github.com/travis-ci/travis.rb#installation
+
+## use command 
+gem install travis --no-document
+
+## 加密rsa密钥
+travis version
+travis login --org
+## finish login with github
+
+## 生成密钥
+travis encrypt-file ~/.ssh/id_rsa
+
+## 输出结果
+encrypting /root/.ssh/id_rsa for xiaokunliu/xiaokunliu.github.io
+storing result as id_rsa.enc
+DANGER ZONE: Override existing id_rsa.enc? |no| yes
+storing secure env variables for decryption
+
+Please add the following to your build script (before_install stage in your .travis.yml, for instance):
+
+	openssl aes-256-cbc -K $encrypted_9b2d7e19d83c_key -iv $encrypted_9b2d7e19d83c_iv -in id_rsa.enc -out ~\/.ssh/id_rsa -d
+
+Pro Tip: You can add it automatically by running with --add.
+
+Make sure to add id_rsa.enc to the git repository		
+Make sure not to add /root/.ssh/id_rsa to the git repository.
+Commit all changes to your .travis.yml.
+
+
+## 将输出密钥添加到.travis.yml中
+
+
+## 在.travis.yml中添加密钥脚本
+```
 
 > 重新安装需要注意事项
 

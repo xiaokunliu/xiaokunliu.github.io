@@ -21,10 +21,17 @@ branches:
 before_install:
 - npm install -g hexo-cli
 - hexo version
+- openssl aes-256-cbc -K $encrypted_9b2d7e19d83c_key -iv $encrypted_9b2d7e19d83c_iv -in id_rsa.enc -out ~/.ssh/id_rsa -d
+- chmod 600 ~/.ssh/id_rsa
+- eval $(ssh-agent)
+- ssh-add ~/.ssh/id_rsa
+- cat .travis/ssh_config
+- cp .travis/ssh_config ~/.ssh/config
 
 # 启动hexo并构建生命周期
 install:
 - git branch -a
+- git checkout feature/writing
 - pwd
 - cd websites
 - npm install
