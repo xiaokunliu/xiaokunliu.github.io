@@ -74,9 +74,8 @@ Commit all changes to your .travis.yml.
 
 
 ## 将输出密钥添加到.travis.yml中
-
-
 ## 在.travis.yml中添加密钥脚本
+https://gythialy.github.io/travis-add-ssh-key/
 ```
 
 > 重新安装需要注意事项

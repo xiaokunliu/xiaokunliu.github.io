@@ -25,8 +25,9 @@ before_install:
 - chmod 600 ~/.ssh/id_rsa
 - eval $(ssh-agent)
 - ssh-add ~/.ssh/id_rsa
-- cat .travis/ssh_config
-- cp .travis/ssh_config ~/.ssh/config
+- ls -al /home/travis/
+- cat /home/travis/ssh_config
+- cp /home/travis/ssh_config ~/.ssh/config
 
 # 启动hexo并构建生命周期
 install:
