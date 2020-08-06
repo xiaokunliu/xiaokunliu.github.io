@@ -2,7 +2,7 @@
 title: git需求管理规范
 category: tools
 date: 2020-08-05 22:07:07
-tags:
+tags: tools
 ---
 
 
@@ -13,17 +13,17 @@ tags:
 
 ##### 迭代周期与git版本管理
 
-![](/Users/keithl/docker/dev/data/xiaokunliu.github.io/websites/zimages/tools/git/git_timeline.jpg)
+![](https://raw.githubusercontent.com/xiaokunliu/xiaokunliu.github.io/feature/writing/websites/zimages/tools/git/git_timeline.jpg)
 
 ##### 开发流程
 
 > 需求开发流程
 
-![](/Users/keithl/docker/dev/data/xiaokunliu.github.io/websites/zimages/tools/git/git_flow.jpg)
+![](https://raw.githubusercontent.com/xiaokunliu/xiaokunliu.github.io/feature/writing/websites/zimages/tools/git/git_flow.jpg)
 
 > 线上紧急修复bug流程
 
-![](/Users/keithl/docker/dev/data/xiaokunliu.github.io/websites/zimages/tools/git/git_flow_hotfix.jpg)
+![](https://raw.githubusercontent.com/xiaokunliu/xiaokunliu.github.io/feature/writing/websites/zimages/tools/git/git_flow_hotfix.jpg)
 
 
 
