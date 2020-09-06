@@ -9,7 +9,7 @@ tags: 分布式架构设计
 
 ## Raft算法
 
-![](https://raw.githubusercontent.com/xiaokunliu/xiaokunliu.github.io/feature/writing/websitess/zimages/arch/raft02/title.jpg)
+![](https://raw.githubusercontent.com/xiaokunliu/xiaokunliu.github.io/feature/writing/websites/zimages/arch/raft02/title.jpg)
 
 ### Raft简述
 
