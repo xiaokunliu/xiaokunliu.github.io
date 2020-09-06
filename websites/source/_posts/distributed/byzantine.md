@@ -1,8 +1,8 @@
 ---
 title: 分布式共识问题
-category: distibuted
+category: 分布式架构设计 
 date: 2020-05-27 09:41:07
-tags: distibuted
+tags: 分布式架构设计
 ---
 
 <!-- more -->

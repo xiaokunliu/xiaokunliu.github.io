@@ -1,8 +1,8 @@
 ---
 title: paxos算法
-category: 分布式协议与算法
+category: 分布式架构设计
 date: 2020-07-04 03:34:31
-tags: 分布式协议与算法
+tags: 分布式架构设计
 ---
 
 <!-- more -->

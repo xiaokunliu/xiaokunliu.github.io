@@ -1,8 +1,8 @@
 ---
 title: 分布式一致性
-category: consistency
+category: 分布式架构设计
 date: 2020-06-24 08:09:56
-tags: consistency
+tags: 分布式架构设计
 ---
 
 

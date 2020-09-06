@@ -1,8 +1,8 @@
 ---
 title: Raft算法简述
-category: 分布式协议与算法
+category: 分布式架构设计
 date: 2020-07-24 03:31:43
-tags: 分布式协议与算法
+tags: 分布式架构设计
 ---
 
 

@@ -1,8 +1,8 @@
 ---
 title: 分布式理论基础
-category: distibuted
+category: 分布式架构设计
 date: 2020-06-08 15:16:16
-tags: distibuted
+tags: 分布式架构设计
 ---
 
 
