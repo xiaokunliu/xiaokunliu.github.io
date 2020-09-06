@@ -9,7 +9,7 @@ tags: 分布式架构设计
 
 ## Raft算法
 
-![](https://raw.githubusercontent.com/xiaokunliu/xiaokunliu.github.io/feature/writing/website/zimages/arch/raft02/title.jpg)
+![](https://raw.githubusercontent.com/xiaokunliu/xiaokunliu.github.io/feature/writing/websitess/zimages/arch/raft02/title.jpg)
 
 ### Raft简述
 
@@ -49,13 +49,13 @@ Raft算法是一种用于管理Replicated Log的共识算法,其算法结果与�
 
 所有的键值服务节点都属于follower节点,在Raft算法中,follower节点会存在两个核心属性,即等待leader节点心跳检测的超时时间timeout以及任期编号term.在初始状态下,键值服务集群不存在leader节点,此时任期term为0,同时为了保证集群每个follower节点都能够有机会发起投票以及避免投票冲突带来的性能问题,于是采取心跳检测的超时时间作为随机数.即如下:
 
-![](https://raw.githubusercontent.com/xiaokunliu/xiaokunliu.github.io/feature/writing/website/zimages/arch/raft02/leader_init.jpg)
+![](https://raw.githubusercontent.com/xiaokunliu/xiaokunliu.github.io/feature/writing/websites/zimages/arch/raft02/leader_init.jpg)
 
 - 投票请求
 
 在上述集群的初始状态中,我们可以看到followerA节点等待leader节点的ping心跳率先超时,于是followerA节点成为候选节点Candidate,同时默认为自己的任期term进行+1的投票,此时节点A会更新当前的任期编号term为1(初始状态为0),接着再向集群服务节点B以及C发起RPC投票请求,即如下:
 
-![](https://raw.githubusercontent.com/xiaokunliu/xiaokunliu.github.io/feature/writing/website/zimages/arch/raft02/leader_vote_req.jpg)
+![](https://raw.githubusercontent.com/xiaokunliu/xiaokunliu.github.io/feature/writing/websites/zimages/arch/raft02/leader_vote_req.jpg)
 
 - 投票请求响应
 
@@ -63,17 +63,17 @@ Raft算法是一种用于管理Replicated Log的共识算法,其算法结果与�
 
 1) 如果是在timeout时间内,集群的服务节点B以及C接收到候选节点A的RPC投票请求并且此时还没有接收到其他服务节点的投票请求,那么就会更新当前的任期编号为1,同时将投票给A服务节点并给予响应,即:
 
-![](https://raw.githubusercontent.com/xiaokunliu/xiaokunliu.github.io/feature/writing/website/zimages/arch/raft02/leader_vote_resp_success.jpg)
+![](https://raw.githubusercontent.com/xiaokunliu/xiaokunliu.github.io/feature/writing/websites/zimages/arch/raft02/leader_vote_resp_success.jpg)
 
 2) 如果在超时时间内没有获得半数投票,那么原先的选举会失效并将会重新发起投票选举,如果未超时,A服务节点接将收到其他服务节点投票响应并为自己的选票进行相应的计算增加,即:
 
-![](https://raw.githubusercontent.com/xiaokunliu/xiaokunliu.github.io/feature/writing/website/zimages/arch/raft02/leader_vote_resp_fail.jpg)
+![](https://raw.githubusercontent.com/xiaokunliu/xiaokunliu.github.io/feature/writing/websites/zimages/arch/raft02/leader_vote_resp_fail.jpg)
 
 - A节点获得半数投票成为leader节点
 
 当候选节点A在超时的时间内获得到集群半数以上的节点给予的投票响应,于是会晋升成为leader节点,并周期性地向follower节点发起类似ping的心跳响应,并在当前任期内维持ping心跳检测的超时时间timeout,即如下:
 
-![](https://raw.githubusercontent.com/xiaokunliu/xiaokunliu.github.io/feature/writing/website/zimages/arch/raft02/leader_vote_result.jpg)
+![](https://raw.githubusercontent.com/xiaokunliu/xiaokunliu.github.io/feature/writing/websites/zimages/arch/raft02/leader_vote_result.jpg)
 
 #### 日志复制
 
@@ -81,7 +81,7 @@ Raft算法是一种用于管理Replicated Log的共识算法,其算法结果与�
 
 > 日志项属性
 
-![](https://raw.githubusercontent.com/xiaokunliu/xiaokunliu.github.io/feature/writing/website/zimages/arch/raft02/log_entry.jpg)
+![](https://raw.githubusercontent.com/xiaokunliu/xiaokunliu.github.io/feature/writing/websites/zimages/arch/raft02/log_entry.jpg)
 
 由上图可知,日志实体(log Entry)主要包含以下几个属性:
 
@@ -96,23 +96,23 @@ Raft算法的日志复制是基于优化之后的2PC(减少一半的消息往返
 
 - 客户端服务client service向Raft集群服务发起事务请求操作,将转发由Raft集群的leader节点进行事务请求的写入以此来保证Raft集群服务的共识问题,假设客户端服务发起写请求操作`set x=10`,即:
 
-![](https://raw.githubusercontent.com/xiaokunliu/xiaokunliu.github.io/feature/writing/website/zimages/arch/raft02/log_write_req.jpg)
+![](https://raw.githubusercontent.com/xiaokunliu/xiaokunliu.github.io/feature/writing/websites/zimages/arch/raft02/log_write_req.jpg)
 
 - leader节点接收到事务请求操作,将请求提交给leader节点服务下的共识模块进行事务操作并输出cmd指令以RPC的方式进行AppendEntries(复制日志项)到其他服务节点中,即:
 
-![](https://raw.githubusercontent.com/xiaokunliu/xiaokunliu.github.io/feature/writing/website/zimages/arch/raft02/log_rpc_append_entry.jpg)
+![](https://raw.githubusercontent.com/xiaokunliu/xiaokunliu.github.io/feature/writing/websites/zimages/arch/raft02/log_rpc_append_entry.jpg)
 
 - 当follower节点将接收到leader节点RPC的appendEntries(日志复制)进行持久化后,将会返回给leader节点,而leader节点如果接收到大多数follower节点的RPC日志复制成功的响应,那么就会将当前的log应用到leader节点的状态机并给予客户端的响应.即:
 
-![](https://raw.githubusercontent.com/xiaokunliu/xiaokunliu.github.io/feature/writing/website/zimages/arch/raft02/log_rpc_append_entry_res.jpg)
+![](https://raw.githubusercontent.com/xiaokunliu/xiaokunliu.github.io/feature/writing/websites/zimages/arch/raft02/log_rpc_append_entry_res.jpg)
 
 - 这个时候leader节点如果有新的RPC日志项复制抑或是发起heartbeat心跳检测,`RPC-AppendEntries&Heartbeat`会携带当前最大的且即将提交的`index`到follower节点,follower节点会进行一致性检查流程并将日志项提交到本地状态机以保证与leader节点的日志数据一致.即:
 
-![](https://raw.githubusercontent.com/xiaokunliu/xiaokunliu.github.io/feature/writing/website/zimages/arch/raft02/log_rpc_append_entry_res_updated.jpg)
+![](https://raw.githubusercontent.com/xiaokunliu/xiaokunliu.github.io/feature/writing/websites/zimages/arch/raft02/log_rpc_append_entry_res_updated.jpg)
 
 - 整个RPC日志复制流程如下:
 
-![](https://raw.githubusercontent.com/xiaokunliu/xiaokunliu.github.io/feature/writing/website/zimages/arch/raft02/log_rpc_append_entry_final.jpg)
+![](https://raw.githubusercontent.com/xiaokunliu/xiaokunliu.github.io/feature/writing/websites/zimages/arch/raft02/log_rpc_append_entry_final.jpg)
 
 最后,关于Raft算法的日志复制,可以类比数据库的主从复制架构来思考,上述的提交日志可以理解为binlog或者是oplog,那么每次发起的RPC日志复制抑或是心跳检测都会携带日志最大且即将提交的索引值index,通过binlog或者是oplog将数据更新到节点的状态机上.
 
@@ -122,7 +122,7 @@ Raft算法的日志复制是基于优化之后的2PC(减少一半的消息往返
 
 假设当前Raft服务集群节点的log以及对应的logEntry如下:
 
-![](https://raw.githubusercontent.com/xiaokunliu/xiaokunliu.github.io/feature/writing/website/zimages/arch/raft02/log_consistence_init.jpg)
+![](https://raw.githubusercontent.com/xiaokunliu/xiaokunliu.github.io/feature/writing/websites/zimages/arch/raft02/log_consistence_init.jpg)
 
 在上述图中,我们看到leader节点与follower节点的日志数据存在不一致,我们知道Raft算法是属于强leader模型,一切以“leader”为主,因此日志复制也不例外,一旦出现不一致,那么follower节点会进行一致性检查并以leader发送的RPC日志为主将不一致性的数据强制更新为与leader节点日志一致,而对于leader节点的日志是不会覆盖和删除自己的日志记录.也就是说对于raft算法的一致性检查原理主要包含以下步骤:
 
@@ -135,15 +135,15 @@ Raft算法的日志复制是基于优化之后的2PC(减少一半的消息往返
 
 - 若为RPC复制新的日志项,其检查流程如下:
 
-![](https://raw.githubusercontent.com/xiaokunliu/xiaokunliu.github.io/feature/writing/website/zimages/arch/raft02/log_consistence_req.jpg)
+![](https://raw.githubusercontent.com/xiaokunliu/xiaokunliu.github.io/feature/writing/websites/zimages/arch/raft02/log_consistence_req.jpg)
 
 - 若为心跳检测,其检查流程如下:
 
-![](https://raw.githubusercontent.com/xiaokunliu/xiaokunliu.github.io/feature/writing/website/zimages/arch/raft02/log_consistence_req_heartbeat.jpg)
+![](https://raw.githubusercontent.com/xiaokunliu/xiaokunliu.github.io/feature/writing/websites/zimages/arch/raft02/log_consistence_req_heartbeat.jpg)
 
 上述不论是发送RPC复制日志项还是心跳消息,在follower节点B以及C中由于日志属性不匹配抑或是日志项不存在而被拒绝当前`index=9`或者`index=8`的日志项更新,于是对于leader节点将向后递减重新发送新的RPC复制日志到follower节点,即:
 
-![](https://raw.githubusercontent.com/xiaokunliu/xiaokunliu.github.io/feature/writing/website/zimages/arch/raft02/log_consistence_res.jpg)
+![](https://raw.githubusercontent.com/xiaokunliu/xiaokunliu.github.io/feature/writing/websites/zimages/arch/raft02/log_consistence_res.jpg)
 
 至此,在有限的时间内leader节点会将其日志复制到follower节点来保证整个Raft集群的日志数据一致性.
 
@@ -162,13 +162,13 @@ Raft算法的日志复制是基于优化之后的2PC(减少一半的消息往返
 
 - 集群中leader节点崩溃与恢复
 
-![](https://raw.githubusercontent.com/xiaokunliu/xiaokunliu.github.io/feature/writing/website/zimages/arch/raft02/mem_cluster_down.jpg)
+![](https://raw.githubusercontent.com/xiaokunliu/xiaokunliu.github.io/feature/writing/websites/zimages/arch/raft02/mem_cluster_down.jpg)
 
 从上面我们可以看到在一个Raft集群服务中,如果leader节点发生不可用,那么剩下的follower节点将会重新进行选举,假设此时选举B作为leader节点,那么当原有的leader节点恢复正常的时候,此时集群存在两个“leader”节点,如何解决?
 
 - 集群扩容
 
-![](https://raw.githubusercontent.com/xiaokunliu/xiaokunliu.github.io/feature/writing/website/zimages/arch/raft02/mem_clutser_extend.jpg)
+![](https://raw.githubusercontent.com/xiaokunliu/xiaokunliu.github.io/feature/writing/websites/zimages/arch/raft02/mem_clutser_extend.jpg)
 
 从上述可以看到,在实现集群服务节点的扩容时,如果新加入的服务节点刚好碰上原有的集群服务发生网络分区,导致C与B,A节点失去联系,而在C节点恢复的时候与刚加入的服务节点D&E组成一个新的Raft集群(D&E与原有的服务节点属于同一个区域内);其次如果是新加入的两个节点与原有的服务节点不属在同一个区域,那么当前raft集群扩容就存在跨区域的集群,跨区域必然会存在网络不可靠的因素,因此一旦两个区域发生网络分区错误,那此时新区域下的D&E以及原有的区域集群节点分别组成了一个Raft集群,此时就会面临双leader节点问题.
 
@@ -182,7 +182,7 @@ Raft算法的日志复制是基于优化之后的2PC(减少一半的消息往返
 
 在一个稳定的Raft集群服务中,存在着以下的一个leader以及两个follower节点,follower节点的配置需要从leader节点同步进行更新,于是在这里我们关注leader节点的配置即可,也就是整个集群的一份配置.对于ES集群而言,其配置信息如下:
 
-![](https://raw.githubusercontent.com/xiaokunliu/xiaokunliu.github.io/feature/writing/website/zimages/arch/raft02/mem_cluster_configuration.jpg)
+![](https://raw.githubusercontent.com/xiaokunliu/xiaokunliu.github.io/feature/writing/websites/zimages/arch/raft02/mem_cluster_configuration.jpg)
 
 上述的log/clusterName/nodes等信息组成一个集群的配置信息,也就是说Raft 算法要解决上述多leader节点的问题,其实是保障在集群配置变更时,集群能稳定运行,不会同时出现多个leader节点的集群配置.
 
@@ -204,17 +204,17 @@ Raft算法的日志复制是基于优化之后的2PC(减少一半的消息往返
 
 1) Raft集群的leader节点发生不可用,原先具备leader选举权的follower节点进行leader选举,最终节点B成为新一轮的leader,即如下:
 
-![](https://raw.githubusercontent.com/xiaokunliu/xiaokunliu.github.io/feature/writing/website/zimages/arch/raft02/mem_change_cluster_1.jpg)
+![](https://raw.githubusercontent.com/xiaokunliu/xiaokunliu.github.io/feature/writing/websites/zimages/arch/raft02/mem_change_cluster_1.jpg)
 
 此时集群的配置由[A,B,C]变更为[B,C],同时配置中的部分属性数据也会发生变更,比如任期term以及log数据
 
 2) 这个时候如果A节点恢复并重新加入到现有的Raft集群中,那么利用单节点原理,leaderB更新配置并将log同步覆盖更新节点A,此时A节点自然作为follower节点,最后leader节点B通过日志复制的RPC向集群服务更新配置最终保证集群的强leader模型,
 
-![](https://raw.githubusercontent.com/xiaokunliu/xiaokunliu.github.io/feature/writing/website/zimages/arch/raft02/mem_change_cluster_2.jpg)
+![](https://raw.githubusercontent.com/xiaokunliu/xiaokunliu.github.io/feature/writing/websites/zimages/arch/raft02/mem_change_cluster_2.jpg)
 
 - 扩容解决“脑裂”问题
 
-![](https://raw.githubusercontent.com/xiaokunliu/xiaokunliu.github.io/feature/writing/website/zimages/arch/raft02/mem_change_cluster_3.jpg)
+![](https://raw.githubusercontent.com/xiaokunliu/xiaokunliu.github.io/feature/writing/websites/zimages/arch/raft02/mem_change_cluster_3.jpg)
 
 在现有的Raft集群中加入节点D,此时集群raft_cluster监听到节点D加入集群,此时leader节点更新集群的配置并向节点D同步日志数据log,最后更新集群配置之后再向Raft集群服务节点发起日志复制的RPC请求消息同步最新的集群配置信息从而保证Raft集群的强一致性.
 
@@ -224,19 +224,19 @@ Raft算法的日志复制是基于优化之后的2PC(减少一半的消息往返
 
 1) 初始化状态,只有华南区域部署Raft集群服务,但因业务需求原因,需要在华北地区增加机器节点,并加入到现有的Raft集群服务,即:
 
-![](https://raw.githubusercontent.com/xiaokunliu/xiaokunliu.github.io/feature/writing/website/zimages/arch/raft02/mem_change_cluster_region1.jpg)
+![](https://raw.githubusercontent.com/xiaokunliu/xiaokunliu.github.io/feature/writing/websites/zimages/arch/raft02/mem_change_cluster_region1.jpg)
 
 2) 如果两区域网络没有发生分区错误,按照上述单节点变更原则,最终Raft集群配置以及节点状态如下:
 
-![](https://raw.githubusercontent.com/xiaokunliu/xiaokunliu.github.io/feature/writing/website/zimages/arch/raft02/mem_change_cluster_region2.jpg)
+![](https://raw.githubusercontent.com/xiaokunliu/xiaokunliu.github.io/feature/writing/websites/zimages/arch/raft02/mem_change_cluster_region2.jpg)
 
 3) 如果两区域的网络发生分区,那么就会导致Raft集群服务在不同的区域中产生两个leader节点,即:
 
-![](https://raw.githubusercontent.com/xiaokunliu/xiaokunliu.github.io/feature/writing/website/zimages/arch/raft02/mem_change_cluster_region3.jpg)
+![](https://raw.githubusercontent.com/xiaokunliu/xiaokunliu.github.io/feature/writing/websites/zimages/arch/raft02/mem_change_cluster_region3.jpg)
 
 4) 华南区域leader节点发生不可用,而在重新选举的过程中,区域产生分区错误,导致Raft集群服务出现两个leader节点,即:
 
-![](https://raw.githubusercontent.com/xiaokunliu/xiaokunliu.github.io/feature/writing/website/zimages/arch/raft02/mem_change_cluster_region4.jpg)
+![](https://raw.githubusercontent.com/xiaokunliu/xiaokunliu.github.io/feature/writing/websites/zimages/arch/raft02/mem_change_cluster_region4.jpg)
 
 对于3&4问题,属于跨区域的集群的“脑裂”问题(ES集群也存在同样的问题)
 
@@ -254,7 +254,7 @@ Raft算法的日志复制是基于优化之后的2PC(减少一半的消息往返
 
 2) 其次可以将node节点降低权限,仅作为提供数据服务,不具备竞选leader资格(即没有投票资格),假设当前集群节点个数为n,根据反证法以及投票满足大多数原则(理想状态不考虑随机超时时间)可知最小可以配置具备成为leader节点个数为`(n/2)+1`并且是在处于同一个区域下,即:
 
-![](https://raw.githubusercontent.com/xiaokunliu/xiaokunliu.github.io/feature/writing/website/zimages/arch/raft02/mem_change_cluster_region5.jpg)
+![](https://raw.githubusercontent.com/xiaokunliu/xiaokunliu.github.io/feature/writing/websites/zimages/arch/raft02/mem_change_cluster_region5.jpg)
 
 ### Raft算法分析小结
 
@@ -278,7 +278,7 @@ Raft算法的日志复制是基于优化之后的2PC(减少一半的消息往返
 
 ##### Raft算法架构
 
-![](https://raw.githubusercontent.com/xiaokunliu/xiaokunliu.github.io/feature/writing/website/zimages/arch/raft02/leader_consensus_opr.jpg)
+![](https://raw.githubusercontent.com/xiaokunliu/xiaokunliu.github.io/feature/writing/websites/zimages/arch/raft02/leader_consensus_opr.jpg)
 
 通过上述可知,客户端client service多个节点发起事务操作提交到集群的leader节点,集群的leader服务节点通过共识模块来输出对应的数据值并记录变更日志log,同时发起日志复制到集群其他服务节点以便于同步变更操作并等待大多数节点的响应之后再持久化到本地的状态机,最后更新之后再返回给客户端响应,而集群服务的其他节点则通过新的日志复制RPC消息抑或是RPC心跳检测进行一致性校验然后更新到对应的状态机上.
 
@@ -288,7 +288,7 @@ Raft算法的日志复制是基于优化之后的2PC(减少一半的消息往返
 
 简而言之,就是不同进程p对分别输入一组u的数据,通过相同的程序处理逻辑来保证其输出值最终都是v.即:
 
-![](https://raw.githubusercontent.com/xiaokunliu/xiaokunliu.github.io/feature/writing/website/zimages/arch/raft02/leader_consensus.jpg)
+![](https://raw.githubusercontent.com/xiaokunliu/xiaokunliu.github.io/feature/writing/websites/zimages/arch/raft02/leader_consensus.jpg)
 
 - 对于Raft集群存在哪些共识问题
 
@@ -362,13 +362,13 @@ Raft集群通过每次选举产生新的leader,同时会对应新的Term,每一�
 
 在一次选举中,每一个服务节点最多会对一个任期编号进行投票,并且按照先来先服务原则进行投票.即在发生选举过程中,可能存在两个或者多个候选节点向集群服务发起投票,Raft集群为了避免同时发生投票的碰撞,采取随机超时时间的心跳检测机制来进行投票,这个时候对于其中一个服务节点A,先接收到服务节点B且携带任期编号为v的投票请求并给予投票,此时服务节点C也携带任期编号为v投票请求到服务节点A,由于A节点先投票给B,于是返回给节点C当前已经没有选票,投票失败的响应.
 
-![](https://raw.githubusercontent.com/xiaokunliu/xiaokunliu.github.io/feature/writing/website/zimages/arch/raft02/leader_vote_request_short.jpg)
+![](https://raw.githubusercontent.com/xiaokunliu/xiaokunliu.github.io/feature/writing/websites/zimages/arch/raft02/leader_vote_request_short.jpg)
 
 ##### 满足完整性日志
 
 日志完整性高的follower节点拒绝投票给日志完整性低的候选节点.假设现在Raft集群服务提交的日志log如下(其中包含日志索引logIndex,实体log包含任期编号term以及变更的指令):
 
-![](https://raw.githubusercontent.com/xiaokunliu/xiaokunliu.github.io/feature/writing/website/zimages/arch/raft02/leader_vote__replicated_log.jpg)
+![](https://raw.githubusercontent.com/xiaokunliu/xiaokunliu.github.io/feature/writing/websites/zimages/arch/raft02/leader_vote__replicated_log.jpg)
 
 现在Raft集群中各个节点以及日志复制情况如上,那么此时如果leader节点发生不可用,followers都具备成为leader节点,但是如果是一个日志索引下标`logIndex=5`的候选节点向一个日志索引下标为`logIndex=8`的follower节点发起投票请求,这个时候follower节点将会被拒绝,主要原因是后者的`logIndex`更大,相对地,其日志完整性更高(可类比于kafka的ISR副本机制)
 
