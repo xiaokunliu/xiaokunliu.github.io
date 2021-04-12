@@ -53,23 +53,23 @@ travis version
 travis login --org
 ## finish login with github
 
-## 生成密钥
-travis encrypt-file ~/.ssh/id_rsa
+## 生成密钥  travis encrypt-file ~/.ssh/id_rsa
+root@55c6f90f649b:/opt/data/xiaokunliu.github.io# travis encrypt-file github_deploy_key
 
 ## 输出结果
-encrypting /root/.ssh/id_rsa for xiaokunliu/xiaokunliu.github.io
-storing result as id_rsa.enc
-DANGER ZONE: Override existing id_rsa.enc? |no| yes
+Detected repository as xiaokunliu/xiaokunliu.github.io, is this correct? |yes| yes
+encrypting github_deploy_key for xiaokunliu/xiaokunliu.github.io
+storing result as github_deploy_key.enc
 storing secure env variables for decryption
 
 Please add the following to your build script (before_install stage in your .travis.yml, for instance):
 
-	openssl aes-256-cbc -K $encrypted_9b2d7e19d83c_key -iv $encrypted_9b2d7e19d83c_iv -in id_rsa.enc -out ~\/.ssh/id_rsa -d
+    openssl aes-256-cbc -K $encrypted_8ebb1ef83f64_key -iv $encrypted_8ebb1ef83f64_iv -in github_deploy_key.enc -out github_deploy_key -d
 
 Pro Tip: You can add it automatically by running with --add.
 
-Make sure to add id_rsa.enc to the git repository		
-Make sure not to add /root/.ssh/id_rsa to the git repository.
+Make sure to add github_deploy_key.enc to the git repository.
+Make sure not to add github_deploy_key to the git repository.
 Commit all changes to your .travis.yml.
 
 
