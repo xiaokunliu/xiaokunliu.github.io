@@ -55,7 +55,17 @@ hexo new post title_name --categories category_name
 hexo clean && hexo g && hexo d
 ```
 
+- template
+```text
+---
+title: 设计原则
+category: 架构设计
+date: 2021-04-13 16:44:43
+tags: 架构设计
+---
 
+<!-- more -->
+```
 
 
 
