@@ -7,7 +7,7 @@ tags: 并发编程
 
 <!-- more -->
 
-###### 1. JVM运行数据区概览
+#### JVM运行数据区概览
 > jvm运行数据区图例
 
 ![在这里插入图片描述](https://img-blog.csdnimg.cn/20200124163048370.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dpbmRfNjAy,size_16,color_FFFFFF,t_70)
@@ -16,7 +16,7 @@ tags: 并发编程
 - 线程独占(封闭): 每个线程都拥有它的独立的内存空间,jvm在运行程序时就会为线程开辟一个内存空间来存储线程相关的信息,随着线程生命周期创建和销毁
 - 线程共享: 所有线程都能够访问当前的数据区域,随着GC的生命周期的创建和销毁
 
-###### 2. JVM运行数据区分解说明
+#### JVM运行数据区分解说明
 > 线程共享
 
 - 方法区

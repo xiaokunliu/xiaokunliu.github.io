@@ -7,8 +7,7 @@ tags: 并发编程
 
 <!-- more -->
 
-
-###### 1. JVM运行数据区概述
+#### JVM运行数据区概述
 > .class与字节码bytecode
 
 - .class: 是指文件扩展名称为.class的文件,表示由java源程序经过java编译器编译而成且由JVM执行的二进制文件,因此可以通过拥有一份.class文件在不同的操作系统平台上的JVM执行,实现跨平台运行的特性
@@ -21,7 +20,9 @@ tags: 并发编程
 
 - 字节码文件(可阅读的指令文件)
 ![在这里插入图片描述](https://img-blog.csdnimg.cn/20200124155445198.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dpbmRfNjAy,size_16,color_FFFFFF,t_70)
-###### 2. .class文件结构与字节码
+
+
+#### 2. .class文件结构与字节码
 
 > .class文件结构
 
