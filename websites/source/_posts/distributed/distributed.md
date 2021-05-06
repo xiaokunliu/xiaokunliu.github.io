@@ -17,12 +17,16 @@ tags: 分布式架构设计
 
 ### 微观角度 - 分布式实践技术
 #### 分布式基础理论
-- 核心理论：CAP理论 & BASE理论
+- 核心理论：CAP理论 & BASE理论 & 全局时钟 & 逻辑时钟
 - 事务相关：ACID && 2PC & 3PC & TCC 
 ![分布式核心理论](https://xiaokunliu.github.io/2020/06/08/cap/)
 
 - 分布式一致性问题
 ![一致性问题](https://xiaokunliu.github.io/2020/06/24/consistency/)
+
+- 一致性
+    - 强一致性
+    - 弱一致性(BASE理论 & 全局时钟 & 逻辑时钟)
 
 #### 分布式协议与算法
 - 共识问题
@@ -38,15 +42,28 @@ tags: 分布式架构设计
 - 一致性Hash算法
 ![单节点hash算法](https://xiaokunliu.github.io/2020/10/01/single_consistence/)
 
+- Quorum机制
+
+
 
 #### 分布式事务
-
+- 理论相关：XA，2PC，3PC，TCC协议，Seta事务以及MQ事务实现BASE最终一致性
+- 锁机制以及分布式锁的原理
+- 全局ID设计
 
 #### 分布式通信
+- RPC通信机制以及原理
+- http1 & http1.1 & http2
+- gRPC通信机制
 
 
 #### 分布式服务
 
+- 配置中心
+- 注册中心
+- 服务协调者
+- 链路追踪
+- 服务网关
 
 #### 分布式存储
 
