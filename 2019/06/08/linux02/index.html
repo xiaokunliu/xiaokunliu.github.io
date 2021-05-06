@@ -1,0 +1,358 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<!--
+config header
+-->
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#202020"/>
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  <script src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" async></script>
+
+  
+      <meta name="google-site-verification" content="{{ theme.google_site_verification }}" />
+  
+
+  
+    <meta name="keywords" content="Linux技术小结," />
+  
+
+  
+    <meta name="description" content="分享个人学习工作的技术知识" />
+  
+  
+  <link rel="icon" type="image/x-icon" href="/logo.jpg">
+  <title>category: Linux技术小结 [ 疾风先生 ]</title>
+  
+    <!-- stylesheets list from config.yml -->
+    
+      <link rel="stylesheet" href="//cdn.bootcss.com/pure/1.0.0/pure-min.css">
+    
+      <link rel="stylesheet" href="/css/xoxo.css">
+    
+  
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+
+<body>
+  <div class="nav-container">
+    <nav class="home-menu pure-menu pure-menu-horizontal">
+  <a class="pure-menu-heading" href="/">
+    <img class="avatar" src="https://xiaokunliu.github.io/images/logo.jpg">
+    <span class="title">疾风先生</span>
+  </a>
+
+  <ul class="pure-menu-list clearfix">
+      
+          
+            <li class="pure-menu-item"><a href="/" class="pure-menu-link">首页</a></li>
+          
+      
+          
+            <li class="pure-menu-item"><a href="/archives" class="pure-menu-link">归档</a></li>
+          
+      
+          
+            <li class="pure-menu-item"><a href="/tags" class="pure-menu-link">标签</a></li>
+          
+      
+          
+            <li class="pure-menu-item"><a href="/categories" class="pure-menu-link">分类</a></li>
+          
+      
+          
+            <li class="pure-menu-item"><a href="/search" class="pure-menu-link">搜索</a></li>
+          
+      
+  </ul>
+   
+</nav>
+  </div>
+
+  <div class="container" id="content-outer">
+    <div class="inner" id="content-inner">
+      <div class="post-container">
+  <article class="post" id="post">
+    <header class="post-header text-center">
+      <h1 class="title">
+        linux工作常用命令小结2
+      </h1>
+      <span>
+        
+        <time class="time" datetime="2019-06-08T20:47:28.000Z">
+        2019-06-08
+      </time>
+        
+      </span>
+      <span class="slash">/</span>
+      <span class="post-meta">
+      <span class="post-tags">
+        <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux%E6%8A%80%E6%9C%AF%E5%B0%8F%E7%BB%93/" rel="tag">Linux技术小结</a></li></ul>
+      </span>
+    </span>
+      <span class="slash">/</span>
+      <span class="read">
+      <span id="busuanzi_value_page_pv"></span> 点击
+    </span>
+    </header>
+
+    <div class="post-content">
+      <span id="more"></span>
+<h4 id="linux-监控命令小结"><a href="#linux-监控命令小结" class="headerlink" title="linux 监控命令小结"></a>linux 监控命令小结</h4><blockquote>
+<p>IO监控</p>
+</blockquote>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># iostat 仅对系统整体情况进行分析</span></span><br><span class="line"><span class="comment"># 系统级别的IO监控</span></span><br><span class="line">iostat -xdm 1</span><br><span class="line"></span><br><span class="line"><span class="comment"># %util:代表磁盘繁忙程度。100% 表示磁盘繁忙, 0%表示磁盘空闲。但是注意,磁盘繁忙不代表磁盘(带宽)利用率高  </span></span><br><span class="line"><span class="comment"># argrq-sz:提交给驱动层的IO请求大小,一般不小于4K,不大于max(readahead_kb, max_sectors_kb),可用于判断当前的IO模式,一般情况下,尤其是磁盘繁忙时, 越大代表顺序,越小代表随机</span></span><br><span class="line"><span class="comment"># svctm:一次IO请求的服务时间,对于单块盘,完全随机读时,基本在7ms左右,既寻道+旋转延迟时间</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 进程级IO监控</span></span><br><span class="line"><span class="comment"># iotop:顾名思义, io版的top</span></span><br><span class="line"><span class="comment"># pidstat:顾名思义, 统计进程(pid)的stat,进程的stat自然包括进程的IO状况</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment"># 业务级IO监控</span></span><br><span class="line"><span class="comment"># ioprofile 命令本质上是 lsof + strace, 具体下载可见 http://code.google.com/p/maatkit/</span></span><br><span class="line">ioprofile</span><br><span class="line"></span><br><span class="line"><span class="comment"># 文件级IO监控</span></span><br><span class="line"><span class="comment"># 文件级IO监控可以配合/补充&quot;业务级和进程级&quot;IO分析</span></span><br><span class="line"><span class="comment"># 文件级IO分析,主要针对单个文件, 回答当前哪些进程正在对某个文件进行读写操作.</span></span><br><span class="line"><span class="comment"># 1 lsof   或者  ls /proc/pid/fd</span></span><br><span class="line"><span class="comment"># 2 inodewatch.stp</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># inodewatch.stp</span></span><br><span class="line"><span class="comment">#! /usr/bin/env stap</span></span><br><span class="line"></span><br><span class="line">probe vfs.write, vfs.read</span><br><span class="line">&#123;</span><br><span class="line">  <span class="comment"># dev and ino are defined by vfs.write and vfs.read</span></span><br><span class="line">  <span class="keyword">if</span> (dev == MKDEV(<span class="variable">$1</span>,<span class="variable">$2</span>) <span class="comment"># major/minor device</span></span><br><span class="line">      &amp;&amp; ino == <span class="variable">$3</span>)</span><br><span class="line">    <span class="built_in">printf</span> (<span class="string">&quot;%s(%d) %s 0x%x/%u\n&quot;</span>,</span><br><span class="line">      execname(), pid(), probefunc(), dev, ino)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>查看磁盘IO</p>
+</blockquote>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 左右箭头：改变排序方式，默认是按IO排序。</span></span><br><span class="line"><span class="comment"># r：改变排序顺序。</span></span><br><span class="line"><span class="comment"># o：只显示有IO输出的进程。</span></span><br><span class="line"><span class="comment"># p：进程/线程的显示方式的切换。</span></span><br><span class="line"><span class="comment"># a：显示累积使用量。</span></span><br><span class="line"><span class="comment"># q：退出。</span></span><br><span class="line">iotop -oP</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>查看进程cpu，内存负载</p>
+</blockquote>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">top -c</span><br><span class="line"><span class="comment"># 按键F，进入选择模式，根据linux上面的提示，如果选择排序则按键S，再退出即会显示按照指定的指标排序显示</span></span><br><span class="line"><span class="comment"># 显示内存状态 free,具体包括物理内存,虚拟内存,共享内存和系统缓存</span></span><br><span class="line"><span class="comment"># 显示系统进程在瞬间的运行动态,ps</span></span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>虚拟内存状态</p>
+</blockquote>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 可以报告关于进程、内存、I/O等系统整体运行状态</span></span><br><span class="line"><span class="comment"># 事件间隔：状态信息刷新的时间间隔；</span></span><br><span class="line"><span class="comment"># 次数：显示报告的次数。</span></span><br><span class="line">vmstat 3   <span class="comment"># 每隔3s打印一次</span></span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>磁盘分区监控</p>
+</blockquote>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 分区使用率大于85%:&#123;/home:[90.7568]&#125;,搜索磁盘占用空间最大的目录并通知清理</span></span><br><span class="line"><span class="comment"># du命令是对文件和目录磁盘使用的空间的查看</span></span><br><span class="line">du --max-depth=1 -BM ./</span><br><span class="line"></span><br><span class="line"><span class="comment"># df命令用于显示磁盘分区上的可使用的磁盘空间。默认显示单位为KB。可以利用该命令来获取硬盘被占用了多少空间，目前还剩下多少空间等信息</span></span><br><span class="line">df -h</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>内存监控</p>
+</blockquote>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 机器内存free（含buf/cache）小于10%（7.1800）</span></span><br><span class="line"><span class="comment"># 查看内存占用情况</span></span><br><span class="line">free -m</span><br><span class="line"></span><br><span class="line"><span class="comment"># 查看进程占用的内存,从高到低占用排序</span></span><br><span class="line">top -c -o -%MEM</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>统计网络接口活动</p>
+</blockquote>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># ifstat命令就像iostat/vmstat描述其它的系统状况一样，是一个统计网络接口活动状态的工具</span></span><br><span class="line">apt-get install -y ifstat</span><br><span class="line">ifstat -tT</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>查看网络状态</p>
+</blockquote>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># netstat命令用来打印Linux中网络系统的状态信息，可让你得知整个Linux系统的网络情况</span></span><br><span class="line"><span class="comment"># 并不是所有的进程都能找到，没有权限的会不显示，使用 root 权限查看所有的信息</span></span><br><span class="line">netstat -ap | grep uwsgi</span><br><span class="line"></span><br><span class="line"><span class="comment"># 显示网络接口列表</span></span><br><span class="line">netstat -i</span><br><span class="line"></span><br><span class="line"><span class="comment"># 查看phpcgi进程数，如果接近预设值，说明不够用，需要增加</span></span><br><span class="line">netstat -anpo | grep <span class="string">&quot;php-cgi&quot;</span> | wc -l</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>全能系统信息统计工具</p>
+</blockquote>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># dstat命令是一个用来替换vmstat、iostat、netstat、nfsstat和ifstat这些命令的工具，是一个全能系统信息统计工具</span></span><br><span class="line"><span class="comment"># 监控swap，process，sockets，filesystem并显示监控的时间</span></span><br><span class="line">dstat -tsp --socket --fs</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>显示系统的平均负载</p>
+</blockquote>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># uptime命令能够打印系统总共运行了多长时间和系统的平均负载。</span></span><br><span class="line"><span class="comment"># uptime命令可以显示的信息显示依次为：现在时间、系统已经运行了多长时间、目前有多少登陆用户、系统在过去的1分钟、5分钟和15分钟内的平均负载</span></span><br><span class="line">uptime</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>系统运行状态统计工具</p>
+</blockquote>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># sar命令是Linux下系统运行状态统计工具，它将指定的操作系统状态计数器显示到标准输出设备</span></span><br><span class="line"><span class="comment"># 察看内存和交换空间的使用率</span></span><br><span class="line"><span class="comment"># kbmemfree与kbmemused字段分别显示内存的未使用与已使用空间，后面跟着的是已使用空间的百分比（%memused字段）。</span></span><br><span class="line"><span class="comment"># kbbuffers与kbcached字段分别显示缓冲区与系统全域的数据存取量，单位为KB。</span></span><br><span class="line">sar -r</span><br></pre></td></tr></table></figure>
+
+
+
+    </div>
+
+    <div>全文完。</div>
+  </article>
+  <div class="toc-container">
+    
+  <div id="toc" class="toc-article">
+    <strong class="toc-title">目录</strong>
+    <ol class="toc"><li class="toc-item toc-level-4"><a class="toc-link" href="#linux-%E7%9B%91%E6%8E%A7%E5%91%BD%E4%BB%A4%E5%B0%8F%E7%BB%93"><span class="toc-text">linux 监控命令小结</span></a></li></ol>
+  </div>
+
+
+  </div>
+</div>
+<div class="copyright">
+    <span>本作品采用</span>
+    <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by/4.0/">知识共享署名 4.0 国际许可协议</a>
+    <span>进行许可。 转载时请注明原文链接。</span>
+</div>
+<div class="share" style="width: 100%;">
+  <img src="/images/wechat-small.jpg" alt="Running Geek" style="margin: auto; display: block;"/>
+
+  <div style="margin: auto; text-align: center; font-size: 0.8em; color: grey;">老铁们关注走一走，不迷路</div>
+  
+</div>
+
+  
+    <div class="post-nav">
+      <div class="post-nav-item post-nav-next">
+        
+          <span>〈 </span>
+          <a href="/2019/06/02/linux01/" rel="next" title="linux工作常用命令小结1">
+          linux工作常用命令小结1
+          </a>
+        
+      </div>
+  
+      <div class="post-nav-item post-nav-prev">
+          
+          <a href="/2019/06/12/linux03/" rel="prev" title="linux工作常用命令小结3">
+            linux工作常用命令小结3
+          </a>
+          <span>〉</span>
+        
+      </div>
+    </div>
+  
+
+
+    </div>
+
+    
+
+  </div>
+  <footer class="footer text-center">
+    <div id="bottom-inner">
+        <a class="bottom-item" href="https://xiaokunliu.github.io">首页</a> |
+        <a class="bottom-item" href="https://xiaokunliu.github.io" target="_blank">主站</a> |
+        <a class="bottom-item" href="https://github.com/xiaokunliu" target="_blank">GitHub</a> |
+        <a class="bottom-item" href="https://hexo.io" target="_blank">Powered by hexo</a> |
+        <a class="bottom-item" href="https://github.com/KevinOfNeu/hexo-theme-xoxo" target="_blank">Theme xoxo</a>
+    </div>
+</footer>
+  
+
+<script>
+  (function(window, document, undefined) {
+
+    var timer = null;
+
+    function returnTop() {
+      cancelAnimationFrame(timer);
+      timer = requestAnimationFrame(function fn() {
+        var oTop = document.body.scrollTop || document.documentElement.scrollTop;
+        if (oTop > 0) {
+          document.body.scrollTop = document.documentElement.scrollTop = oTop - 50;
+          timer = requestAnimationFrame(fn);
+        } else {
+          cancelAnimationFrame(timer);
+        }
+      });
+    }
+
+    var hearts = [];
+    window.requestAnimationFrame = (function() {
+      return window.requestAnimationFrame ||
+        window.webkitRequestAnimationFrame ||
+        window.mozRequestAnimationFrame ||
+        window.oRequestAnimationFrame ||
+        window.msRequestAnimationFrame ||
+        function(callback) {
+          setTimeout(callback, 1000 / 60);
+        }
+    })();
+    init();
+
+    function init() {
+      css(".heart{z-index:9999;width: 10px;height: 10px;position: fixed;background: #f00;transform: rotate(45deg);-webkit-transform: rotate(45deg);-moz-transform: rotate(45deg);}.heart:after,.heart:before{content: '';width: inherit;height: inherit;background: inherit;border-radius: 50%;-webkit-border-radius: 50%;-moz-border-radius: 50%;position: absolute;}.heart:after{top: -5px;}.heart:before{left: -5px;}");
+      attachEvent();
+      gameloop();
+      addMenuEvent();
+    }
+
+    function gameloop() {
+      for (var i = 0; i < hearts.length; i++) {
+        if (hearts[i].alpha <= 0) {
+          document.body.removeChild(hearts[i].el);
+          hearts.splice(i, 1);
+          continue;
+        }
+        hearts[i].y--;
+        hearts[i].scale += 0.004;
+        hearts[i].alpha -= 0.013;
+        hearts[i].el.style.cssText = "left:" + hearts[i].x + "px;top:" + hearts[i].y + "px;opacity:" + hearts[i].alpha + ";transform:scale(" + hearts[i].scale + "," + hearts[i].scale + ") rotate(45deg);background:" + hearts[i].color;
+      }
+      requestAnimationFrame(gameloop);
+    }
+
+    /**
+     * 给logo设置点击事件
+     * 
+     * - 回到顶部
+     * - 出现爱心
+     */
+    function attachEvent() {
+      var old = typeof window.onclick === "function" && window.onclick;
+      var logo = document.getElementById("logo");
+      if (logo) {
+        logo.onclick = function(event) {
+          returnTop();
+          old && old();
+          createHeart(event);
+        }
+      }
+      
+    }
+
+    function createHeart(event) {
+      var d = document.createElement("div");
+      d.className = "heart";
+      hearts.push({
+        el: d,
+        x: event.clientX - 5,
+        y: event.clientY - 5,
+        scale: 1,
+        alpha: 1,
+        color: randomColor()
+      });
+      document.body.appendChild(d);
+    }
+
+    function css(css) {
+      var style = document.createElement("style");
+      style.type = "text/css";
+      try {
+        style.appendChild(document.createTextNode(css));
+      } catch (ex) {
+        style.styleSheet.cssText = css;
+      }
+      document.getElementsByTagName('head')[0].appendChild(style);
+    }
+
+    function randomColor() {
+      // return "rgb(" + (~~(Math.random() * 255)) + "," + (~~(Math.random() * 255)) + "," + (~~(Math.random() * 255)) + ")";
+      return "#F44336";
+    }
+
+    function addMenuEvent() {
+      var menu = document.getElementById('menu-main-post');
+      if (menu) {
+        var toc = document.getElementById('toc');
+        if (toc) {
+          menu.onclick = function() {
+            if (toc) {
+              if (toc.style.display == 'block') {
+                toc.style.display = 'none';
+              } else {
+                toc.style.display = 'block';
+              }
+            }
+          };
+        } else {
+          menu.style.display = 'none';
+        }
+      }
+    }
+
+  })(window, document);
+</script>
+
+  
+
+
+
+</body>
+</html>

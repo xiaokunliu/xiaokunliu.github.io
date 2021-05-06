@@ -1,0 +1,335 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<!--
+config header
+-->
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#202020"/>
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  <script src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" async></script>
+
+  
+      <meta name="google-site-verification" content="{{ theme.google_site_verification }}" />
+  
+
+  
+    <meta name="keywords" content="Python," />
+  
+
+  
+    <meta name="description" content="分享个人学习工作的技术知识" />
+  
+  
+  <link rel="icon" type="image/x-icon" href="/logo.jpg">
+  <title>category: Python [ 疾风先生 ]</title>
+  
+    <!-- stylesheets list from config.yml -->
+    
+      <link rel="stylesheet" href="//cdn.bootcss.com/pure/1.0.0/pure-min.css">
+    
+      <link rel="stylesheet" href="/css/xoxo.css">
+    
+  
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+
+<body>
+  <div class="nav-container">
+    <nav class="home-menu pure-menu pure-menu-horizontal">
+  <a class="pure-menu-heading" href="/">
+    <img class="avatar" src="https://xiaokunliu.github.io/images/logo.jpg">
+    <span class="title">疾风先生</span>
+  </a>
+
+  <ul class="pure-menu-list clearfix">
+      
+          
+            <li class="pure-menu-item"><a href="/" class="pure-menu-link">首页</a></li>
+          
+      
+          
+            <li class="pure-menu-item"><a href="/archives" class="pure-menu-link">归档</a></li>
+          
+      
+          
+            <li class="pure-menu-item"><a href="/tags" class="pure-menu-link">标签</a></li>
+          
+      
+          
+            <li class="pure-menu-item"><a href="/categories" class="pure-menu-link">分类</a></li>
+          
+      
+          
+            <li class="pure-menu-item"><a href="/search" class="pure-menu-link">搜索</a></li>
+          
+      
+  </ul>
+   
+</nav>
+  </div>
+
+  <div class="container" id="content-outer">
+    <div class="inner" id="content-inner">
+      <div class="post-container">
+  <article class="post" id="post">
+    <header class="post-header text-center">
+      <h1 class="title">
+        python微服务设计
+      </h1>
+      <span>
+        
+        <time class="time" datetime="2018-03-12T18:36:59.000Z">
+        2018-03-12
+      </time>
+        
+      </span>
+      <span class="slash">/</span>
+      <span class="post-meta">
+      <span class="post-tags">
+        <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/" rel="tag">Python</a></li></ul>
+      </span>
+    </span>
+      <span class="slash">/</span>
+      <span class="read">
+      <span id="busuanzi_value_page_pv"></span> 点击
+    </span>
+    </header>
+
+    <div class="post-content">
+      <span id="more"></span>
+<h5 id="Nameko-API-Swagger"><a href="#Nameko-API-Swagger" class="headerlink" title="Nameko + API Swagger"></a>Nameko + API Swagger</h5><h6 id="创建项目"><a href="#创建项目" class="headerlink" title="创建项目"></a>创建项目</h6><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">## 安装微服务框架</span></span><br><span class="line">pip install nameko==2.5.4.4</span><br><span class="line"><span class="comment">## 安装api框架</span></span><br><span class="line">pip install nameko-swagger==1.2.7</span><br><span class="line"><span class="comment">## 创建项目</span></span><br><span class="line">nameko-admin createproject demo</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>项目目录结构</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">demo/</span><br><span class="line">    .tox/   </span><br><span class="line">    bin/</span><br><span class="line">        run.sh</span><br><span class="line">    conf/</span><br><span class="line">        config.yaml</span><br><span class="line">    logs/</span><br><span class="line">    service/</span><br><span class="line">        demo.py</span><br><span class="line">    spec/</span><br><span class="line">        v1/</span><br><span class="line">            api.yaml</span><br><span class="line">    test/</span><br><span class="line">    ... ##</span><br></pre></td></tr></table></figure>
+
+<h6 id="默认配置"><a href="#默认配置" class="headerlink" title="默认配置"></a>默认配置</h6><figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">## api.yaml</span></span><br><span class="line"><span class="attr">paths:</span></span><br><span class="line">  <span class="string">/demo/health:</span></span><br><span class="line">    <span class="attr">get:</span></span><br><span class="line">      <span class="attr">summary:</span> <span class="string">获取服务健康状态</span></span><br><span class="line">      <span class="attr">tags:</span></span><br><span class="line">        <span class="bullet">-</span> <span class="string">demo</span></span><br><span class="line">      <span class="attr">operationId:</span> <span class="string">get_health</span></span><br><span class="line">      <span class="attr">responses:</span></span><br><span class="line">        <span class="attr">default:</span></span><br><span class="line">          <span class="attr">description:</span> <span class="string">|</span></span><br><span class="line"><span class="string">            返回结果：&#123;&quot;code&quot;: &quot;xxx&quot;, &quot;msg&quot;: &quot;xxx&quot;, &quot;data&quot;: &#123;&#125;, &quot;time&quot;: xxx, &quot;why&quot;: &quot;xxx&quot;&#125;</span></span><br><span class="line"><span class="string"></span></span><br><span class="line">            <span class="string">其中`code`字段可能返回的错误码包括：</span></span><br><span class="line">            <span class="string">*</span> <span class="string">&quot;OK&quot;</span> <span class="string">操作成功，结果见`data`字段</span></span><br><span class="line">            <span class="string">*</span> <span class="string">&quot;INTERNAL_SERVER_ERROR&quot;</span> <span class="string">内部错误，具体原因见`why`字段</span></span><br><span class="line">          <span class="attr">schema:</span></span><br><span class="line">            <span class="string">$ref:</span> <span class="string">&#x27;#/definitions/HealthResponse&#x27;</span></span><br></pre></td></tr></table></figure>
+
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">## demo.py</span></span><br><span class="line"><span class="meta">@swagger.unmarshal_request</span></span><br><span class="line"><span class="meta">@http(<span class="params"><span class="string">&#x27;GET&#x27;</span>, <span class="string">&#x27;/v1/demo/health&#x27;</span></span>)</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">http_get_health</span>(<span class="params">self, request</span>):</span></span><br><span class="line">    <span class="keyword">return</span> <span class="built_in">dict</span>(code=<span class="string">&#x27;OK&#x27;</span>, msg=<span class="string">&#x27;&#x27;</span>, data=&#123;&#125;, time=<span class="built_in">int</span>(time.time()))</span><br></pre></td></tr></table></figure>
+
+<h6 id="配置在路径path的作用域中"><a href="#配置在路径path的作用域中" class="headerlink" title="配置在路径path的作用域中"></a>配置在路径path的作用域中</h6><figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">## api.yaml添加path的路径参数配置</span></span><br><span class="line"><span class="string">/demo/path/index/&#123;uid&#125;:</span></span><br><span class="line">    <span class="attr">get:</span></span><br><span class="line">      <span class="attr">summary:</span> <span class="string">根据请求参数在path中进行查询</span></span><br><span class="line">      <span class="attr">tags:</span></span><br><span class="line">        <span class="bullet">-</span> <span class="string">demo</span></span><br><span class="line">      <span class="attr">operationId:</span> <span class="string">index</span></span><br><span class="line">      <span class="attr">parameters:</span></span><br><span class="line">        <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">uid</span></span><br><span class="line">          <span class="attr">in:</span> <span class="string">path</span>        <span class="comment"># Note the name is the same as in the path</span></span><br><span class="line">          <span class="attr">description:</span> <span class="string">用户uid</span></span><br><span class="line">          <span class="attr">required:</span> <span class="literal">true</span></span><br><span class="line">          <span class="attr">type:</span> <span class="string">integer</span></span><br><span class="line">      <span class="attr">responses:</span></span><br><span class="line">        <span class="attr">default:</span></span><br><span class="line">          <span class="attr">description:</span> <span class="string">|</span></span><br><span class="line"><span class="string">            返回结果：&#123;&quot;code&quot;: &quot;xxx&quot;, &quot;msg&quot;: &quot;xxx&quot;, &quot;data&quot;: &#123;&#125;, &quot;time&quot;: xxx, &quot;why&quot;: &quot;xxx&quot;&#125;</span></span><br><span class="line"><span class="string"></span></span><br><span class="line">            <span class="string">其中`code`字段可能返回的错误码包括：</span></span><br><span class="line">            <span class="string">*</span> <span class="string">&quot;OK&quot;</span> <span class="string">操作成功，结果见`data`字段</span></span><br><span class="line">            <span class="string">*</span> <span class="string">&quot;INTERNAL_SERVER_ERROR&quot;</span> <span class="string">内部错误，具体原因见`why`字段</span></span><br><span class="line">          <span class="attr">schema:</span></span><br><span class="line">            <span class="string">$ref:</span> <span class="string">&#x27;#/definitions/HealthResponse&#x27;</span></span><br></pre></td></tr></table></figure>
+
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">## demo.py</span></span><br><span class="line"><span class="meta">@swagger.unmarshal_request</span></span><br><span class="line"><span class="meta">@http(<span class="params"><span class="string">&#x27;GET&#x27;</span>, <span class="string">&#x27;/v1/demo/path/index/&lt;int:uid&gt;&#x27;</span></span>)</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">path_index</span>(<span class="params">self, request, uid</span>):</span></span><br><span class="line">    logger.info(request)</span><br><span class="line">    logger.info(uid)</span><br><span class="line">    <span class="keyword">return</span> <span class="built_in">dict</span>(code=<span class="string">&#x27;OK&#x27;</span>, msg=<span class="string">&#x27;&#x27;</span>, data=&#123;<span class="string">r&quot;msg&quot;</span>: <span class="string">&quot;path index success...&quot;</span>&#125;</span><br></pre></td></tr></table></figure>
+
+<h6 id="配置在路径query作用域中"><a href="#配置在路径query作用域中" class="headerlink" title="配置在路径query作用域中"></a>配置在路径query作用域中</h6><figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">## api.yaml</span></span><br><span class="line"><span class="string">/demo/query/index:</span></span><br><span class="line">    <span class="attr">get:</span></span><br><span class="line">      <span class="attr">summary:</span> <span class="string">根据请求参数在query中查询</span></span><br><span class="line">      <span class="attr">operationId:</span> <span class="string">query_index</span></span><br><span class="line">      <span class="attr">parameters:</span></span><br><span class="line">        <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">cid</span></span><br><span class="line">          <span class="attr">in:</span> <span class="string">query</span></span><br><span class="line">          <span class="attr">description:</span> <span class="string">用户频道Id</span></span><br><span class="line">          <span class="attr">required:</span> <span class="literal">true</span></span><br><span class="line">          <span class="attr">type:</span> <span class="string">integer</span></span><br><span class="line">      <span class="attr">responses:</span></span><br><span class="line">        <span class="attr">default:</span></span><br><span class="line">          <span class="attr">description:</span> <span class="string">|</span></span><br><span class="line"><span class="string">           返回结果：&#123;&quot;code&quot;: &quot;xxx&quot;, &quot;msg&quot;: &quot;xxx&quot;, &quot;data&quot;: &#123;&#125;, &quot;time&quot;: xxx, &quot;why&quot;: &quot;xxx&quot;&#125;</span></span><br><span class="line"><span class="string"></span></span><br><span class="line">            <span class="string">其中`code`字段可能返回的错误码包括：</span></span><br><span class="line">            <span class="string">*</span> <span class="string">&quot;OK&quot;</span> <span class="string">操作成功，结果见`data`字段</span></span><br><span class="line">            <span class="string">*</span> <span class="string">&quot;INTERNAL_SERVER_ERROR&quot;</span> <span class="string">内部错误，具体原因见`why`字段</span></span><br><span class="line">          <span class="attr">schema:</span></span><br><span class="line">            <span class="string">$ref:</span> <span class="string">&#x27;#/definitions/HealthResponse&#x27;</span></span><br></pre></td></tr></table></figure>
+
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">## demo.py</span></span><br><span class="line"><span class="meta">@swagger.unmarshal_request</span></span><br><span class="line"><span class="meta">@http(<span class="params"><span class="string">&#x27;GET&#x27;</span>, <span class="string">&#x27;/v1/demo/query/index&#x27;</span></span>)</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">query_index</span>(<span class="params">self, request, cid</span>):</span></span><br><span class="line">    logger.info(request)</span><br><span class="line">    logger.info(cid)</span><br><span class="line">    <span class="keyword">return</span> <span class="built_in">dict</span>(code=<span class="string">&#x27;OK&#x27;</span>,</span><br><span class="line">                msg=<span class="string">&#x27;&#x27;</span>,</span><br><span class="line">                data=&#123;<span class="string">&quot;cid&quot;</span>: cid&#125;,</span><br><span class="line">                time=<span class="built_in">int</span>(time.time()))</span><br></pre></td></tr></table></figure>
+
+<h6 id="配置在query中查询多个"><a href="#配置在query中查询多个" class="headerlink" title="配置在query中查询多个"></a>配置在query中查询多个</h6><figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">## api.yaml</span></span><br><span class="line"><span class="string">/demo/query/many:</span></span><br><span class="line">    <span class="attr">get:</span></span><br><span class="line">      <span class="attr">summary:</span> <span class="string">根据请求参数在query中查询</span></span><br><span class="line">      <span class="attr">operationId:</span> <span class="string">query_many</span></span><br><span class="line">      <span class="attr">parameters:</span></span><br><span class="line">        <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">cid</span></span><br><span class="line">          <span class="attr">in:</span> <span class="string">query</span></span><br><span class="line">          <span class="attr">description:</span> <span class="string">用户频道Id</span></span><br><span class="line">          <span class="attr">required:</span> <span class="literal">true</span></span><br><span class="line">          <span class="attr">type:</span> <span class="string">integer</span></span><br><span class="line">          <span class="attr">minimum:</span> <span class="number">1</span></span><br><span class="line">        <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">uid</span></span><br><span class="line">          <span class="attr">in:</span> <span class="string">query</span></span><br><span class="line">          <span class="attr">description:</span> <span class="string">用户id</span></span><br><span class="line">          <span class="attr">required:</span> <span class="literal">false</span></span><br><span class="line">          <span class="attr">type:</span> <span class="string">integer</span></span><br><span class="line">          <span class="attr">minimum:</span> <span class="number">1</span></span><br><span class="line">        <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">channelid</span></span><br><span class="line">          <span class="attr">in:</span> <span class="string">query</span></span><br><span class="line">          <span class="attr">required:</span> <span class="literal">false</span></span><br><span class="line">          <span class="attr">type:</span> <span class="string">string</span></span><br><span class="line">      <span class="attr">responses:</span></span><br><span class="line">        <span class="attr">default:</span></span><br><span class="line">          <span class="attr">description:</span> <span class="string">|</span></span><br><span class="line"><span class="string">           返回结果：&#123;&quot;code&quot;: &quot;xxx&quot;, &quot;msg&quot;: &quot;xxx&quot;, &quot;data&quot;: &#123;&#125;, &quot;time&quot;: xxx, &quot;why&quot;: &quot;xxx&quot;&#125;</span></span><br><span class="line"><span class="string"></span></span><br><span class="line">            <span class="string">其中`code`字段可能返回的错误码包括：</span></span><br><span class="line">            <span class="string">*</span> <span class="string">&quot;OK&quot;</span> <span class="string">操作成功，结果见`data`字段</span></span><br><span class="line">            <span class="string">*</span> <span class="string">&quot;INTERNAL_SERVER_ERROR&quot;</span> <span class="string">内部错误，具体原因见`why`字段</span></span><br><span class="line">          <span class="attr">schema:</span></span><br><span class="line">            <span class="string">$ref:</span> <span class="string">&#x27;#/definitions/HealthResponse&#x27;</span></span><br></pre></td></tr></table></figure>
+
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">## demo.py</span></span><br><span class="line"><span class="meta">@swagger.unmarshal_request</span></span><br><span class="line"><span class="meta">@http(<span class="params"><span class="string">&#x27;GET&#x27;</span>, <span class="string">&#x27;/v1/demo/query/many&#x27;</span></span>)</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">query_many</span>(<span class="params">self, request,</span></span></span><br><span class="line"><span class="params"><span class="function">               cid,</span></span></span><br><span class="line"><span class="params"><span class="function">               uid=<span class="number">0</span>,</span></span></span><br><span class="line"><span class="params"><span class="function">               channelid=<span class="number">0</span></span>):</span></span><br><span class="line">    logger.info(request)</span><br><span class="line">    logger.info(cid)</span><br><span class="line">    logger.info(uid)</span><br><span class="line">    logger.info(channelid)</span><br><span class="line">    <span class="keyword">return</span> <span class="built_in">dict</span>(code=<span class="string">&#x27;OK&#x27;</span>,</span><br><span class="line">                msg=<span class="string">&#x27;&#x27;</span>,</span><br><span class="line">                data=&#123;<span class="string">&quot;cid&quot;</span>: cid,</span><br><span class="line">                      <span class="string">&quot;uid&quot;</span>: uid,</span><br><span class="line">                      <span class="string">&quot;channelid&quot;</span>: channelid&#125;,</span><br><span class="line">                time=<span class="built_in">int</span>(time.time()))</span><br></pre></td></tr></table></figure>
+
+<h6 id="在post的表单中查询"><a href="#在post的表单中查询" class="headerlink" title="在post的表单中查询"></a>在post的表单中查询</h6><figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">## api.yaml</span></span><br><span class="line"><span class="string">/demo/post:</span></span><br><span class="line">    <span class="attr">post:</span></span><br><span class="line">      <span class="attr">summary:</span> <span class="string">根据请求参数在post的表单中查询</span></span><br><span class="line">      <span class="attr">operationId:</span> <span class="string">do_post</span></span><br><span class="line">      <span class="attr">parameters:</span></span><br><span class="line">        <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">cid</span></span><br><span class="line">          <span class="attr">in:</span> <span class="string">formData</span></span><br><span class="line">          <span class="attr">description:</span> <span class="string">用户频道Id</span></span><br><span class="line">          <span class="attr">required:</span> <span class="literal">true</span></span><br><span class="line">          <span class="attr">type:</span> <span class="string">integer</span></span><br><span class="line">          <span class="attr">minimum:</span> <span class="number">1</span></span><br><span class="line">        <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">uid</span></span><br><span class="line">          <span class="attr">in:</span> <span class="string">formData</span></span><br><span class="line">          <span class="attr">description:</span> <span class="string">用户id</span></span><br><span class="line">          <span class="attr">required:</span> <span class="literal">false</span></span><br><span class="line">          <span class="attr">type:</span> <span class="string">integer</span></span><br><span class="line">          <span class="attr">minimum:</span> <span class="number">1</span></span><br><span class="line">        <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">channelid</span></span><br><span class="line">          <span class="attr">in:</span> <span class="string">formData</span></span><br><span class="line">          <span class="attr">required:</span> <span class="literal">false</span></span><br><span class="line">          <span class="attr">type:</span> <span class="string">string</span></span><br><span class="line">      <span class="attr">responses:</span></span><br><span class="line">        <span class="attr">default:</span></span><br><span class="line">          <span class="attr">description:</span> <span class="string">|</span></span><br><span class="line"><span class="string">           返回结果：&#123;&quot;code&quot;: &quot;xxx&quot;, &quot;msg&quot;: &quot;xxx&quot;, &quot;data&quot;: &#123;&#125;, &quot;time&quot;: xxx, &quot;why&quot;: &quot;xxx&quot;&#125;</span></span><br><span class="line"><span class="string"></span></span><br><span class="line">            <span class="string">其中`code`字段可能返回的错误码包括：</span></span><br><span class="line">            <span class="string">*</span> <span class="string">&quot;OK&quot;</span> <span class="string">操作成功，结果见`data`字段</span></span><br><span class="line">            <span class="string">*</span> <span class="string">&quot;INTERNAL_SERVER_ERROR&quot;</span> <span class="string">内部错误，具体原因见`why`字段</span></span><br><span class="line">          <span class="attr">schema:</span></span><br><span class="line">            <span class="string">$ref:</span> <span class="string">&#x27;#/definitions/HealthResponse&#x27;</span></span><br></pre></td></tr></table></figure>
+
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">## demo.py</span></span><br><span class="line"><span class="meta">@swagger.unmarshal_request</span></span><br><span class="line"><span class="meta">@http(<span class="params"><span class="string">&#x27;POST&#x27;</span>, <span class="string">&#x27;/v1/demo/post&#x27;</span></span>)</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">do_post</span>(<span class="params">self, request,</span></span></span><br><span class="line"><span class="params"><span class="function">               cid,</span></span></span><br><span class="line"><span class="params"><span class="function">               uid=<span class="number">0</span>,</span></span></span><br><span class="line"><span class="params"><span class="function">               channelid=<span class="string">&quot;&quot;</span></span>):</span></span><br><span class="line">    logger.info(request)</span><br><span class="line">    logger.info(cid)</span><br><span class="line">    logger.info(uid)</span><br><span class="line">    logger.info(channelid)</span><br><span class="line">    <span class="keyword">return</span> <span class="built_in">dict</span>(code=<span class="string">&#x27;OK&#x27;</span>,</span><br><span class="line">                msg=<span class="string">&#x27;do post message&#x27;</span>,</span><br><span class="line">                data=&#123;<span class="string">&quot;cid&quot;</span>: cid,</span><br><span class="line">                      <span class="string">&quot;uid&quot;</span>: uid,</span><br><span class="line">                      <span class="string">&quot;channelid&quot;</span>: channelid&#125;,</span><br><span class="line">                time=<span class="built_in">int</span>(time.time()*<span class="number">1000</span>))</span><br></pre></td></tr></table></figure>
+
+<h6 id="配置在post中查询多个"><a href="#配置在post中查询多个" class="headerlink" title="配置在post中查询多个"></a>配置在post中查询多个</h6><figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">## api.yaml</span></span><br><span class="line"><span class="string">/demo/post/query:</span></span><br><span class="line">    <span class="attr">post:</span></span><br><span class="line">      <span class="attr">summary:</span> <span class="string">根据请求参数在post的表单以及query的路径中查询</span></span><br><span class="line">      <span class="attr">operationId:</span> <span class="string">query_post</span></span><br><span class="line">      <span class="attr">parameters:</span></span><br><span class="line">        <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">cid</span></span><br><span class="line">          <span class="attr">in:</span> <span class="string">query</span></span><br><span class="line">          <span class="attr">description:</span> <span class="string">用户频道Id</span></span><br><span class="line">          <span class="attr">required:</span> <span class="literal">true</span></span><br><span class="line">          <span class="attr">type:</span> <span class="string">integer</span></span><br><span class="line">          <span class="attr">minimum:</span> <span class="number">1</span></span><br><span class="line">        <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">uid</span></span><br><span class="line">          <span class="attr">in:</span> <span class="string">query</span></span><br><span class="line">          <span class="attr">description:</span> <span class="string">用户id</span></span><br><span class="line">          <span class="attr">required:</span> <span class="literal">false</span></span><br><span class="line">          <span class="attr">type:</span> <span class="string">integer</span></span><br><span class="line">          <span class="attr">minimum:</span> <span class="number">1</span></span><br><span class="line">        <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">channelid</span></span><br><span class="line">          <span class="attr">in:</span> <span class="string">formData</span></span><br><span class="line">          <span class="attr">required:</span> <span class="literal">false</span></span><br><span class="line">          <span class="attr">type:</span> <span class="string">string</span></span><br><span class="line">      <span class="attr">responses:</span></span><br><span class="line">        <span class="attr">default:</span></span><br><span class="line">          <span class="attr">description:</span> <span class="string">|</span></span><br><span class="line"><span class="string">           返回结果：&#123;&quot;code&quot;: &quot;xxx&quot;, &quot;msg&quot;: &quot;xxx&quot;, &quot;data&quot;: &#123;&#125;, &quot;time&quot;: xxx, &quot;why&quot;: &quot;xxx&quot;&#125;</span></span><br><span class="line"><span class="string"></span></span><br><span class="line">            <span class="string">其中`code`字段可能返回的错误码包括：</span></span><br><span class="line">            <span class="string">*</span> <span class="string">&quot;OK&quot;</span> <span class="string">操作成功，结果见`data`字段</span></span><br><span class="line">            <span class="string">*</span> <span class="string">&quot;INTERNAL_SERVER_ERROR&quot;</span> <span class="string">内部错误，具体原因见`why`字段</span></span><br><span class="line">          <span class="attr">schema:</span></span><br><span class="line">            <span class="string">$ref:</span> <span class="string">&#x27;#/definitions/HealthResponse&#x27;</span></span><br></pre></td></tr></table></figure>
+
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">## demo.py</span></span><br><span class="line"><span class="meta">@swagger.unmarshal_request</span></span><br><span class="line"><span class="meta">@http(<span class="params"><span class="string">&#x27;POST&#x27;</span>, <span class="string">&#x27;/v1/demo/post/query&#x27;</span></span>)</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">query_post</span>(<span class="params">self, request,</span></span></span><br><span class="line"><span class="params"><span class="function">               cid,</span></span></span><br><span class="line"><span class="params"><span class="function">               uid=<span class="number">0</span>,</span></span></span><br><span class="line"><span class="params"><span class="function">               channelid=<span class="string">&quot;&quot;</span></span>):</span></span><br><span class="line">    logger.info(request)</span><br><span class="line">    logger.info(cid)</span><br><span class="line">    logger.info(uid)</span><br><span class="line">    logger.info(channelid)</span><br><span class="line">    <span class="keyword">return</span> <span class="built_in">dict</span>(code=<span class="string">&#x27;OK&#x27;</span>,</span><br><span class="line">                msg=<span class="string">&#x27;query post message&#x27;</span>,</span><br><span class="line">                data=&#123;<span class="string">&quot;cid&quot;</span>: cid,</span><br><span class="line">                      <span class="string">&quot;uid&quot;</span>: uid,</span><br><span class="line">                      <span class="string">&quot;channelid&quot;</span>: channelid&#125;,</span><br><span class="line">                time=<span class="built_in">int</span>(time.time() * <span class="number">1000</span>))</span><br></pre></td></tr></table></figure>
+
+<h6 id="配置在body中"><a href="#配置在body中" class="headerlink" title="配置在body中"></a>配置在body中</h6><figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">## api.yaml</span></span><br><span class="line"><span class="string">/demo/post/body:</span></span><br><span class="line">    <span class="attr">post:</span></span><br><span class="line">      <span class="attr">summary:</span> <span class="string">根据请求参数在body中查询</span></span><br><span class="line">      <span class="attr">operationId:</span> <span class="string">query_body</span></span><br><span class="line">      <span class="attr">parameters:</span></span><br><span class="line">        <span class="bullet">-</span> <span class="attr">in:</span> <span class="string">body</span></span><br><span class="line">          <span class="attr">name:</span> <span class="string">jsonParameters</span></span><br><span class="line">          <span class="attr">schema:</span></span><br><span class="line">            <span class="string">$ref:</span> <span class="string">&#x27;#/definitions/RequestJson&#x27;</span></span><br><span class="line">      <span class="attr">responses:</span></span><br><span class="line">        <span class="attr">default:</span></span><br><span class="line">          <span class="attr">description:</span> <span class="string">|</span></span><br><span class="line"><span class="string">           返回结果：&#123;&quot;code&quot;: &quot;xxx&quot;, &quot;msg&quot;: &quot;xxx&quot;, &quot;data&quot;: &#123;&#125;, &quot;time&quot;: xxx, &quot;why&quot;: &quot;xxx&quot;&#125;</span></span><br><span class="line"><span class="string"></span></span><br><span class="line">            <span class="string">其中`code`字段可能返回的错误码包括：</span></span><br><span class="line">            <span class="string">*</span> <span class="string">&quot;OK&quot;</span> <span class="string">操作成功，结果见`data`字段</span></span><br><span class="line">            <span class="string">*</span> <span class="string">&quot;INTERNAL_SERVER_ERROR&quot;</span> <span class="string">内部错误，具体原因见`why`字段</span></span><br><span class="line">          <span class="attr">schema:</span></span><br><span class="line">            <span class="string">$ref:</span> <span class="string">&#x27;#/definitions/HealthResponse&#x27;</span></span><br><span class="line"></span><br><span class="line"><span class="comment">## 定义的requestJson格式</span></span><br><span class="line"><span class="attr">definitions:</span></span><br><span class="line">  <span class="attr">RequestJson:</span></span><br><span class="line">    <span class="attr">description:</span> <span class="string">请求参数在body中的json格式</span></span><br><span class="line">    <span class="attr">type:</span> <span class="string">object</span></span><br><span class="line">    <span class="attr">properties:</span></span><br><span class="line">      <span class="attr">cid:</span></span><br><span class="line">         <span class="attr">description:</span> <span class="string">用户的cid</span></span><br><span class="line">         <span class="attr">type:</span> <span class="string">integer</span></span><br><span class="line">      <span class="attr">uid:</span></span><br><span class="line">         <span class="attr">description:</span> <span class="string">用户的uid</span></span><br><span class="line">         <span class="attr">type:</span> <span class="string">integer</span></span><br><span class="line">      <span class="attr">channelid:</span></span><br><span class="line">         <span class="attr">description:</span> <span class="string">频道Id</span></span><br><span class="line">         <span class="attr">type:</span> <span class="string">string</span></span><br><span class="line">    <span class="attr">required:</span></span><br><span class="line">      <span class="bullet">-</span> <span class="string">cid</span></span><br></pre></td></tr></table></figure>
+
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">## demo.py</span></span><br><span class="line"><span class="meta">@swagger.unmarshal_request</span></span><br><span class="line"><span class="meta">@http(<span class="params"><span class="string">&#x27;POST&#x27;</span>, <span class="string">&#x27;/v1/demo/post/body&#x27;</span></span>)</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">query_body</span>(<span class="params">self, request, jsonParameters</span>):</span></span><br><span class="line">    <span class="string">u&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">    jsonParameters名称要和api.yaml上声明的name一致,请求的body的json格式为</span></span><br><span class="line"><span class="string">    &#123;</span></span><br><span class="line"><span class="string">        cid:&quot;&quot;,</span></span><br><span class="line"><span class="string">        uid:&quot;&quot;,</span></span><br><span class="line"><span class="string">        channelid:&quot;&quot;</span></span><br><span class="line"><span class="string">    &#125;</span></span><br><span class="line"><span class="string">    ## 使用这种可以传递一个对象的json数据而避免使用过长的参数列表来进行request请求</span></span><br><span class="line"><span class="string">    &quot;&quot;&quot;</span></span><br><span class="line">    <span class="keyword">return</span> <span class="built_in">dict</span>(code=<span class="string">&#x27;OK&#x27;</span>,</span><br><span class="line">                msg=<span class="string">&#x27;query post message&#x27;</span>,</span><br><span class="line">                data=jsonParameters,</span><br><span class="line">                time=<span class="built_in">int</span>(time.time() * <span class="number">1000</span>))</span><br></pre></td></tr></table></figure>
+    </div>
+
+    <div>全文完。</div>
+  </article>
+  <div class="toc-container">
+    
+  <div id="toc" class="toc-article">
+    <strong class="toc-title">目录</strong>
+    <ol class="toc"><li class="toc-item toc-level-5"><a class="toc-link" href="#Nameko-API-Swagger"><span class="toc-text">Nameko + API Swagger</span></a><ol class="toc-child"><li class="toc-item toc-level-6"><a class="toc-link" href="#%E5%88%9B%E5%BB%BA%E9%A1%B9%E7%9B%AE"><span class="toc-text">创建项目</span></a></li><li class="toc-item toc-level-6"><a class="toc-link" href="#%E9%BB%98%E8%AE%A4%E9%85%8D%E7%BD%AE"><span class="toc-text">默认配置</span></a></li><li class="toc-item toc-level-6"><a class="toc-link" href="#%E9%85%8D%E7%BD%AE%E5%9C%A8%E8%B7%AF%E5%BE%84path%E7%9A%84%E4%BD%9C%E7%94%A8%E5%9F%9F%E4%B8%AD"><span class="toc-text">配置在路径path的作用域中</span></a></li><li class="toc-item toc-level-6"><a class="toc-link" href="#%E9%85%8D%E7%BD%AE%E5%9C%A8%E8%B7%AF%E5%BE%84query%E4%BD%9C%E7%94%A8%E5%9F%9F%E4%B8%AD"><span class="toc-text">配置在路径query作用域中</span></a></li><li class="toc-item toc-level-6"><a class="toc-link" href="#%E9%85%8D%E7%BD%AE%E5%9C%A8query%E4%B8%AD%E6%9F%A5%E8%AF%A2%E5%A4%9A%E4%B8%AA"><span class="toc-text">配置在query中查询多个</span></a></li><li class="toc-item toc-level-6"><a class="toc-link" href="#%E5%9C%A8post%E7%9A%84%E8%A1%A8%E5%8D%95%E4%B8%AD%E6%9F%A5%E8%AF%A2"><span class="toc-text">在post的表单中查询</span></a></li><li class="toc-item toc-level-6"><a class="toc-link" href="#%E9%85%8D%E7%BD%AE%E5%9C%A8post%E4%B8%AD%E6%9F%A5%E8%AF%A2%E5%A4%9A%E4%B8%AA"><span class="toc-text">配置在post中查询多个</span></a></li><li class="toc-item toc-level-6"><a class="toc-link" href="#%E9%85%8D%E7%BD%AE%E5%9C%A8body%E4%B8%AD"><span class="toc-text">配置在body中</span></a></li></ol></li></ol>
+  </div>
+
+
+  </div>
+</div>
+<div class="copyright">
+    <span>本作品采用</span>
+    <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by/4.0/">知识共享署名 4.0 国际许可协议</a>
+    <span>进行许可。 转载时请注明原文链接。</span>
+</div>
+<div class="share" style="width: 100%;">
+  <img src="/images/wechat-small.jpg" alt="Running Geek" style="margin: auto; display: block;"/>
+
+  <div style="margin: auto; text-align: center; font-size: 0.8em; color: grey;">老铁们关注走一走，不迷路</div>
+  
+</div>
+
+  
+    <div class="post-nav">
+      <div class="post-nav-item post-nav-next">
+        
+          <span>〈 </span>
+          <a href="/2017/12/31/bump/" rel="next" title="python使用bump管理版本号和打包">
+          python使用bump管理版本号和打包
+          </a>
+        
+      </div>
+  
+      <div class="post-nav-item post-nav-prev">
+          
+          <a href="/2018/04/01/new_style_class/" rel="prev" title="python新式类">
+            python新式类
+          </a>
+          <span>〉</span>
+        
+      </div>
+    </div>
+  
+
+
+    </div>
+
+    
+
+  </div>
+  <footer class="footer text-center">
+    <div id="bottom-inner">
+        <a class="bottom-item" href="https://xiaokunliu.github.io">首页</a> |
+        <a class="bottom-item" href="https://xiaokunliu.github.io" target="_blank">主站</a> |
+        <a class="bottom-item" href="https://github.com/xiaokunliu" target="_blank">GitHub</a> |
+        <a class="bottom-item" href="https://hexo.io" target="_blank">Powered by hexo</a> |
+        <a class="bottom-item" href="https://github.com/KevinOfNeu/hexo-theme-xoxo" target="_blank">Theme xoxo</a>
+    </div>
+</footer>
+  
+
+<script>
+  (function(window, document, undefined) {
+
+    var timer = null;
+
+    function returnTop() {
+      cancelAnimationFrame(timer);
+      timer = requestAnimationFrame(function fn() {
+        var oTop = document.body.scrollTop || document.documentElement.scrollTop;
+        if (oTop > 0) {
+          document.body.scrollTop = document.documentElement.scrollTop = oTop - 50;
+          timer = requestAnimationFrame(fn);
+        } else {
+          cancelAnimationFrame(timer);
+        }
+      });
+    }
+
+    var hearts = [];
+    window.requestAnimationFrame = (function() {
+      return window.requestAnimationFrame ||
+        window.webkitRequestAnimationFrame ||
+        window.mozRequestAnimationFrame ||
+        window.oRequestAnimationFrame ||
+        window.msRequestAnimationFrame ||
+        function(callback) {
+          setTimeout(callback, 1000 / 60);
+        }
+    })();
+    init();
+
+    function init() {
+      css(".heart{z-index:9999;width: 10px;height: 10px;position: fixed;background: #f00;transform: rotate(45deg);-webkit-transform: rotate(45deg);-moz-transform: rotate(45deg);}.heart:after,.heart:before{content: '';width: inherit;height: inherit;background: inherit;border-radius: 50%;-webkit-border-radius: 50%;-moz-border-radius: 50%;position: absolute;}.heart:after{top: -5px;}.heart:before{left: -5px;}");
+      attachEvent();
+      gameloop();
+      addMenuEvent();
+    }
+
+    function gameloop() {
+      for (var i = 0; i < hearts.length; i++) {
+        if (hearts[i].alpha <= 0) {
+          document.body.removeChild(hearts[i].el);
+          hearts.splice(i, 1);
+          continue;
+        }
+        hearts[i].y--;
+        hearts[i].scale += 0.004;
+        hearts[i].alpha -= 0.013;
+        hearts[i].el.style.cssText = "left:" + hearts[i].x + "px;top:" + hearts[i].y + "px;opacity:" + hearts[i].alpha + ";transform:scale(" + hearts[i].scale + "," + hearts[i].scale + ") rotate(45deg);background:" + hearts[i].color;
+      }
+      requestAnimationFrame(gameloop);
+    }
+
+    /**
+     * 给logo设置点击事件
+     * 
+     * - 回到顶部
+     * - 出现爱心
+     */
+    function attachEvent() {
+      var old = typeof window.onclick === "function" && window.onclick;
+      var logo = document.getElementById("logo");
+      if (logo) {
+        logo.onclick = function(event) {
+          returnTop();
+          old && old();
+          createHeart(event);
+        }
+      }
+      
+    }
+
+    function createHeart(event) {
+      var d = document.createElement("div");
+      d.className = "heart";
+      hearts.push({
+        el: d,
+        x: event.clientX - 5,
+        y: event.clientY - 5,
+        scale: 1,
+        alpha: 1,
+        color: randomColor()
+      });
+      document.body.appendChild(d);
+    }
+
+    function css(css) {
+      var style = document.createElement("style");
+      style.type = "text/css";
+      try {
+        style.appendChild(document.createTextNode(css));
+      } catch (ex) {
+        style.styleSheet.cssText = css;
+      }
+      document.getElementsByTagName('head')[0].appendChild(style);
+    }
+
+    function randomColor() {
+      // return "rgb(" + (~~(Math.random() * 255)) + "," + (~~(Math.random() * 255)) + "," + (~~(Math.random() * 255)) + ")";
+      return "#F44336";
+    }
+
+    function addMenuEvent() {
+      var menu = document.getElementById('menu-main-post');
+      if (menu) {
+        var toc = document.getElementById('toc');
+        if (toc) {
+          menu.onclick = function() {
+            if (toc) {
+              if (toc.style.display == 'block') {
+                toc.style.display = 'none';
+              } else {
+                toc.style.display = 'block';
+              }
+            }
+          };
+        } else {
+          menu.style.display = 'none';
+        }
+      }
+    }
+
+  })(window, document);
+</script>
+
+  
+
+
+
+</body>
+</html>

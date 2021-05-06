@@ -1,0 +1,437 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<!--
+config header
+-->
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#202020"/>
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  <script src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" async></script>
+
+  
+      <meta name="google-site-verification" content="{{ theme.google_site_verification }}" />
+  
+
+  
+    <meta name="keywords" content="并发编程," />
+  
+
+  
+    <meta name="description" content="分享个人学习工作的技术知识" />
+  
+  
+  <link rel="icon" type="image/x-icon" href="/logo.jpg">
+  <title>category: 并发编程 [ 疾风先生 ]</title>
+  
+    <!-- stylesheets list from config.yml -->
+    
+      <link rel="stylesheet" href="//cdn.bootcss.com/pure/1.0.0/pure-min.css">
+    
+      <link rel="stylesheet" href="/css/xoxo.css">
+    
+  
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+
+<body>
+  <div class="nav-container">
+    <nav class="home-menu pure-menu pure-menu-horizontal">
+  <a class="pure-menu-heading" href="/">
+    <img class="avatar" src="https://xiaokunliu.github.io/images/logo.jpg">
+    <span class="title">疾风先生</span>
+  </a>
+
+  <ul class="pure-menu-list clearfix">
+      
+          
+            <li class="pure-menu-item"><a href="/" class="pure-menu-link">首页</a></li>
+          
+      
+          
+            <li class="pure-menu-item"><a href="/archives" class="pure-menu-link">归档</a></li>
+          
+      
+          
+            <li class="pure-menu-item"><a href="/tags" class="pure-menu-link">标签</a></li>
+          
+      
+          
+            <li class="pure-menu-item"><a href="/categories" class="pure-menu-link">分类</a></li>
+          
+      
+          
+            <li class="pure-menu-item"><a href="/search" class="pure-menu-link">搜索</a></li>
+          
+      
+  </ul>
+   
+</nav>
+  </div>
+
+  <div class="container" id="content-outer">
+    <div class="inner" id="content-inner">
+      <div class="post-container">
+  <article class="post" id="post">
+    <header class="post-header text-center">
+      <h1 class="title">
+        Java内存模型之简要知识与规范梳理
+      </h1>
+      <span>
+        
+        <time class="time" datetime="2020-02-16T20:47:28.000Z">
+        2020-02-16
+      </time>
+        
+      </span>
+      <span class="slash">/</span>
+      <span class="post-meta">
+      <span class="post-tags">
+        <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E5%B9%B6%E5%8F%91%E7%BC%96%E7%A8%8B/" rel="tag">并发编程</a></li></ul>
+      </span>
+    </span>
+      <span class="slash">/</span>
+      <span class="read">
+      <span id="busuanzi_value_page_pv"></span> 点击
+    </span>
+    </header>
+
+    <div class="post-content">
+      <span id="more"></span>
+<h6 id="1-JMM简要知识"><a href="#1-JMM简要知识" class="headerlink" title="1. JMM简要知识"></a>1. JMM简要知识</h6><blockquote>
+<p>语义规范</p>
+</blockquote>
+<ul>
+<li>Java编程语言的语义允许编译器和微处理器执行优化，从而与不正确同步的代码进行交互来完成工作.</li>
+<li>线程内语义是单线程程序的语义，它允许根据线程内读操作看到的值来完全预测线程的行为;由于单线程内的实现是在其上下文执行的, 可以通过评估线程的实现从而确定执行中的线程t的操作是否合法.</li>
+<li>程序遵循线程内语义: 在线程隔离状态下，每个线程的操作必须由该线程的语义控制，但是每个读操作看到的值由内存模型决定.</li>
+</ul>
+<blockquote>
+<p>JMM规范</p>
+</blockquote>
+<ul>
+<li>从数据存储上,对于共享数据的读写操作,JMM会通过线程工作内存以及JVM的堆内存来对数据进行读写操作(类比互联网业务,工作内存类比为redis等缓存,堆内存类比为数据储存载体,如数据库)</li>
+<li>从代码优化上,JMM为了提升性能,会针对程序顺序代码进行重排序甚至删除不必要的同步代码</li>
+</ul>
+<blockquote>
+<p>JMM概要</p>
+</blockquote>
+<ul>
+<li>给定程序以及一个检测程序是否合法的执行跟踪,JMM工作原理是检查执行跟踪中的每个读,并根据某些规则检查读观察到的写是否有效</li>
+<li>主要保证执行的每个结果与内存模型预期值一致,那么它可以不关心实现者是如何实现程序的行为</li>
+<li>内存模型决定在程序的每个点可以读取哪些值。在隔离状态下，每个线程的操作必须由该线程的语义控制，但是每个读操作看到的值由内存模型决定</li>
+<li>每次在线程内对变量进行写行为产生一个线程间的动作时,它必须匹配程序顺序中紧随其后的读行为的线程间动作,其中对于线程的读操作行为获取的值是由于JMM决定的值</li>
+</ul>
+<h6 id="2-JMM与顺序一致性模型"><a href="#2-JMM与顺序一致性模型" class="headerlink" title="2. JMM与顺序一致性模型"></a>2. JMM与顺序一致性模型</h6><blockquote>
+<p>程序顺序与顺序一致性</p>
+</blockquote>
+<ul>
+<li><p>程序顺序</p>
+<ul>
+<li>可描述为线程间所有动作是根据线程内语义执行操作顺序的一个集合</li>
+<li>简言之,就是在线程内的操作所见即所得,即程序代码顺序</li>
+</ul>
+</li>
+<li><p>顺序一致性内存模型</p>
+<ul>
+<li>一个线程所有操作都必须按照程序的顺序来执行</li>
+<li>不论线程是否同步,所有线程都只能看到一个单一的操作执行顺序,并且每个操作都必须是原子性操作并立即对其他所有线程可见</li>
+</ul>
+</li>
+<li><p>顺序一致性问题</p>
+<ul>
+<li>如果内存模型使用一致性模型,那么将会导致编译器和处理器的优化策略变得不合法</li>
+</ul>
+</li>
+</ul>
+<blockquote>
+<p>JMM在顺序一致性方面的努力</p>
+</blockquote>
+<ul>
+<li>源代码</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// shared.java</span></span><br><span class="line"><span class="keyword">int</span> pwrite = <span class="number">0</span>;</span><br><span class="line"><span class="keyword">int</span> cwrite = <span class="number">0</span>;</span><br><span class="line"><span class="comment">// producer.java</span></span><br><span class="line"><span class="keyword">int</span> pread = <span class="number">0</span>;</span><br><span class="line"><span class="keyword">int</span> r1 = <span class="number">0</span>;</span><br><span class="line">run()&#123;</span><br><span class="line">    r1 = <span class="number">20</span>;				<span class="comment">// --- 1</span></span><br><span class="line">	pread = cwrite;			<span class="comment">// --- 2</span></span><br><span class="line">	pwrite = <span class="number">10</span>;			<span class="comment">// --- 3</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// consumer.java</span></span><br><span class="line"><span class="keyword">int</span> cread = <span class="number">0</span>;</span><br><span class="line"><span class="keyword">int</span> r2 = <span class="number">0</span>;</span><br><span class="line">run()&#123;</span><br><span class="line">	cread = pwrite;			<span class="comment">// --- 4</span></span><br><span class="line">	r2 = <span class="number">21</span>;				<span class="comment">// --- 5</span></span><br><span class="line">	cwrite = <span class="number">20</span>;			<span class="comment">// --- 6</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>代码分析<ul>
+<li>基于JMM模型: 由于存在数据竞争,上面的代码执行顺序会在编译器阶段,JMM允许对程序代码进行重排序,输出结果会出现pread = cwrite = 20 与 cread = pwrite = 10的情况</li>
+<li>基于一致性内存模型: 将会正常输出,不会出现pread = cwrite = 20 与 cread = pwrite = 10的情况,但是线程之间的顺序会交替执行</li>
+</ul>
+</li>
+<li>加锁方案<ul>
+<li>基于JMM模型: 保证输出结果的正常,但是在上述线程内执行的顺序会被重排序</li>
+<li>一致性内存模型: 不会打乱顺序,仍然正常结果输出</li>
+</ul>
+</li>
+<li>小结<ul>
+<li>在存在数据竞争的条件下,JMM无法保证线程之间的执行顺序,而顺序一致性保证与代码执行的顺序相同,即使线程的执行顺序存在交替执行也不影响单个线程内的执行顺序</li>
+<li>单个线程中,JMM仍然会对临界区的执行动作进行重排序,而顺序一致性并没有进行重排,仍然保持与程序代码相同的顺序</li>
+</ul>
+</li>
+</ul>
+<h6 id="3-JMM规范梳理"><a href="#3-JMM规范梳理" class="headerlink" title="3. JMM规范梳理"></a>3. JMM规范梳理</h6><blockquote>
+<p>共享数据规则</p>
+</blockquote>
+<ul>
+<li>能够被多个线程共享的内存区域称为共享内存或是堆内存</li>
+<li>线程共享数据: 所有的对象实例字段,static字段,数组元素等</li>
+<li>线程封闭数据: 局部变量,方法参数,异常处理器以及ThreadLocal/ThreadLocalRandom等</li>
+</ul>
+<blockquote>
+<p>线程行为操作规则</p>
+</blockquote>
+<p><strong>相当于线程行为可以被其他线程看到,也可以检测到其他线程的行为动作,前提是存在数据竞争,程序行为表现如下:</strong></p>
+<ul>
+<li>可以执行正常的读操作</li>
+<li>可以执行正常的写操作</li>
+<li>对于同步代码块<ul>
+<li>可以执行volatile数据的读取,说明其他线程的写操作当前线程可以“看到”(写操作在线程失效直接读取主内存)</li>
+<li>可以执行volatile数据的写,说明变量数据可以对其他线程“可见”</li>
+<li>lock锁定监视器</li>
+<li>unlock解锁监视器</li>
+</ul>
+</li>
+<li>线程合并执行的第一个和最后一个动作(个人理解为等待多个线程执行子任务之后再一同执行程序后续代码的场景)</li>
+<li>启动线程和终止线程</li>
+</ul>
+<blockquote>
+<p>Synchronization原则(能够被感知,可见行为的变化)</p>
+</blockquote>
+<ul>
+<li>监视器m的解锁与监视器m的后续动作加锁操作同步</li>
+<li>线程对volatile变量v进行写操作,与任何线程对v的所有后续读操作同步</li>
+<li>启动线程的操作与线程执行的第一个动作的操作同步</li>
+<li>在线程中对每个属性执行默认值的写入操作与线程的第一个动作操作同步</li>
+<li>线程中的最终动作T1 与另一个线程T2中检测到T1已终止的任何动作同步</li>
+<li>如果线程T1中断thread T2，则该中断线程T1 将与 任何其他线程（包括T2）确定T2已被中断（通过InterruptedException引发或调用Thread.interrupted 或Thread.isInterrupted）的任何点同步</li>
+</ul>
+<blockquote>
+<p>Happen-Before原则(规范)</p>
+</blockquote>
+<ul>
+<li><p>执行动作之间的happen-before关系</p>
+</li>
+<li><p>*如果两个动作x和y,我们定义hb(x,y)来描述x happen before y,满足关系有以下情况:**</p>
+<ul>
+<li>同一个线程中执行动作x和y,在程序顺序上x优先于y,则hb(x,y)</li>
+<li>对象构造器代码块的结束happen-before该对象finalizer的开始</li>
+<li>如果x动作于接下来的y动作同步,则hb(x,y)</li>
+<li>传递性,如果hb(x,y),且hb(y,z),则hb(x,z)</li>
+</ul>
+</li>
+<li><p> happen-before原则</p>
+</li>
+<li><p>*主要作用于两个的动作存在冲突的执行顺序以及定义数据竞争发生的时机,具体VM实现,遵循以下原则:**</p>
+<ul>
+<li>线程解锁动作都happen-before该线程加锁之后的后续每个动作</li>
+<li>对volatile变量执行写操作happen-before该变量读操作的后续每个动作</li>
+<li>调用线程的start()方法happen-before于已开启的线程内的任何一个动作</li>
+<li>线程所有动作happen-before于其他任意线程成功从该线程对象上的join()方法返回</li>
+<li>程序任何对象的初始化happen-before于程序中任何其他的动作操作行为</li>
+</ul>
+</li>
+<li><p>作用: 遵循上述的原则,意味着有些代码不能进行重排序,有些数据不能被缓存(解决JMM可见性的规范)</p>
+</li>
+</ul>
+
+    </div>
+
+    <div>全文完。</div>
+  </article>
+  <div class="toc-container">
+    
+  <div id="toc" class="toc-article">
+    <strong class="toc-title">目录</strong>
+    <ol class="toc"><li class="toc-item toc-level-6"><a class="toc-link" href="#1-JMM%E7%AE%80%E8%A6%81%E7%9F%A5%E8%AF%86"><span class="toc-text">1. JMM简要知识</span></a></li><li class="toc-item toc-level-6"><a class="toc-link" href="#2-JMM%E4%B8%8E%E9%A1%BA%E5%BA%8F%E4%B8%80%E8%87%B4%E6%80%A7%E6%A8%A1%E5%9E%8B"><span class="toc-text">2. JMM与顺序一致性模型</span></a></li><li class="toc-item toc-level-6"><a class="toc-link" href="#3-JMM%E8%A7%84%E8%8C%83%E6%A2%B3%E7%90%86"><span class="toc-text">3. JMM规范梳理</span></a></li></ol>
+  </div>
+
+
+  </div>
+</div>
+<div class="copyright">
+    <span>本作品采用</span>
+    <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by/4.0/">知识共享署名 4.0 国际许可协议</a>
+    <span>进行许可。 转载时请注明原文链接。</span>
+</div>
+<div class="share" style="width: 100%;">
+  <img src="/images/wechat-small.jpg" alt="Running Geek" style="margin: auto; display: block;"/>
+
+  <div style="margin: auto; text-align: center; font-size: 0.8em; color: grey;">老铁们关注走一走，不迷路</div>
+  
+</div>
+
+  
+    <div class="post-nav">
+      <div class="post-nav-item post-nav-next">
+        
+          <span>〈 </span>
+          <a href="/2020/02/15/final/" rel="next" title="final线程安全与工作原理">
+          final线程安全与工作原理
+          </a>
+        
+      </div>
+  
+      <div class="post-nav-item post-nav-prev">
+          
+          <a href="/2020/02/19/jmm02/" rel="prev" title="Java内存模型之可见性分析">
+            Java内存模型之可见性分析
+          </a>
+          <span>〉</span>
+        
+      </div>
+    </div>
+  
+
+
+    </div>
+
+    
+
+  </div>
+  <footer class="footer text-center">
+    <div id="bottom-inner">
+        <a class="bottom-item" href="https://xiaokunliu.github.io">首页</a> |
+        <a class="bottom-item" href="https://xiaokunliu.github.io" target="_blank">主站</a> |
+        <a class="bottom-item" href="https://github.com/xiaokunliu" target="_blank">GitHub</a> |
+        <a class="bottom-item" href="https://hexo.io" target="_blank">Powered by hexo</a> |
+        <a class="bottom-item" href="https://github.com/KevinOfNeu/hexo-theme-xoxo" target="_blank">Theme xoxo</a>
+    </div>
+</footer>
+  
+
+<script>
+  (function(window, document, undefined) {
+
+    var timer = null;
+
+    function returnTop() {
+      cancelAnimationFrame(timer);
+      timer = requestAnimationFrame(function fn() {
+        var oTop = document.body.scrollTop || document.documentElement.scrollTop;
+        if (oTop > 0) {
+          document.body.scrollTop = document.documentElement.scrollTop = oTop - 50;
+          timer = requestAnimationFrame(fn);
+        } else {
+          cancelAnimationFrame(timer);
+        }
+      });
+    }
+
+    var hearts = [];
+    window.requestAnimationFrame = (function() {
+      return window.requestAnimationFrame ||
+        window.webkitRequestAnimationFrame ||
+        window.mozRequestAnimationFrame ||
+        window.oRequestAnimationFrame ||
+        window.msRequestAnimationFrame ||
+        function(callback) {
+          setTimeout(callback, 1000 / 60);
+        }
+    })();
+    init();
+
+    function init() {
+      css(".heart{z-index:9999;width: 10px;height: 10px;position: fixed;background: #f00;transform: rotate(45deg);-webkit-transform: rotate(45deg);-moz-transform: rotate(45deg);}.heart:after,.heart:before{content: '';width: inherit;height: inherit;background: inherit;border-radius: 50%;-webkit-border-radius: 50%;-moz-border-radius: 50%;position: absolute;}.heart:after{top: -5px;}.heart:before{left: -5px;}");
+      attachEvent();
+      gameloop();
+      addMenuEvent();
+    }
+
+    function gameloop() {
+      for (var i = 0; i < hearts.length; i++) {
+        if (hearts[i].alpha <= 0) {
+          document.body.removeChild(hearts[i].el);
+          hearts.splice(i, 1);
+          continue;
+        }
+        hearts[i].y--;
+        hearts[i].scale += 0.004;
+        hearts[i].alpha -= 0.013;
+        hearts[i].el.style.cssText = "left:" + hearts[i].x + "px;top:" + hearts[i].y + "px;opacity:" + hearts[i].alpha + ";transform:scale(" + hearts[i].scale + "," + hearts[i].scale + ") rotate(45deg);background:" + hearts[i].color;
+      }
+      requestAnimationFrame(gameloop);
+    }
+
+    /**
+     * 给logo设置点击事件
+     * 
+     * - 回到顶部
+     * - 出现爱心
+     */
+    function attachEvent() {
+      var old = typeof window.onclick === "function" && window.onclick;
+      var logo = document.getElementById("logo");
+      if (logo) {
+        logo.onclick = function(event) {
+          returnTop();
+          old && old();
+          createHeart(event);
+        }
+      }
+      
+    }
+
+    function createHeart(event) {
+      var d = document.createElement("div");
+      d.className = "heart";
+      hearts.push({
+        el: d,
+        x: event.clientX - 5,
+        y: event.clientY - 5,
+        scale: 1,
+        alpha: 1,
+        color: randomColor()
+      });
+      document.body.appendChild(d);
+    }
+
+    function css(css) {
+      var style = document.createElement("style");
+      style.type = "text/css";
+      try {
+        style.appendChild(document.createTextNode(css));
+      } catch (ex) {
+        style.styleSheet.cssText = css;
+      }
+      document.getElementsByTagName('head')[0].appendChild(style);
+    }
+
+    function randomColor() {
+      // return "rgb(" + (~~(Math.random() * 255)) + "," + (~~(Math.random() * 255)) + "," + (~~(Math.random() * 255)) + ")";
+      return "#F44336";
+    }
+
+    function addMenuEvent() {
+      var menu = document.getElementById('menu-main-post');
+      if (menu) {
+        var toc = document.getElementById('toc');
+        if (toc) {
+          menu.onclick = function() {
+            if (toc) {
+              if (toc.style.display == 'block') {
+                toc.style.display = 'none';
+              } else {
+                toc.style.display = 'block';
+              }
+            }
+          };
+        } else {
+          menu.style.display = 'none';
+        }
+      }
+    }
+
+  })(window, document);
+</script>
+
+  
+
+
+
+</body>
+</html>

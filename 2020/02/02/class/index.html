@@ -1,0 +1,388 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<!--
+config header
+-->
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#202020"/>
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  <script src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" async></script>
+
+  
+      <meta name="google-site-verification" content="{{ theme.google_site_verification }}" />
+  
+
+  
+    <meta name="keywords" content="并发编程," />
+  
+
+  
+    <meta name="description" content="分享个人学习工作的技术知识" />
+  
+  
+  <link rel="icon" type="image/x-icon" href="/logo.jpg">
+  <title>category: 并发编程 [ 疾风先生 ]</title>
+  
+    <!-- stylesheets list from config.yml -->
+    
+      <link rel="stylesheet" href="//cdn.bootcss.com/pure/1.0.0/pure-min.css">
+    
+      <link rel="stylesheet" href="/css/xoxo.css">
+    
+  
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+
+<body>
+  <div class="nav-container">
+    <nav class="home-menu pure-menu pure-menu-horizontal">
+  <a class="pure-menu-heading" href="/">
+    <img class="avatar" src="https://xiaokunliu.github.io/images/logo.jpg">
+    <span class="title">疾风先生</span>
+  </a>
+
+  <ul class="pure-menu-list clearfix">
+      
+          
+            <li class="pure-menu-item"><a href="/" class="pure-menu-link">首页</a></li>
+          
+      
+          
+            <li class="pure-menu-item"><a href="/archives" class="pure-menu-link">归档</a></li>
+          
+      
+          
+            <li class="pure-menu-item"><a href="/tags" class="pure-menu-link">标签</a></li>
+          
+      
+          
+            <li class="pure-menu-item"><a href="/categories" class="pure-menu-link">分类</a></li>
+          
+      
+          
+            <li class="pure-menu-item"><a href="/search" class="pure-menu-link">搜索</a></li>
+          
+      
+  </ul>
+   
+</nav>
+  </div>
+
+  <div class="container" id="content-outer">
+    <div class="inner" id="content-inner">
+      <div class="post-container">
+  <article class="post" id="post">
+    <header class="post-header text-center">
+      <h1 class="title">
+        Java之.class文件与字节码文件
+      </h1>
+      <span>
+        
+        <time class="time" datetime="2020-02-02T20:47:28.000Z">
+        2020-02-02
+      </time>
+        
+      </span>
+      <span class="slash">/</span>
+      <span class="post-meta">
+      <span class="post-tags">
+        <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E5%B9%B6%E5%8F%91%E7%BC%96%E7%A8%8B/" rel="tag">并发编程</a></li></ul>
+      </span>
+    </span>
+      <span class="slash">/</span>
+      <span class="read">
+      <span id="busuanzi_value_page_pv"></span> 点击
+    </span>
+    </header>
+
+    <div class="post-content">
+      <span id="more"></span>
+
+<h4 id="JVM运行数据区概述"><a href="#JVM运行数据区概述" class="headerlink" title="JVM运行数据区概述"></a>JVM运行数据区概述</h4><blockquote>
+<p>.class与字节码bytecode</p>
+</blockquote>
+<ul>
+<li>.class: 是指文件扩展名称为.class的文件,表示由java源程序经过java编译器编译而成且由JVM执行的二进制文件,因此可以通过拥有一份.class文件在不同的操作系统平台上的JVM执行,实现跨平台运行的特性</li>
+<li>字节码bytecode: 简单说不是文件,而是JVM操作的指令格式,通常我们通过<code>javap -c -v xx.class</code>生成的文件称为字节码文件,是属于可阅读的字节码指令文件,能够让我们清楚地知道java文件编译成.class文件之后显示的执行指令,便于程序员理解jvm的相关的知识</li>
+</ul>
+<blockquote>
+<p>.class文件与字节码文件格式</p>
+</blockquote>
+<ul>
+<li><p>.class文件(16进制文件)<br><img src="https://img-blog.csdnimg.cn/20200124155250693.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dpbmRfNjAy,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"></p>
+</li>
+<li><p>字节码文件(可阅读的指令文件)<br><img src="https://img-blog.csdnimg.cn/20200124155445198.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dpbmRfNjAy,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"></p>
+</li>
+</ul>
+<h4 id="2-class文件结构与字节码"><a href="#2-class文件结构与字节码" class="headerlink" title="2. .class文件结构与字节码"></a>2. .class文件结构与字节码</h4><blockquote>
+<p>.class文件结构</p>
+</blockquote>
+<ul>
+<li><p>幻数</p>
+<ul>
+<li>类文件的四个字节表头0xCAFEBABE<br><img src="https://img-blog.csdnimg.cn/20200124160239164.png" alt="在这里插入图片描述"></li>
+</ul>
+</li>
+<li><p>类文件格式的版本</p>
+<ul>
+<li>类文件的次要和主要版本</li>
+<li>jdk的主要版本如下  <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">Java SE 14 = 58 (0x3A hex),</span><br><span class="line">Java SE 13 = 57 (0x39 hex),</span><br><span class="line">Java SE 12 = 56 (0x38 hex),</span><br><span class="line">Java SE 11 = 55 (0x37 hex),</span><br><span class="line">Java SE 10 = 54 (0x36 hex),[3]</span><br><span class="line">Java SE 9 = 53 (0x35 hex),[4]</span><br><span class="line">Java SE 8 = 52 (0x34 hex),</span><br><span class="line">Java SE 7 = 51 (0x33 hex),</span><br><span class="line">Java SE 6.0 = 50 (0x32 hex),</span><br><span class="line">Java SE 5.0 = 49 (0x31 hex),</span><br></pre></td></tr></table></figure>
+  <img src="https://img-blog.csdnimg.cn/20200124161328936.png" alt="在这里插入图片描述"><br>表示0x0034当前使用jdk版本为jdk8</li>
+</ul>
+</li>
+<li><p>常量池: 类文件的常量池</p>
+</li>
+<li><p>访问标识: 类文件的访问标识,  abstract, static,等等</p>
+</li>
+<li><p>当前的类名称,class name</p>
+</li>
+<li><p>当前父类的名称, super class name</p>
+</li>
+<li><p>当前类的任何接口</p>
+</li>
+<li><p>当前类的字段信息</p>
+</li>
+<li><p>当前类的方法信息</p>
+</li>
+<li><p>当前类的属性信息</p>
+</li>
+</ul>
+<blockquote>
+<p>字节码指令</p>
+</blockquote>
+<ul>
+<li><p>指令类别</p>
+<ul>
+<li>存储指令 （例如：aload_0, istore）</li>
+<li>算术与逻辑指令 （例如: ladd, fcmpl）</li>
+<li>类型转换指令 （例如：i2b, d2i）</li>
+<li>对象创建与操作指令 （例如：new, putfield）</li>
+<li>堆栈操作指令 （例如：swap, dup2）</li>
+<li>控制转移指令 （例如：ifeq, goto）</li>
+<li>方法调用与返回指令 （例如：invokespecial, areturn)</li>
+</ul>
+</li>
+<li><p>指令操作前后缀与数据类型</p>
+<ul>
+<li>i        整数</li>
+<li>l         长整数</li>
+<li>s     短整数</li>
+<li>b    字节</li>
+<li>c    字符</li>
+<li>f        单精度浮点数</li>
+<li>d    双精度浮点数</li>
+<li>z    布尔值</li>
+<li>a    引用</li>
+</ul>
+</li>
+<li><p>例子</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">## iadd  表示两个整数相加</span><br><span class="line">## dadd  表示两个double类型数据相加</span><br><span class="line">....</span><br></pre></td></tr></table></figure></li>
+<li><p>参见jvm的规范</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">## jvm指令码表</span><br><span class="line">https://docs.oracle.com/javase/specs/jvms/se13/html/jvms-6.html#jvms-6.5</span><br><span class="line"></span><br><span class="line">## jvm字节码文件格式</span><br><span class="line">https://docs.oracle.com/javase/specs/jvms/se13/html/jvms-4.html#jvms-4.1</span><br></pre></td></tr></table></figure>
+
+
+</li>
+</ul>
+
+    </div>
+
+    <div>全文完。</div>
+  </article>
+  <div class="toc-container">
+    
+  <div id="toc" class="toc-article">
+    <strong class="toc-title">目录</strong>
+    <ol class="toc"><li class="toc-item toc-level-4"><a class="toc-link" href="#JVM%E8%BF%90%E8%A1%8C%E6%95%B0%E6%8D%AE%E5%8C%BA%E6%A6%82%E8%BF%B0"><span class="toc-text">JVM运行数据区概述</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2-class%E6%96%87%E4%BB%B6%E7%BB%93%E6%9E%84%E4%B8%8E%E5%AD%97%E8%8A%82%E7%A0%81"><span class="toc-text">2. .class文件结构与字节码</span></a></li></ol>
+  </div>
+
+
+  </div>
+</div>
+<div class="copyright">
+    <span>本作品采用</span>
+    <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by/4.0/">知识共享署名 4.0 国际许可协议</a>
+    <span>进行许可。 转载时请注明原文链接。</span>
+</div>
+<div class="share" style="width: 100%;">
+  <img src="/images/wechat-small.jpg" alt="Running Geek" style="margin: auto; display: block;"/>
+
+  <div style="margin: auto; text-align: center; font-size: 0.8em; color: grey;">老铁们关注走一走，不迷路</div>
+  
+</div>
+
+  
+    <div class="post-nav">
+      <div class="post-nav-item post-nav-next">
+        
+          <span>〈 </span>
+          <a href="/2020/01/12/cpu_cache/" rel="next" title="CPU高速缓存与内存屏障">
+          CPU高速缓存与内存屏障
+          </a>
+        
+      </div>
+  
+      <div class="post-nav-item post-nav-prev">
+          
+          <a href="/2020/02/03/jvm/" rel="prev" title="JVM运行数据区说明">
+            JVM运行数据区说明
+          </a>
+          <span>〉</span>
+        
+      </div>
+    </div>
+  
+
+
+    </div>
+
+    
+
+  </div>
+  <footer class="footer text-center">
+    <div id="bottom-inner">
+        <a class="bottom-item" href="https://xiaokunliu.github.io">首页</a> |
+        <a class="bottom-item" href="https://xiaokunliu.github.io" target="_blank">主站</a> |
+        <a class="bottom-item" href="https://github.com/xiaokunliu" target="_blank">GitHub</a> |
+        <a class="bottom-item" href="https://hexo.io" target="_blank">Powered by hexo</a> |
+        <a class="bottom-item" href="https://github.com/KevinOfNeu/hexo-theme-xoxo" target="_blank">Theme xoxo</a>
+    </div>
+</footer>
+  
+
+<script>
+  (function(window, document, undefined) {
+
+    var timer = null;
+
+    function returnTop() {
+      cancelAnimationFrame(timer);
+      timer = requestAnimationFrame(function fn() {
+        var oTop = document.body.scrollTop || document.documentElement.scrollTop;
+        if (oTop > 0) {
+          document.body.scrollTop = document.documentElement.scrollTop = oTop - 50;
+          timer = requestAnimationFrame(fn);
+        } else {
+          cancelAnimationFrame(timer);
+        }
+      });
+    }
+
+    var hearts = [];
+    window.requestAnimationFrame = (function() {
+      return window.requestAnimationFrame ||
+        window.webkitRequestAnimationFrame ||
+        window.mozRequestAnimationFrame ||
+        window.oRequestAnimationFrame ||
+        window.msRequestAnimationFrame ||
+        function(callback) {
+          setTimeout(callback, 1000 / 60);
+        }
+    })();
+    init();
+
+    function init() {
+      css(".heart{z-index:9999;width: 10px;height: 10px;position: fixed;background: #f00;transform: rotate(45deg);-webkit-transform: rotate(45deg);-moz-transform: rotate(45deg);}.heart:after,.heart:before{content: '';width: inherit;height: inherit;background: inherit;border-radius: 50%;-webkit-border-radius: 50%;-moz-border-radius: 50%;position: absolute;}.heart:after{top: -5px;}.heart:before{left: -5px;}");
+      attachEvent();
+      gameloop();
+      addMenuEvent();
+    }
+
+    function gameloop() {
+      for (var i = 0; i < hearts.length; i++) {
+        if (hearts[i].alpha <= 0) {
+          document.body.removeChild(hearts[i].el);
+          hearts.splice(i, 1);
+          continue;
+        }
+        hearts[i].y--;
+        hearts[i].scale += 0.004;
+        hearts[i].alpha -= 0.013;
+        hearts[i].el.style.cssText = "left:" + hearts[i].x + "px;top:" + hearts[i].y + "px;opacity:" + hearts[i].alpha + ";transform:scale(" + hearts[i].scale + "," + hearts[i].scale + ") rotate(45deg);background:" + hearts[i].color;
+      }
+      requestAnimationFrame(gameloop);
+    }
+
+    /**
+     * 给logo设置点击事件
+     * 
+     * - 回到顶部
+     * - 出现爱心
+     */
+    function attachEvent() {
+      var old = typeof window.onclick === "function" && window.onclick;
+      var logo = document.getElementById("logo");
+      if (logo) {
+        logo.onclick = function(event) {
+          returnTop();
+          old && old();
+          createHeart(event);
+        }
+      }
+      
+    }
+
+    function createHeart(event) {
+      var d = document.createElement("div");
+      d.className = "heart";
+      hearts.push({
+        el: d,
+        x: event.clientX - 5,
+        y: event.clientY - 5,
+        scale: 1,
+        alpha: 1,
+        color: randomColor()
+      });
+      document.body.appendChild(d);
+    }
+
+    function css(css) {
+      var style = document.createElement("style");
+      style.type = "text/css";
+      try {
+        style.appendChild(document.createTextNode(css));
+      } catch (ex) {
+        style.styleSheet.cssText = css;
+      }
+      document.getElementsByTagName('head')[0].appendChild(style);
+    }
+
+    function randomColor() {
+      // return "rgb(" + (~~(Math.random() * 255)) + "," + (~~(Math.random() * 255)) + "," + (~~(Math.random() * 255)) + ")";
+      return "#F44336";
+    }
+
+    function addMenuEvent() {
+      var menu = document.getElementById('menu-main-post');
+      if (menu) {
+        var toc = document.getElementById('toc');
+        if (toc) {
+          menu.onclick = function() {
+            if (toc) {
+              if (toc.style.display == 'block') {
+                toc.style.display = 'none';
+              } else {
+                toc.style.display = 'block';
+              }
+            }
+          };
+        } else {
+          menu.style.display = 'none';
+        }
+      }
+    }
+
+  })(window, document);
+</script>
+
+  
+
+
+
+</body>
+</html>

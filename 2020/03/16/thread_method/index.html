@@ -1,0 +1,363 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<!--
+config header
+-->
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#202020"/>
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  <script src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" async></script>
+
+  
+      <meta name="google-site-verification" content="{{ theme.google_site_verification }}" />
+  
+
+  
+    <meta name="keywords" content="并发编程," />
+  
+
+  
+    <meta name="description" content="分享个人学习工作的技术知识" />
+  
+  
+  <link rel="icon" type="image/x-icon" href="/logo.jpg">
+  <title>category: 并发编程 [ 疾风先生 ]</title>
+  
+    <!-- stylesheets list from config.yml -->
+    
+      <link rel="stylesheet" href="//cdn.bootcss.com/pure/1.0.0/pure-min.css">
+    
+      <link rel="stylesheet" href="/css/xoxo.css">
+    
+  
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+
+<body>
+  <div class="nav-container">
+    <nav class="home-menu pure-menu pure-menu-horizontal">
+  <a class="pure-menu-heading" href="/">
+    <img class="avatar" src="https://xiaokunliu.github.io/images/logo.jpg">
+    <span class="title">疾风先生</span>
+  </a>
+
+  <ul class="pure-menu-list clearfix">
+      
+          
+            <li class="pure-menu-item"><a href="/" class="pure-menu-link">首页</a></li>
+          
+      
+          
+            <li class="pure-menu-item"><a href="/archives" class="pure-menu-link">归档</a></li>
+          
+      
+          
+            <li class="pure-menu-item"><a href="/tags" class="pure-menu-link">标签</a></li>
+          
+      
+          
+            <li class="pure-menu-item"><a href="/categories" class="pure-menu-link">分类</a></li>
+          
+      
+          
+            <li class="pure-menu-item"><a href="/search" class="pure-menu-link">搜索</a></li>
+          
+      
+  </ul>
+   
+</nav>
+  </div>
+
+  <div class="container" id="content-outer">
+    <div class="inner" id="content-inner">
+      <div class="post-container">
+  <article class="post" id="post">
+    <header class="post-header text-center">
+      <h1 class="title">
+        线程核心方法简介
+      </h1>
+      <span>
+        
+        <time class="time" datetime="2020-03-16T20:47:28.000Z">
+        2020-03-16
+      </time>
+        
+      </span>
+      <span class="slash">/</span>
+      <span class="post-meta">
+      <span class="post-tags">
+        <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E5%B9%B6%E5%8F%91%E7%BC%96%E7%A8%8B/" rel="tag">并发编程</a></li></ul>
+      </span>
+    </span>
+      <span class="slash">/</span>
+      <span class="read">
+      <span id="busuanzi_value_page_pv"></span> 点击
+    </span>
+    </header>
+
+    <div class="post-content">
+      <span id="more"></span>
+<h5 id="1-线程终止"><a href="#1-线程终止" class="headerlink" title="1. 线程终止"></a>1. 线程终止</h5><blockquote>
+<p>基于可见性的volatile实现</p>
+</blockquote>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 定义任务线程</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">VolatileTask</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">volatile</span> <span class="keyword">boolean</span> flag = <span class="keyword">false</span>;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">read</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">while</span> (!flag)&#123;</span><br><span class="line">            System.out.println(<span class="string">&quot;query data ....&quot;</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        System.out.println(<span class="string">&quot;query data done ....&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">write</span><span class="params">()</span></span>&#123;</span><br><span class="line">        flag = <span class="keyword">true</span>;</span><br><span class="line">        System.out.println(<span class="string">&quot;writing data done ....&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// 执行main方法</span></span><br><span class="line"> 	<span class="keyword">final</span> VolatileTask task = <span class="keyword">new</span> VolatileTask();</span><br><span class="line">    <span class="keyword">new</span> Thread(<span class="keyword">new</span> Runnable() &#123;</span><br><span class="line">         <span class="meta">@Override</span></span><br><span class="line">         <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</span><br><span class="line">             task.read();</span><br><span class="line">         &#125;</span><br><span class="line">     &#125;).start();</span><br><span class="line"></span><br><span class="line">     TimeUnit.SECONDS.sleep(<span class="number">2</span>);</span><br><span class="line"></span><br><span class="line">     <span class="keyword">new</span> Thread(<span class="keyword">new</span> Runnable() &#123;</span><br><span class="line">         <span class="meta">@Override</span></span><br><span class="line">         <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</span><br><span class="line">             task.write();</span><br><span class="line">         &#125;</span><br><span class="line">     &#125;).start();</span><br></pre></td></tr></table></figure>
+<ul>
+<li>执行结果:<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">// ...</span><br><span class="line">query data ....</span><br><span class="line">query data ....</span><br><span class="line">query data ....</span><br><span class="line">writing data done ....</span><br><span class="line">query data done ....</span><br></pre></td></tr></table></figure></li>
+<li>分析<ul>
+<li>上述执行的结果属于线程执行正常结束</li>
+<li>上述是在client模式下执行,没有执行重排序操作,在JMM规范中,volatile保持可见性,在字节码层面,volatile带有修饰符ACC_VOLATILE,在JVM规范中有声明为没有缓存,也就是直接从主内存读取数据,因此在另一个线程可以读取到flag的最新值</li>
+</ul>
+</li>
+</ul>
+<blockquote>
+<p>stop方法以及存在的问题</p>
+</blockquote>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Task</span> <span class="keyword">implements</span> <span class="title">Runnable</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">int</span> i = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">int</span> j = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">synchronized</span> (<span class="keyword">this</span>)&#123;</span><br><span class="line">            ++i;</span><br><span class="line">            <span class="keyword">try</span>&#123;</span><br><span class="line">                TimeUnit.SECONDS.sleep(<span class="number">3</span>);</span><br><span class="line">            &#125;<span class="keyword">catch</span> (InterruptedException e)&#123;</span><br><span class="line">                e.printStackTrace();</span><br><span class="line">            &#125;</span><br><span class="line">            ++j;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">output</span><span class="params">()</span></span>&#123;</span><br><span class="line">        System.out.printf(<span class="string">&quot;time=%s,i=%d, j=%d%n&quot;</span>, System.currentTimeMillis(), i, j);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// main方法</span></span><br><span class="line">	Task task = <span class="keyword">new</span> Task();</span><br><span class="line">    Thread t1 = <span class="keyword">new</span> Thread(task);</span><br><span class="line">    t1.start();</span><br><span class="line"></span><br><span class="line">     TimeUnit.SECONDS.sleep(<span class="number">1</span>);</span><br><span class="line">     t1.stop();</span><br><span class="line"></span><br><span class="line">     task.output();</span><br><span class="line">     <span class="keyword">while</span> (t1.isAlive())&#123;</span><br><span class="line">     &#125;</span><br><span class="line">     </span><br><span class="line">     <span class="comment">// 保证线程已经终止</span></span><br><span class="line">     task.output();</span><br></pre></td></tr></table></figure>
+<ul>
+<li>执行结果<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">// 线程未终止</span><br><span class="line">time=1582099251750,i=1, j=0</span><br><span class="line">// 线程已终止</span><br><span class="line">time=1582099251769,i=1, j=0</span><br></pre></td></tr></table></figure></li>
+<li>分析<ul>
+<li>根据上述执行的结果,执行stop方法无法保证数据达到我们预期值,即j=1</li>
+<li>其次也可以看出stop方法调用执行之后对线程是无法预测的,也就是说线程在执行的过程中突然收到停止的方法“蒙圈”了,无法捕获到异常信息</li>
+<li>最后一点就是在同步代码中结束的时候,stop方法直接退出并没有将同步代码完全执行完</li>
+</ul>
+</li>
+</ul>
+<blockquote>
+<p>使用interrupt方法中断线程</p>
+</blockquote>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// task 代码不变</span></span><br><span class="line"><span class="comment">// main方法</span></span><br><span class="line">	Task task = <span class="keyword">new</span> Task();</span><br><span class="line">    Thread t1 = <span class="keyword">new</span> Thread(task);</span><br><span class="line">     t1.start();</span><br><span class="line"></span><br><span class="line">     TimeUnit.SECONDS.sleep(<span class="number">1</span>);</span><br><span class="line">     t1.interrupt();</span><br><span class="line"></span><br><span class="line">     task.output();</span><br><span class="line"></span><br><span class="line">     <span class="keyword">while</span> (t1.isAlive())&#123;</span><br><span class="line"></span><br><span class="line">     &#125;</span><br><span class="line"></span><br><span class="line">     <span class="comment">// 保证线程已经终止</span></span><br><span class="line">     task.output();</span><br></pre></td></tr></table></figure>
+<ul>
+<li>执行结果<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">java.lang.InterruptedException: sleep interrupted</span><br><span class="line">	at java.lang.Thread.sleep(Native Method)</span><br><span class="line">	at java.lang.Thread.sleep(Thread.java:340)</span><br><span class="line">	at java.util.concurrent.TimeUnit.sleep(TimeUnit.java:386)</span><br><span class="line">	at com.xiaokunliu.homework.thread.base.methods.Task.run(ThreadStop.java:87)</span><br><span class="line">	at java.lang.Thread.run(Thread.java:748)</span><br><span class="line">time=1582099560454,i=1, j=0</span><br><span class="line">time=1582099560475,i=1, j=1</span><br></pre></td></tr></table></figure></li>
+<li>分析<ul>
+<li>可以看出,上述执行interrupt方法之后,会在线程中抛出中断异常,线程可以进行捕获处理</li>
+<li>其次中断操作能够保证同步操作中的代码能够被执行,从代码中也可以知道是因为可以处理中断异常,因此在实际开发过程中线程可以业务策略进行处理保证数据是正常可预期的</li>
+</ul>
+</li>
+</ul>
+<h6 id="2-线程join方法"><a href="#2-线程join方法" class="headerlink" title="2. 线程join方法"></a>2. 线程join方法</h6><blockquote>
+<p>join的场景</p>
+</blockquote>
+<p>假设现在有一个业务场景是查询直播信息,而查询直播信息需要几个步骤完成,一个是获取用户的频道信息,二是查询是否在推荐直播位置中,三是该直播是否正在直播,上述三个接口分别是在基础组,应用组和直播组开发团队进行维护,这个时候为了完成需求,我需要通过接口的方式进行分别调用然后汇聚再返回,此时我们可以开三个线程,一个是处理用户频道查询,一个是查询是否在推荐位中,一个是查询是否正在直播的状态,于是有以下代码(伪代码)</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// main方法</span></span><br><span class="line">Thread t1 = <span class="keyword">new</span> Thread()&#123;</span><br><span class="line">	<span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span></span>&#123;</span><br><span class="line">		<span class="comment">// get user channel </span></span><br><span class="line">	&#125;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line">Thread t2 = <span class="keyword">new</span> Thread()&#123;</span><br><span class="line">	<span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span></span>&#123;</span><br><span class="line">		<span class="comment">// get user recommand lives</span></span><br><span class="line">	&#125;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line">Thread t3 = <span class="keyword">new</span> Thread()&#123;</span><br><span class="line">	<span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span></span>&#123;</span><br><span class="line">		<span class="comment">// get user get live status</span></span><br><span class="line">	&#125;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line">t1.start();</span><br><span class="line">t2.start();</span><br><span class="line">t3.start();</span><br><span class="line"></span><br><span class="line"><span class="comment">// 这里是处理汇总的数据方式,因此必须等待上述执行完成</span></span><br><span class="line">t1.join();</span><br><span class="line">t2.join();</span><br><span class="line">t3.join();</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>分析<ul>
+<li>join方法就是在当前线程调用join方法的线程中的任务执行完成之后再进行下一步的操作</li>
+<li>其次基于上述的应用场景,还可以使用CountDownLatch或者是Future/Callable抑或是join/fork框架实现</li>
+</ul>
+</li>
+</ul>
+<h5 id="3-线程的yeild方法"><a href="#3-线程的yeild方法" class="headerlink" title="3. 线程的yeild方法"></a>3. 线程的yeild方法</h5><blockquote>
+<p>yeild定义与理解</p>
+</blockquote>
+<p>yield是属于一个由static native 修饰的底层实现机制,它的作用是一个“不完全让出CPU资源的权利”来调度线程<br><strong>现在有一个应用场景: 假设执行一个耗时且不重要的A任务需要10s,而执行一个紧急不耗时的B任务需要1s,那么这个时候当启动A线程的时候,在A线程中调用yield()方法来告诉CPU说我当前执行的任务不是很重要但是比较耗时,可以适当让出CPU资源优先给其他紧急处理任务的线程执行</strong><br><strong>类比于一个生活场景就是去看医生,医生可能会在会诊一个普通病人的时候突然遇到重症病人,需要紧急优先处理的场景</strong></p>
+<blockquote>
+<p>yeild示例代码</p>
+</blockquote>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line">Thread t1 = <span class="keyword">new</span> Thread(<span class="string">&quot;线程1&quot;</span>)&#123;</span><br><span class="line">           <span class="meta">@Override</span></span><br><span class="line">           <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</span><br><span class="line">               <span class="keyword">try</span>&#123;</span><br><span class="line">                   <span class="comment">// 执行完成需要2s</span></span><br><span class="line">                   TimeUnit.SECONDS.sleep(<span class="number">2</span>);</span><br><span class="line">                   System.out.println(Thread.currentThread().getName() + <span class="string">&quot;执行重要的事情&quot;</span>);</span><br><span class="line">               &#125;<span class="keyword">catch</span> (Exception e)&#123;</span><br><span class="line">                   e.printStackTrace();</span><br><span class="line">               &#125;</span><br><span class="line">           &#125;</span><br><span class="line">       &#125;;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">     Thread t2 = <span class="keyword">new</span> Thread(<span class="string">&quot;线程2&quot;</span>)&#123;</span><br><span class="line">          <span class="meta">@Override</span></span><br><span class="line">          <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</span><br><span class="line">              <span class="keyword">try</span>&#123;</span><br><span class="line">                  <span class="comment">// 让给执行重要的线程优先执行，当前为不重要且耗时操作</span></span><br><span class="line">                  Thread.yield();</span><br><span class="line">                  TimeUnit.SECONDS.sleep(<span class="number">12L</span>);</span><br><span class="line">                  System.out.println(Thread.currentThread().getName()+<span class="string">&quot;执行不重要的事情。。。&quot;</span>);</span><br><span class="line">              &#125;<span class="keyword">catch</span> (Exception e)&#123;</span><br><span class="line">                  e.printStackTrace();</span><br><span class="line">              &#125;</span><br><span class="line">          &#125;</span><br><span class="line">      &#125;;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 保证t2 先执行</span></span><br><span class="line">      t2.start();</span><br><span class="line">      TimeUnit.MILLISECONDS.sleep(<span class="number">500</span>);</span><br><span class="line">      t1.start();</span><br><span class="line"></span><br><span class="line">      t2.join();</span><br><span class="line">      t1.join();</span><br><span class="line">      System.out.println(<span class="string">&quot;执行完成。。。&quot;</span>);</span><br></pre></td></tr></table></figure>
+<ul>
+<li>执行结果如下<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">线程1执行重要的事情</span><br><span class="line">线程2执行不重要的事情。。。</span><br><span class="line">执行完成。。。</span><br></pre></td></tr></table></figure></li>
+</ul>
+
+    </div>
+
+    <div>全文完。</div>
+  </article>
+  <div class="toc-container">
+    
+  <div id="toc" class="toc-article">
+    <strong class="toc-title">目录</strong>
+    <ol class="toc"><li class="toc-item toc-level-5"><a class="toc-link" href="#1-%E7%BA%BF%E7%A8%8B%E7%BB%88%E6%AD%A2"><span class="toc-text">1. 线程终止</span></a><ol class="toc-child"><li class="toc-item toc-level-6"><a class="toc-link" href="#2-%E7%BA%BF%E7%A8%8Bjoin%E6%96%B9%E6%B3%95"><span class="toc-text">2. 线程join方法</span></a></li></ol></li><li class="toc-item toc-level-5"><a class="toc-link" href="#3-%E7%BA%BF%E7%A8%8B%E7%9A%84yeild%E6%96%B9%E6%B3%95"><span class="toc-text">3. 线程的yeild方法</span></a></li></ol>
+  </div>
+
+
+  </div>
+</div>
+<div class="copyright">
+    <span>本作品采用</span>
+    <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by/4.0/">知识共享署名 4.0 国际许可协议</a>
+    <span>进行许可。 转载时请注明原文链接。</span>
+</div>
+<div class="share" style="width: 100%;">
+  <img src="/images/wechat-small.jpg" alt="Running Geek" style="margin: auto; display: block;"/>
+
+  <div style="margin: auto; text-align: center; font-size: 0.8em; color: grey;">老铁们关注走一走，不迷路</div>
+  
+</div>
+
+  
+    <div class="post-nav">
+      <div class="post-nav-item post-nav-next">
+        
+          <span>〈 </span>
+          <a href="/2020/03/14/reactor/" rel="next" title="高性能IO编程设计">
+          高性能IO编程设计
+          </a>
+        
+      </div>
+  
+      <div class="post-nav-item post-nav-prev">
+          
+          <a href="/2020/03/18/thread_pool/" rel="prev" title="并发编程之线程池原理">
+            并发编程之线程池原理
+          </a>
+          <span>〉</span>
+        
+      </div>
+    </div>
+  
+
+
+    </div>
+
+    
+
+  </div>
+  <footer class="footer text-center">
+    <div id="bottom-inner">
+        <a class="bottom-item" href="https://xiaokunliu.github.io">首页</a> |
+        <a class="bottom-item" href="https://xiaokunliu.github.io" target="_blank">主站</a> |
+        <a class="bottom-item" href="https://github.com/xiaokunliu" target="_blank">GitHub</a> |
+        <a class="bottom-item" href="https://hexo.io" target="_blank">Powered by hexo</a> |
+        <a class="bottom-item" href="https://github.com/KevinOfNeu/hexo-theme-xoxo" target="_blank">Theme xoxo</a>
+    </div>
+</footer>
+  
+
+<script>
+  (function(window, document, undefined) {
+
+    var timer = null;
+
+    function returnTop() {
+      cancelAnimationFrame(timer);
+      timer = requestAnimationFrame(function fn() {
+        var oTop = document.body.scrollTop || document.documentElement.scrollTop;
+        if (oTop > 0) {
+          document.body.scrollTop = document.documentElement.scrollTop = oTop - 50;
+          timer = requestAnimationFrame(fn);
+        } else {
+          cancelAnimationFrame(timer);
+        }
+      });
+    }
+
+    var hearts = [];
+    window.requestAnimationFrame = (function() {
+      return window.requestAnimationFrame ||
+        window.webkitRequestAnimationFrame ||
+        window.mozRequestAnimationFrame ||
+        window.oRequestAnimationFrame ||
+        window.msRequestAnimationFrame ||
+        function(callback) {
+          setTimeout(callback, 1000 / 60);
+        }
+    })();
+    init();
+
+    function init() {
+      css(".heart{z-index:9999;width: 10px;height: 10px;position: fixed;background: #f00;transform: rotate(45deg);-webkit-transform: rotate(45deg);-moz-transform: rotate(45deg);}.heart:after,.heart:before{content: '';width: inherit;height: inherit;background: inherit;border-radius: 50%;-webkit-border-radius: 50%;-moz-border-radius: 50%;position: absolute;}.heart:after{top: -5px;}.heart:before{left: -5px;}");
+      attachEvent();
+      gameloop();
+      addMenuEvent();
+    }
+
+    function gameloop() {
+      for (var i = 0; i < hearts.length; i++) {
+        if (hearts[i].alpha <= 0) {
+          document.body.removeChild(hearts[i].el);
+          hearts.splice(i, 1);
+          continue;
+        }
+        hearts[i].y--;
+        hearts[i].scale += 0.004;
+        hearts[i].alpha -= 0.013;
+        hearts[i].el.style.cssText = "left:" + hearts[i].x + "px;top:" + hearts[i].y + "px;opacity:" + hearts[i].alpha + ";transform:scale(" + hearts[i].scale + "," + hearts[i].scale + ") rotate(45deg);background:" + hearts[i].color;
+      }
+      requestAnimationFrame(gameloop);
+    }
+
+    /**
+     * 给logo设置点击事件
+     * 
+     * - 回到顶部
+     * - 出现爱心
+     */
+    function attachEvent() {
+      var old = typeof window.onclick === "function" && window.onclick;
+      var logo = document.getElementById("logo");
+      if (logo) {
+        logo.onclick = function(event) {
+          returnTop();
+          old && old();
+          createHeart(event);
+        }
+      }
+      
+    }
+
+    function createHeart(event) {
+      var d = document.createElement("div");
+      d.className = "heart";
+      hearts.push({
+        el: d,
+        x: event.clientX - 5,
+        y: event.clientY - 5,
+        scale: 1,
+        alpha: 1,
+        color: randomColor()
+      });
+      document.body.appendChild(d);
+    }
+
+    function css(css) {
+      var style = document.createElement("style");
+      style.type = "text/css";
+      try {
+        style.appendChild(document.createTextNode(css));
+      } catch (ex) {
+        style.styleSheet.cssText = css;
+      }
+      document.getElementsByTagName('head')[0].appendChild(style);
+    }
+
+    function randomColor() {
+      // return "rgb(" + (~~(Math.random() * 255)) + "," + (~~(Math.random() * 255)) + "," + (~~(Math.random() * 255)) + ")";
+      return "#F44336";
+    }
+
+    function addMenuEvent() {
+      var menu = document.getElementById('menu-main-post');
+      if (menu) {
+        var toc = document.getElementById('toc');
+        if (toc) {
+          menu.onclick = function() {
+            if (toc) {
+              if (toc.style.display == 'block') {
+                toc.style.display = 'none';
+              } else {
+                toc.style.display = 'block';
+              }
+            }
+          };
+        } else {
+          menu.style.display = 'none';
+        }
+      }
+    }
+
+  })(window, document);
+</script>
+
+  
+
+
+
+</body>
+</html>

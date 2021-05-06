@@ -1,0 +1,506 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<!--
+config header
+-->
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#202020"/>
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  <script src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" async></script>
+
+  
+      <meta name="google-site-verification" content="{{ theme.google_site_verification }}" />
+  
+
+  
+    <meta name="keywords" content="分布式架构设计," />
+  
+
+  
+    <meta name="description" content="分享个人学习工作的技术知识" />
+  
+  
+  <link rel="icon" type="image/x-icon" href="/logo.jpg">
+  <title>category: 分布式架构设计 [ 疾风先生 ]</title>
+  
+    <!-- stylesheets list from config.yml -->
+    
+      <link rel="stylesheet" href="//cdn.bootcss.com/pure/1.0.0/pure-min.css">
+    
+      <link rel="stylesheet" href="/css/xoxo.css">
+    
+  
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+
+<body>
+  <div class="nav-container">
+    <nav class="home-menu pure-menu pure-menu-horizontal">
+  <a class="pure-menu-heading" href="/">
+    <img class="avatar" src="https://xiaokunliu.github.io/images/logo.jpg">
+    <span class="title">疾风先生</span>
+  </a>
+
+  <ul class="pure-menu-list clearfix">
+      
+          
+            <li class="pure-menu-item"><a href="/" class="pure-menu-link">首页</a></li>
+          
+      
+          
+            <li class="pure-menu-item"><a href="/archives" class="pure-menu-link">归档</a></li>
+          
+      
+          
+            <li class="pure-menu-item"><a href="/tags" class="pure-menu-link">标签</a></li>
+          
+      
+          
+            <li class="pure-menu-item"><a href="/categories" class="pure-menu-link">分类</a></li>
+          
+      
+          
+            <li class="pure-menu-item"><a href="/search" class="pure-menu-link">搜索</a></li>
+          
+      
+  </ul>
+   
+</nav>
+  </div>
+
+  <div class="container" id="content-outer">
+    <div class="inner" id="content-inner">
+      <div class="post-container">
+  <article class="post" id="post">
+    <header class="post-header text-center">
+      <h1 class="title">
+        分布式共识问题
+      </h1>
+      <span>
+        
+        <time class="time" datetime="2020-05-27T09:41:07.000Z">
+        2020-05-27
+      </time>
+        
+      </span>
+      <span class="slash">/</span>
+      <span class="post-meta">
+      <span class="post-tags">
+        <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E5%88%86%E5%B8%83%E5%BC%8F%E6%9E%B6%E6%9E%84%E8%AE%BE%E8%AE%A1/" rel="tag">分布式架构设计</a></li></ul>
+      </span>
+    </span>
+      <span class="slash">/</span>
+      <span class="read">
+      <span id="busuanzi_value_page_pv"></span> 点击
+    </span>
+    </header>
+
+    <div class="post-content">
+      <span id="more"></span>
+
+<h2 id="分布式共识问题"><a href="#分布式共识问题" class="headerlink" title="分布式共识问题"></a>分布式共识问题</h2><p><img src="https://raw.githubusercontent.com/xiaokunliu/xiaokunliu.github.io/feature/writing/websites/zimages/arch/byzantine/title.jpg"></p>
+<p>在讲述分布式的共识问题之前,我们先了解下什么是拜占庭将军问题, 其次从拜占庭将军问题来认识什么是分布式共识问题,与分布式一致性的区分在哪里?然后推演分布式共识问题产生的原因以及解决共识问题的策略算法有哪些,对应的适用场景有哪些?接下来我们可以带着疑问来逐步揭开上述问题的本质.另外这里要先说明一点,<strong>这里讲述的服务节点不可用包含网络超时/服务节点出现故障/网络通信被伪造等情况.</strong></p>
+<h3 id="拜占庭将军问题"><a href="#拜占庭将军问题" class="headerlink" title="拜占庭将军问题"></a>拜占庭将军问题</h3><h4 id="拜占庭一般性问题"><a href="#拜占庭一般性问题" class="headerlink" title="拜占庭一般性问题"></a>拜占庭一般性问题</h4><ul>
+<li>拜占庭军队中的每一个师都有自己的将军,并且由该将军负责指挥作战</li>
+<li>现在拜占庭军队中的将军存在一些叛徒,将军们可以通过信使进行相互沟通作战方案</li>
+<li>现在对拜占庭军队要求是:</li>
+</ul>
+<blockquote>
+<ol>
+<li><p>所有忠实的将军都能够采取相同的作战计划.</p>
+</li>
+<li><p>少数叛徒不会使忠诚的将军们采取错误的计划从而导致最终的作战失败.</p>
+</li>
+</ol>
+</blockquote>
+<h4 id="问题重述"><a href="#问题重述" class="headerlink" title="问题重述"></a>问题重述</h4><ul>
+<li>所有忠诚的将军都得到同样的信息，他们将以某种方式得到同样的决定</li>
+<li>一个忠诚的将军发出的信息应该被所有其他忠诚的将军所采用</li>
+</ul>
+<h4 id="什么是拜占庭将军问题"><a href="#什么是拜占庭将军问题" class="headerlink" title="什么是拜占庭将军问题"></a>什么是拜占庭将军问题</h4><p>基于上述的问题的理解,假设现在拜占庭军队中有三个师,每个师都有自己的将军,现在要准备开始作战计划攻打城池,现在需要满足上述讲到的要求,即保证每个师的忠诚将军都能够采取相同的作战计划以防止被叛徒信息误导采取错误的决定.此时需要每个师派发行使进行通信协商,同时为了保证协商存在可靠性,即下面的半数投票的可靠性.</p>
+<h5 id="少数服从多数的投票可靠性"><a href="#少数服从多数的投票可靠性" class="headerlink" title="少数服从多数的投票可靠性"></a>少数服从多数的投票可靠性</h5><ul>
+<li>每个师的将军可以发表自己对作战方案的计划,并通过信使通知其他师的将军们</li>
+<li>其次,每个师的将军接收到其他师的将军们的作战方案时候,采取默认少数服从多数的方案作为作战方案执行.</li>
+</ul>
+<p>这个时候我们可以看到,每一个师的将军都能够提供方案,说明是具备作战的指挥权的,相对地,其他师的将军就作为副官,负责执行作战方案.于是对于一个拜占庭将军问题可以进行以下归纳.</p>
+<h5 id="拜占庭将军问题-1"><a href="#拜占庭将军问题-1" class="headerlink" title="拜占庭将军问题"></a>拜占庭将军问题</h5><p>我们可以将问题进行简化为一系列由一个指挥官和多个副官组成的问题,即拜占庭将军问题:</p>
+<ul>
+<li>如果所有的副官都是忠诚的,那么他们必然遵循相同的作战命令</li>
+<li>如果指挥官是忠诚的,那么所有忠实的副官也都会遵循其所发出的命令</li>
+</ul>
+<p>简而言之,拜占庭将军问题就是如何在可能存在有叛徒的情况下,采取合适的通信机制来保证忠诚的将军能够达成共识采取一致的作战计划.</p>
+<h5 id="不可能的结果"><a href="#不可能的结果" class="headerlink" title="不可能的结果"></a>不可能的结果</h5><p>如果忠实于将军的将军少于或等于2/3，则不存在解决方案.</p>
+<h3 id="分布式共识问题-1"><a href="#分布式共识问题-1" class="headerlink" title="分布式共识问题"></a>分布式共识问题</h3><h4 id="什么是分布式共识问题"><a href="#什么是分布式共识问题" class="headerlink" title="什么是分布式共识问题"></a>什么是分布式共识问题</h4><p>基于拜占庭将军问题的分析,我们将其翻译为分布式系统相关的术语,并对其进行阐述如下:</p>
+<ul>
+<li>拜占庭将军: 即分布式系统的服务节点</li>
+<li>忠诚的拜占庭将军: 即分布式系统服务正常运作的服务节点</li>
+<li>叛变的拜占庭将军: 出现故障并发送误导信息的服务节点</li>
+<li>信使被杀: 服务节点之间出现通信故障,导致信息丢失</li>
+<li>信使被间谍替换: 服务节点进行网络通信过程中信息被黑客攻击,通信存在劫持以及信息伪造</li>
+</ul>
+<p>而分布式共识问题就是在分布式系统中,我们要如何保证系统服务节点之间的通信接收到的消息指令都是可靠且一致的.</p>
+<h4 id="分布式共识与一致性区分"><a href="#分布式共识与一致性区分" class="headerlink" title="分布式共识与一致性区分"></a>分布式共识与一致性区分</h4><p><img src="https://raw.githubusercontent.com/xiaokunliu/xiaokunliu.github.io/feature/writing/websites/zimages/arch/byzantine/distibuted_cons.jpg"></p>
+<p>在讲述分布式的共识与一致性之前,我们先来看下上述的图解,用户发起请求向分布式系统集群服务请求资源然后服务资源给予响应,这个时候我们考虑以下的场景:</p>
+<ul>
+<li>首先,用户A先发起一个事务操作的请求到集群服务,这个时候集群服务接收到事务操作请求,这个时候问题来了,集群服务存储节点谁来负责处理事务请求的操作,进行事务操作之后数据如何同步到各个服务节点上,即集群服务节点如何对事务请求操作达成共识.</li>
+<li>其次,用户B发起一个非事务的读取请求到集群服务中,此时读取到数据应当是A进行事务操作之后最新的数据,也就是集群服务节点需要保证给到用户B的数据是最新修改的数据,即服务节点的一致性问题.</li>
+</ul>
+<p>从上述可以看到,对于分布式系统的共识与一致性问题其实关注的点不一样的,即:</p>
+<ul>
+<li>分布式共识问题:回归到事务请求操作的思考层面,就拿扣减库存的分布式事务为例,它必须保证并发的原子性操作,那么此时我们就需要对共享资源进行加锁互斥保证集群中只有一个节点能够进行事务操作;其次当服务节点完成事务操作之后,还需要进行数据同步到冗余服务节点上,那么进行事务操作的服务节点必须向集群其他节点发起数据同步操作并等待响应(是不是类似于上述的拜占庭将军问题);另外关于分布式共识还包含通过原子组播的方式处理进程对消息传递的顺序一致性.</li>
+<li>分布式一致性: 通过上述的查询请求操作,即对于集群冗余服务的数据副本之间对外表现的数据是一致的,类似于JDK中的valotile机制,保证在多核CPU处理器上读取到数据是最新修改的.(后续再单独说明分布式的一致性)</li>
+</ul>
+<p>分布式共识问题,即为了达到共识,每个进程都提出自己的提议（propose）,最终通过共识算法,所有正确运行的进程决定（decide）相同的值,如下图所示:</p>
+<p><img src="https://raw.githubusercontent.com/xiaokunliu/xiaokunliu.github.io/feature/writing/websites/zimages/arch/byzantine/cons_problem.jpg"></p>
+<p>在上面的图示可以看出,不同的进程p0,p1,p2以及p3分别输入一个数据值,然后通过执行程序来处理并交换输入值,保证最终输出的数据值都是一致的.即不同进程的输入值通过自身相同的一套程序进行交换处理输入数据并最终都输出一致的数据v.</p>
+<h4 id="分布式共识特性"><a href="#分布式共识特性" class="headerlink" title="分布式共识特性"></a>分布式共识特性</h4><p>摘录分布式共识的英文阐述如下:</p>
+<blockquote>
+<ol>
+<li>Termination: Every non-faulty process must eventually decide</li>
+<li>Agreement: The final decision of every non-faulty process must be identical</li>
+<li>Validity: If every non-faulty process begins with the same initial value v, then their final decision must be v</li>
+</ol>
+</blockquote>
+<ul>
+<li>终止: 每个非故障的进程最终必须作出提案的决策</li>
+<li>协议: 每一个非故障的进程最终作出的提案决策都必须是一致的</li>
+<li>有效性: 如果每一个非故障的进程均以相同的初始化值v作为提案的输入,那么最终提案决策的输出都必须为v.</li>
+</ul>
+<p>对于分布式共识应用场景有:</p>
+<ul>
+<li>集群服务节点的Master/Leader选举策略</li>
+<li>集群服务节点进程加锁资源互斥</li>
+<li>集群中某一个服务节点故障的判定策略</li>
+<li>时钟相位同步问题</li>
+<li>ATC服务(Air Traffic Control): 空中交管控制系统,即所有的在空飞机都看到画面都是一致的(Air traffic control system: all aircrafts must have the same view)</li>
+</ul>
+<p>关于ATC可以参考:<a target="_blank" rel="noopener" href="https://science.howstuffworks.com/transport/flight/modern/air-traffic-control.htm">https://science.howstuffworks.com/transport/flight/modern/air-traffic-control.htm</a></p>
+<h3 id="共识问题推演"><a href="#共识问题推演" class="headerlink" title="共识问题推演"></a>共识问题推演</h3><h4 id="问题推演"><a href="#问题推演" class="headerlink" title="问题推演"></a>问题推演</h4><p>基于拜占庭将军问题,现假设有三个军队的将军,现在准备拟定攻城的计划,三个将军对此进行各自拟定计划(进攻或者是撤退的策略)并由信使负责消息的传递,最终通过“少数服从多数”原则来决定最终的决策方案.</p>
+<h5 id="正常情况"><a href="#正常情况" class="headerlink" title="正常情况"></a>正常情况</h5><ul>
+<li>三个军的将军都是忠诚的,那么对于发出进攻或者是撤退的策略最终应当是一致的</li>
+</ul>
+<p><img src="https://raw.githubusercontent.com/xiaokunliu/xiaokunliu.github.io/feature/writing/websites/zimages/arch/byzantine/cons_normal.jpg"></p>
+<p>A将军此时发起决策提案为进攻,对于B和C正常接收到的信息是进攻;B将军发起的决策提案为撤退,对于A和C正常接收到的信息为撤退,C将军发起的决策提案为进攻,那么这个时候对于A和B看到的提案为进攻,这个时候我们分别思考A,B,C三位将军接收到的提案为:</p>
+<p>A将军: 自己进攻的提案 + B将军的撤退提案 + C将军的攻击提案,因此最终决定进攻.</p>
+<p>B将军:自己撤退的提案 + A将军的进攻提案 + C将军的进攻提案,因此最终决定也是进攻.</p>
+<p>C将军: 自己进攻的提案 + B将军的撤退提案 + A将军的进攻提案,因此最终决定也是进攻.</p>
+<p>但是这个时候我们需要看到上述决策成功需要满足要求:</p>
+<blockquote>
+<p>1.所有的将军都是忠诚的<br>2.在上述的半数投票过程中,需要满足参与投票的将军个数为2n+1,不然无法决定投票结果.</p>
+</blockquote>
+<h5 id="二忠一叛问题"><a href="#二忠一叛问题" class="headerlink" title="二忠一叛问题"></a>二忠一叛问题</h5><p>如果三个将军中有一个将军出现问题,那么此时的情况又被变成如下的情况:</p>
+<blockquote>
+<p>1.其中一个将军为叛徒<br>2.其中一个将军的信使被间谍替换<br>3.其中一个将军的信使中途被杀</p>
+</blockquote>
+<ul>
+<li>如果其中一个将军为叛徒抑或是C将军的信使被间谍替换,假设为C将军叛变,那么此时产生的情况如下:</li>
+</ul>
+<p><img src="https://raw.githubusercontent.com/xiaokunliu/xiaokunliu.github.io/feature/writing/websites/zimages/arch/byzantine/cons_pantu.jpg"></p>
+<p>A将军: 自己进攻的提案 + B将军的撤退提案 + C将军的攻击提案,因此最终决定进攻.</p>
+<p>B将军:自己撤退的提案 + A将军的进攻提案 + C将军的撤退提案,因此最终决定是撤退.</p>
+<p>C将军: 因为自己本身是叛军,当然在战场上肯定也是撤退</p>
+<p>这个时候三位将军采取最终方案是不一致的,这样会导致A将军直接受到伏击被敌军歼灭;</p>
+<ul>
+<li>如果C将军的信是中途被截杀,那么此时产生的情况如下:</li>
+</ul>
+<p><img src="https://raw.githubusercontent.com/xiaokunliu/xiaokunliu.github.io/feature/writing/websites/zimages/arch/byzantine/cons_cancel.jpg"></p>
+<p>A将军: 只接收到B将军的撤退提案 + 自己攻击的提案, 这个时候是无法进行决策</p>
+<p>B将军: 只接收到A将军的攻击提案 + 自己撤退的提案, 这个时候也无法进行决策</p>
+<p>C将军: 接收到A将军的攻击提案 + 自己的攻击提案 + B将军的撤退提案,采取攻击提案.</p>
+<p>这个时候可以看到A,B,C三位将军最后做决策的时候将无法保证最终的提案一致性而采取相同的行动. </p>
+<h5 id="问题小结"><a href="#问题小结" class="headerlink" title="问题小结"></a>问题小结</h5><p>通过上述的分析,我们将其转化为分布式系统集群三个服务节点A,B,C之间可能存在的问题如下:</p>
+<p>当向分布式系统集群服务发起事务操作请求的时候,如果这个时候存在服务节点发生故障(信使被截杀)抑或是服务节点在消息通信过程被劫持,整个集群服务节点将无法对当前的事务请求操作采取一致性的行动.</p>
+<h4 id="口头消息的解决方案"><a href="#口头消息的解决方案" class="headerlink" title="口头消息的解决方案"></a>口头消息的解决方案</h4><h5 id="无签名的口头消息要求以及含义"><a href="#无签名的口头消息要求以及含义" class="headerlink" title="无签名的口头消息要求以及含义"></a>无签名的口头消息要求以及含义</h5><ul>
+<li>A1:每个服务节点发送的每条消息都能够被正确接收</li>
+</ul>
+<blockquote>
+<p>1.连接两个服务节点之间的通信介质的故障与服务节点发生的故障是无法区分的.如超时网络不通/服务节点宕机均为不可用等均视为服务节点不可用<br>2.如果出现线路故障表示分布式系统中的集群服务节点多了一个不可用的服务节点.</p>
+</blockquote>
+<ul>
+<li>A2:集群服务节点知道消息发送者的信息</li>
+</ul>
+<blockquote>
+<p>不需要通过网络交换就能知道消息发送者的信息</p>
+</blockquote>
+<ul>
+<li>A3:能够检测到集群其他服务节点的心跳</li>
+</ul>
+<blockquote>
+<p>需要有超时机制</p>
+</blockquote>
+<h5 id="口头消息的算法"><a href="#口头消息的算法" class="headerlink" title="口头消息的算法"></a>口头消息的算法</h5><blockquote>
+<p>算法定义</p>
+</blockquote>
+<p>基于上述的假设,现有一个算法函数major满足fn=(V1,V2,…Vn-1),该函数表示集群服务节点中每个节点一个提案值vi,fn表示集群中vi占过半投票对应的提案值v,而口头消息解决算法有一个前提条件,那就是必须是集群服务节点不可用的个数m必须满足m&lt;n/3,(n为当前集群服务节点的总数),也就是集群服务节点总数n最小值为n=3m+1.而对于算法的描述存在两种选择如下:</p>
+<ul>
+<li>如果v的提案值存在那么就执行提案值v的动作,否则采取默认的行为(撤退)</li>
+<li>其次,假设vi 为上述(V1,V2,…Vn-1)一系列有序的集合数据的中位数,那么就执行vi的提案</li>
+</ul>
+<blockquote>
+<p>算法描述</p>
+</blockquote>
+<p>现对于3m+1的集群服务节点选举一个具备指挥权的服务节点作为leader,其他节点作为replicate,这个时候存在以下两种情况</p>
+<p>当m=0时,即不存在服务节点不可用时,其算法执行的策略为:</p>
+<ul>
+<li>leader节点向每个replicate节点发送其提案指令v</li>
+<li>所有replicate节点接收到其提案指令v的消息时执行,如果没有收到执行默认的“撤退”行为.</li>
+</ul>
+<p>当m&gt;0时,其执行的算法如下:</p>
+<ul>
+<li>leader节点向每个replicate节点发送其提案指令v</li>
+<li>所有replicate节点接收到提案指令v的消息时作为执行命令的提案vi,如果没有收到消息则把默认的“撤退”行为作为其执行的提案vi,并此时的服务节点作为一个新的leader向其他n-2个服务节点(自己节点以及上一个leader节点)发起提案vi</li>
+<li>对于replicate节点(V1,V2,…Vn-1),假设当前服务节点为V1,那么V1节点在经过上述步骤2的操作之后,也会接收到其他服务节点(V2,V3,…Vn-1)节点的消息提案,分别设置对应值为v2,v3,…vn-1,其中每一个节点发送过来的提案值都是采取上一步的动作,除了其中的不可用的服务节点.</li>
+</ul>
+<p>经过上述的算法,对于存在m个不可用或者是不可靠的服务节点,需要经过m+1次的递归发起提案请求,同时可以递归推导得出O(m)调用(n-1)次递归独立执行O(m-1).</p>
+<h5 id="口头消息解决方案分析"><a href="#口头消息解决方案分析" class="headerlink" title="口头消息解决方案分析"></a>口头消息解决方案分析</h5><p>基于上述的分析,如果仅有上述的集群服务的3个节点,基于口信消息的方案是无法解决拜占庭将军问题的,现分析如下:</p>
+<ul>
+<li>现在我们从服务集群中选举一个节点作为具备指挥权的服务节点,比如服务节点A</li>
+</ul>
+<p><img src="https://raw.githubusercontent.com/xiaokunliu/xiaokunliu.github.io/feature/writing/websites/zimages/arch/byzantine/cons_fail.jpg"></p>
+<p>对于上述集群服务节点A,B,C节点中,对于B而言不论A是叛变还是C是叛变的,都无法作出决策,说明信消息要达到交互的一致性在集群中只有3个服务节点要是无法做到.</p>
+<p>基于此,我们需要将军队多划出一个独立军队,产生一个新的指挥官,而A,B,C作为副官,负责执行提案策略.这个时候基于上述的算法就有以下情况.</p>
+<p><img src="https://raw.githubusercontent.com/xiaokunliu/xiaokunliu.github.io/feature/writing/websites/zimages/arch/byzantine/cons_success.jpg"></p>
+<p>从上述可以看出,如果是C将军为叛变将,最后不论结果如何,指挥官以及A和B将军会采取进攻的策略;而如果是指挥官是叛变的话,那么对于A,B,C三位将军最终得出的结果是采取撤退的策略,不论是哪种结果对于忠诚的将士而言最终采取的行动是一致的.</p>
+<h5 id="小结"><a href="#小结" class="headerlink" title="小结"></a>小结</h5><p>对于我们分布式互联网而言,一般在企业内部的集群机器而言,由于对外存在防火墙以及安全的网关校验,因此对于企业服务内部都是采取当前的算法策略来解决我们集群服务选举,进程互斥以及分布式事务等问题提供解决方案的思路.对于口信消息的算法,一般用于系统容错故障但不存在恶意攻击的服务节点,即CFT算法,这个场景可能会丢失消息,或者有消息重复,或者是顺序一致性处理等场景,其对应的常用算法有Paxos算法、Raft算法、ZAB协议.</p>
+<h4 id="签名消息的解决方案"><a href="#签名消息的解决方案" class="headerlink" title="签名消息的解决方案"></a>签名消息的解决方案</h4><p>这个时候我们发现上述的解决方案需要在原有的集群服务中增加一个leader节点作为整个集群具备指挥权的服务节点.那么是否可以考虑不需要进行加服务节点就能够解决服务节点之间的共识问题呢?这个时候就需要运用到我们的签名消息解决方案.</p>
+<h5 id="实现签名消息的要求以及含义"><a href="#实现签名消息的要求以及含义" class="headerlink" title="实现签名消息的要求以及含义"></a>实现签名消息的要求以及含义</h5><ul>
+<li>A4: 基于上述无签名消息的要求以及含义基础上,需要满足以下条件:</li>
+</ul>
+<blockquote>
+<p>1.集群服务节点之间的消息通信无法被伪造,任何被伪造的消息都能够被检测出来<br>2.每一个服务节点都能够核实消息签名的真实身份.</p>
+</blockquote>
+<h5 id="消息签名的算法"><a href="#消息签名的算法" class="headerlink" title="消息签名的算法"></a>消息签名的算法</h5><blockquote>
+<p>算法要求</p>
+</blockquote>
+<p>基于上述A1-A4的假设要求,如果存在m个不可用的服务节点,那么整个集群的服务节点必须是不少于m+2,否则无法得到问题的解决.该算法为空洞.</p>
+<blockquote>
+<p>算法的定义</p>
+</blockquote>
+<p>我们定义一个函数fn=choice(V)表示有序的集合中存在签名的消息元素v,如果集合中只有一条消息元素v,那么fn=v.</p>
+<ul>
+<li>如果集合V中仅包含一个元素v,则choice(V)=v</li>
+<li>如果集合为空,那么执行默认的“撤退”行为,即choice(V)=RETREAT.</li>
+</ul>
+<blockquote>
+<p>算法描述</p>
+</blockquote>
+<p>在该算法中,指挥权的服务节点向其他服务节点发送一个按照一定规则签名的消息到其他服务节点中,其他服务节点接收到消息之后将其签名添加到有序的签名消息中并进行发送到其他服务节点中,其他服务节点以此类推.如果存在服务节点“叛变”,必须有效地接收签名的消息,并对签名消息生成多份副本,然后再将这些副本进行签名然后发送到其他节点中.最后不论副本是如何得到,其中单条签名的消息要么是被通过副本拷贝要么是与单条签名一致并正确分发过来的消息.</p>
+<ul>
+<li>指挥权的服务节点对消息进行签名并发送到各个服务节点</li>
+<li>对于每一个接收签名消息的服务节点<ul>
+<li>如果服务节点从指挥节点接收以v:0的签名消息并且还没有接收到其他签名消息的时候,那么对于当前节点i设置选择提案值为choice(V)=v,并且以消息<code>v:0:i</code>的形式发送到其他非指挥权的服务节点上.</li>
+<li>如果服务节点接收到消息形如<code>v:0:j1...:jk</code>并且v并不在集合V中,那么对于当前的服务节点将会把v添加到集合V中并当<code>k&lt;m</code>的时候将以消息为v:0j1…:jk<code>:i</code>的形式发送到其他服务节点,否则将以消息为`v:0:j1…:jk的形式发送到其他服务节点上.</li>
+</ul>
+</li>
+<li>最后对于每一个服务节点i,如果没有接收到更多签名消息的时候,服务节点将会遵循选举从有序的集合V中获取提案v并执行.</li>
+</ul>
+<h5 id="消息签名算法分析"><a href="#消息签名算法分析" class="headerlink" title="消息签名算法分析"></a>消息签名算法分析</h5><p>基于上述的算法,我们仍然用拜占庭将军为例子进行分析如下:</p>
+<p><img src="https://raw.githubusercontent.com/xiaokunliu/xiaokunliu.github.io/feature/writing/websites/zimages/arch/byzantine/cons_02.jpg"></p>
+<ul>
+<li>在左侧图中,由A将军发起进攻指令,B和C将军均收到A将军发出的指令,如果C将军为叛军,那么必然会篡改消息并进行签名发送给B将军,B将军识别到C将军发送的消息是伪造的,于是直接丢弃C将军的指令,最后执行进攻指令.</li>
+<li>如果A将军为叛军,此时分别向B和C发送不同的指令,B和C将军接收到消息并存储在一个有序的集合中,即B存储[进攻, 撤退],C存储[撤退,进攻],根据上述的算法,集合中是有序的,那么对于B和C存储的集合指令也应当是有序且一致的,即均为[进攻,撤退]或者是[撤退,进攻]这样的有序集合,然后按照一定的选举策略(比如选举中间值)执行对应的指令,这样也保证了B和C交互的一致性.</li>
+</ul>
+<h5 id="小结-1"><a href="#小结-1" class="headerlink" title="小结"></a>小结</h5><p>最后关于消息签名的算法,从上面我们可以看到是去中心化的一个分布式系统架构服务,因此对于公网环境下执行事务型操作可以考虑使用消息签名的算法,最大优势在于去中心化.</p>
+
+    </div>
+
+    <div>全文完。</div>
+  </article>
+  <div class="toc-container">
+    
+  <div id="toc" class="toc-article">
+    <strong class="toc-title">目录</strong>
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%88%86%E5%B8%83%E5%BC%8F%E5%85%B1%E8%AF%86%E9%97%AE%E9%A2%98"><span class="toc-text">分布式共识问题</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%8B%9C%E5%8D%A0%E5%BA%AD%E5%B0%86%E5%86%9B%E9%97%AE%E9%A2%98"><span class="toc-text">拜占庭将军问题</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%8B%9C%E5%8D%A0%E5%BA%AD%E4%B8%80%E8%88%AC%E6%80%A7%E9%97%AE%E9%A2%98"><span class="toc-text">拜占庭一般性问题</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E9%97%AE%E9%A2%98%E9%87%8D%E8%BF%B0"><span class="toc-text">问题重述</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E4%BB%80%E4%B9%88%E6%98%AF%E6%8B%9C%E5%8D%A0%E5%BA%AD%E5%B0%86%E5%86%9B%E9%97%AE%E9%A2%98"><span class="toc-text">什么是拜占庭将军问题</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#%E5%B0%91%E6%95%B0%E6%9C%8D%E4%BB%8E%E5%A4%9A%E6%95%B0%E7%9A%84%E6%8A%95%E7%A5%A8%E5%8F%AF%E9%9D%A0%E6%80%A7"><span class="toc-text">少数服从多数的投票可靠性</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%E6%8B%9C%E5%8D%A0%E5%BA%AD%E5%B0%86%E5%86%9B%E9%97%AE%E9%A2%98-1"><span class="toc-text">拜占庭将军问题</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%E4%B8%8D%E5%8F%AF%E8%83%BD%E7%9A%84%E7%BB%93%E6%9E%9C"><span class="toc-text">不可能的结果</span></a></li></ol></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%88%86%E5%B8%83%E5%BC%8F%E5%85%B1%E8%AF%86%E9%97%AE%E9%A2%98-1"><span class="toc-text">分布式共识问题</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E4%BB%80%E4%B9%88%E6%98%AF%E5%88%86%E5%B8%83%E5%BC%8F%E5%85%B1%E8%AF%86%E9%97%AE%E9%A2%98"><span class="toc-text">什么是分布式共识问题</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%88%86%E5%B8%83%E5%BC%8F%E5%85%B1%E8%AF%86%E4%B8%8E%E4%B8%80%E8%87%B4%E6%80%A7%E5%8C%BA%E5%88%86"><span class="toc-text">分布式共识与一致性区分</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%88%86%E5%B8%83%E5%BC%8F%E5%85%B1%E8%AF%86%E7%89%B9%E6%80%A7"><span class="toc-text">分布式共识特性</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%85%B1%E8%AF%86%E9%97%AE%E9%A2%98%E6%8E%A8%E6%BC%94"><span class="toc-text">共识问题推演</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E9%97%AE%E9%A2%98%E6%8E%A8%E6%BC%94"><span class="toc-text">问题推演</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#%E6%AD%A3%E5%B8%B8%E6%83%85%E5%86%B5"><span class="toc-text">正常情况</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%E4%BA%8C%E5%BF%A0%E4%B8%80%E5%8F%9B%E9%97%AE%E9%A2%98"><span class="toc-text">二忠一叛问题</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%E9%97%AE%E9%A2%98%E5%B0%8F%E7%BB%93"><span class="toc-text">问题小结</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%8F%A3%E5%A4%B4%E6%B6%88%E6%81%AF%E7%9A%84%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88"><span class="toc-text">口头消息的解决方案</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#%E6%97%A0%E7%AD%BE%E5%90%8D%E7%9A%84%E5%8F%A3%E5%A4%B4%E6%B6%88%E6%81%AF%E8%A6%81%E6%B1%82%E4%BB%A5%E5%8F%8A%E5%90%AB%E4%B9%89"><span class="toc-text">无签名的口头消息要求以及含义</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%E5%8F%A3%E5%A4%B4%E6%B6%88%E6%81%AF%E7%9A%84%E7%AE%97%E6%B3%95"><span class="toc-text">口头消息的算法</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%E5%8F%A3%E5%A4%B4%E6%B6%88%E6%81%AF%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88%E5%88%86%E6%9E%90"><span class="toc-text">口头消息解决方案分析</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%E5%B0%8F%E7%BB%93"><span class="toc-text">小结</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%AD%BE%E5%90%8D%E6%B6%88%E6%81%AF%E7%9A%84%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88"><span class="toc-text">签名消息的解决方案</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#%E5%AE%9E%E7%8E%B0%E7%AD%BE%E5%90%8D%E6%B6%88%E6%81%AF%E7%9A%84%E8%A6%81%E6%B1%82%E4%BB%A5%E5%8F%8A%E5%90%AB%E4%B9%89"><span class="toc-text">实现签名消息的要求以及含义</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%E6%B6%88%E6%81%AF%E7%AD%BE%E5%90%8D%E7%9A%84%E7%AE%97%E6%B3%95"><span class="toc-text">消息签名的算法</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%E6%B6%88%E6%81%AF%E7%AD%BE%E5%90%8D%E7%AE%97%E6%B3%95%E5%88%86%E6%9E%90"><span class="toc-text">消息签名算法分析</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%E5%B0%8F%E7%BB%93-1"><span class="toc-text">小结</span></a></li></ol></li></ol></li></ol></li></ol>
+  </div>
+
+
+  </div>
+</div>
+<div class="copyright">
+    <span>本作品采用</span>
+    <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by/4.0/">知识共享署名 4.0 国际许可协议</a>
+    <span>进行许可。 转载时请注明原文链接。</span>
+</div>
+<div class="share" style="width: 100%;">
+  <img src="/images/wechat-small.jpg" alt="Running Geek" style="margin: auto; display: block;"/>
+
+  <div style="margin: auto; text-align: center; font-size: 0.8em; color: grey;">老铁们关注走一走，不迷路</div>
+  
+</div>
+
+  
+    <div class="post-nav">
+      <div class="post-nav-item post-nav-next">
+        
+          <span>〈 </span>
+          <a href="/2020/05/21/redis01/" rel="next" title="Redis核心技术分析">
+          Redis核心技术分析
+          </a>
+        
+      </div>
+  
+      <div class="post-nav-item post-nav-prev">
+          
+          <a href="/2020/05/27/junit/" rel="prev" title="单元测试的编写与自动化">
+            单元测试的编写与自动化
+          </a>
+          <span>〉</span>
+        
+      </div>
+    </div>
+  
+
+
+    </div>
+
+    
+
+  </div>
+  <footer class="footer text-center">
+    <div id="bottom-inner">
+        <a class="bottom-item" href="https://xiaokunliu.github.io">首页</a> |
+        <a class="bottom-item" href="https://xiaokunliu.github.io" target="_blank">主站</a> |
+        <a class="bottom-item" href="https://github.com/xiaokunliu" target="_blank">GitHub</a> |
+        <a class="bottom-item" href="https://hexo.io" target="_blank">Powered by hexo</a> |
+        <a class="bottom-item" href="https://github.com/KevinOfNeu/hexo-theme-xoxo" target="_blank">Theme xoxo</a>
+    </div>
+</footer>
+  
+
+<script>
+  (function(window, document, undefined) {
+
+    var timer = null;
+
+    function returnTop() {
+      cancelAnimationFrame(timer);
+      timer = requestAnimationFrame(function fn() {
+        var oTop = document.body.scrollTop || document.documentElement.scrollTop;
+        if (oTop > 0) {
+          document.body.scrollTop = document.documentElement.scrollTop = oTop - 50;
+          timer = requestAnimationFrame(fn);
+        } else {
+          cancelAnimationFrame(timer);
+        }
+      });
+    }
+
+    var hearts = [];
+    window.requestAnimationFrame = (function() {
+      return window.requestAnimationFrame ||
+        window.webkitRequestAnimationFrame ||
+        window.mozRequestAnimationFrame ||
+        window.oRequestAnimationFrame ||
+        window.msRequestAnimationFrame ||
+        function(callback) {
+          setTimeout(callback, 1000 / 60);
+        }
+    })();
+    init();
+
+    function init() {
+      css(".heart{z-index:9999;width: 10px;height: 10px;position: fixed;background: #f00;transform: rotate(45deg);-webkit-transform: rotate(45deg);-moz-transform: rotate(45deg);}.heart:after,.heart:before{content: '';width: inherit;height: inherit;background: inherit;border-radius: 50%;-webkit-border-radius: 50%;-moz-border-radius: 50%;position: absolute;}.heart:after{top: -5px;}.heart:before{left: -5px;}");
+      attachEvent();
+      gameloop();
+      addMenuEvent();
+    }
+
+    function gameloop() {
+      for (var i = 0; i < hearts.length; i++) {
+        if (hearts[i].alpha <= 0) {
+          document.body.removeChild(hearts[i].el);
+          hearts.splice(i, 1);
+          continue;
+        }
+        hearts[i].y--;
+        hearts[i].scale += 0.004;
+        hearts[i].alpha -= 0.013;
+        hearts[i].el.style.cssText = "left:" + hearts[i].x + "px;top:" + hearts[i].y + "px;opacity:" + hearts[i].alpha + ";transform:scale(" + hearts[i].scale + "," + hearts[i].scale + ") rotate(45deg);background:" + hearts[i].color;
+      }
+      requestAnimationFrame(gameloop);
+    }
+
+    /**
+     * 给logo设置点击事件
+     * 
+     * - 回到顶部
+     * - 出现爱心
+     */
+    function attachEvent() {
+      var old = typeof window.onclick === "function" && window.onclick;
+      var logo = document.getElementById("logo");
+      if (logo) {
+        logo.onclick = function(event) {
+          returnTop();
+          old && old();
+          createHeart(event);
+        }
+      }
+      
+    }
+
+    function createHeart(event) {
+      var d = document.createElement("div");
+      d.className = "heart";
+      hearts.push({
+        el: d,
+        x: event.clientX - 5,
+        y: event.clientY - 5,
+        scale: 1,
+        alpha: 1,
+        color: randomColor()
+      });
+      document.body.appendChild(d);
+    }
+
+    function css(css) {
+      var style = document.createElement("style");
+      style.type = "text/css";
+      try {
+        style.appendChild(document.createTextNode(css));
+      } catch (ex) {
+        style.styleSheet.cssText = css;
+      }
+      document.getElementsByTagName('head')[0].appendChild(style);
+    }
+
+    function randomColor() {
+      // return "rgb(" + (~~(Math.random() * 255)) + "," + (~~(Math.random() * 255)) + "," + (~~(Math.random() * 255)) + ")";
+      return "#F44336";
+    }
+
+    function addMenuEvent() {
+      var menu = document.getElementById('menu-main-post');
+      if (menu) {
+        var toc = document.getElementById('toc');
+        if (toc) {
+          menu.onclick = function() {
+            if (toc) {
+              if (toc.style.display == 'block') {
+                toc.style.display = 'none';
+              } else {
+                toc.style.display = 'block';
+              }
+            }
+          };
+        } else {
+          menu.style.display = 'none';
+        }
+      }
+    }
+
+  })(window, document);
+</script>
+
+  
+
+
+
+</body>
+</html>

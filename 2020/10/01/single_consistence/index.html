@@ -1,0 +1,415 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<!--
+config header
+-->
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#202020"/>
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  <script src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" async></script>
+
+  
+      <meta name="google-site-verification" content="{{ theme.google_site_verification }}" />
+  
+
+  
+    <meta name="keywords" content="分布式架构设计," />
+  
+
+  
+    <meta name="description" content="分享个人学习工作的技术知识" />
+  
+  
+  <link rel="icon" type="image/x-icon" href="/logo.jpg">
+  <title>category: 分布式架构设计 [ 疾风先生 ]</title>
+  
+    <!-- stylesheets list from config.yml -->
+    
+      <link rel="stylesheet" href="//cdn.bootcss.com/pure/1.0.0/pure-min.css">
+    
+      <link rel="stylesheet" href="/css/xoxo.css">
+    
+  
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+
+<body>
+  <div class="nav-container">
+    <nav class="home-menu pure-menu pure-menu-horizontal">
+  <a class="pure-menu-heading" href="/">
+    <img class="avatar" src="https://xiaokunliu.github.io/images/logo.jpg">
+    <span class="title">疾风先生</span>
+  </a>
+
+  <ul class="pure-menu-list clearfix">
+      
+          
+            <li class="pure-menu-item"><a href="/" class="pure-menu-link">首页</a></li>
+          
+      
+          
+            <li class="pure-menu-item"><a href="/archives" class="pure-menu-link">归档</a></li>
+          
+      
+          
+            <li class="pure-menu-item"><a href="/tags" class="pure-menu-link">标签</a></li>
+          
+      
+          
+            <li class="pure-menu-item"><a href="/categories" class="pure-menu-link">分类</a></li>
+          
+      
+          
+            <li class="pure-menu-item"><a href="/search" class="pure-menu-link">搜索</a></li>
+          
+      
+  </ul>
+   
+</nav>
+  </div>
+
+  <div class="container" id="content-outer">
+    <div class="inner" id="content-inner">
+      <div class="post-container">
+  <article class="post" id="post">
+    <header class="post-header text-center">
+      <h1 class="title">
+        单节点的一致性hash算法
+      </h1>
+      <span>
+        
+        <time class="time" datetime="2020-10-01T13:03:44.000Z">
+        2020-10-01
+      </time>
+        
+      </span>
+      <span class="slash">/</span>
+      <span class="post-meta">
+      <span class="post-tags">
+        <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E5%88%86%E5%B8%83%E5%BC%8F%E6%9E%B6%E6%9E%84%E8%AE%BE%E8%AE%A1/" rel="tag">分布式架构设计</a></li></ul>
+      </span>
+    </span>
+      <span class="slash">/</span>
+      <span class="read">
+      <span id="busuanzi_value_page_pv"></span> 点击
+    </span>
+    </header>
+
+    <div class="post-content">
+      <span id="more"></span>
+
+<p><img src="/Users/keithl/docker/dev/data/xiaokunliu.github.io/websites/zimages/arch/single_consistence/title.jpg"></p>
+<h3 id="JDK1-7版本的Hash"><a href="#JDK1-7版本的Hash" class="headerlink" title="JDK1.7版本的Hash"></a>JDK1.7版本的Hash</h3><h4 id="HashTable"><a href="#HashTable" class="headerlink" title="HashTable"></a>HashTable</h4><h5 id="HashTabale简述"><a href="#HashTabale简述" class="headerlink" title="HashTabale简述"></a>HashTabale简述</h5><ul>
+<li>实现<code>Map</code>接口,提供实现所有<code>Map</code>的接口方法,通过存储Key数据来映射对应的Value值,并且不允许存储的Key以及Value为空.</li>
+<li>存储的Key数据必须要实现Object的<code>HashCode</code>以及<code>Equals</code>方法.</li>
+<li><code>HashTable</code>影响性能的两个核心因素,即初始化容量(initial capacity)以及负载因子(load factor);容量capacity即为hash table对应桶的个数,初始化容量即为hash table进行初始化创建hash table需要分配的桶个数;load factor则是hash table在实现容量动态扩容前的桶个数满意度的度量器,即hash table的桶个数达到<code>capaticy * load factor</code>会实现动态扩容,即rehash.</li>
+<li>默认load factor为0.75,过高则能减少分配空间的浪费但是查询的时间复杂度会增加,过低会增加分配空间的浪费,无法充分利用内存空间,相对地能提升查询的时间复杂度.</li>
+<li><code>Map</code>存储的key-value数据通过创建一个迭代器并返回,迭代器具备<code>fail-fast</code>特性,即在进行迭代器遍历的过程中,如果对遍历的元素进行修改,将会抛出异常,即<code>ConcurrentModificationException</code>;而对于返回<code>Map</code>存储的key或者是value的枚举类<code>Enumerations</code>并非具备<code>fail-fast</code>特性.</li>
+<li>JDK源码对<code>Fail-Fast</code>的解析说明,迭代器的快速失败行为不能得到保证,因为一般来说,如果是存在非同步并发修改时不可能做出任何硬性保证.具备<code>Fail-Fast</code>的迭代器尽最大努力抛出ConcurrentModificationException.因此,如果一个程序依赖于这个异常来保证其正确性是错误的做法,因为迭代器的fail-fast行为只能用于程序bug的检测.</li>
+<li>在实际使用过程中,如果当前应用场景不需要保证线程安全的并发访问,JDK推荐使用<code>HashMap</code>,而对于需要保证线程安全的并发访问,JDK推荐使用<code>ConcurrentHashMap</code>.</li>
+</ul>
+<h5 id="HashTable的类关系图"><a href="#HashTable的类关系图" class="headerlink" title="HashTable的类关系图"></a>HashTable的类关系图</h5><p><img src="/Users/keithl/docker/dev/data/xiaokunliu.github.io/websites/zimages/arch/single_consistence/hashtabe_class.jpg"></p>
+<p>根据上述类图,我们知道HashTable主要包含三个核心部分,一个是控制hash阀值的Holder,一个是存储key-value的Entry以及提供遍历查询的KeySet/ValueSet/迭代器Enumerator.</p>
+<h5 id="put-amp-putAll操作"><a href="#put-amp-putAll操作" class="headerlink" title="put&amp;putAll操作"></a>put&amp;putAll操作</h5><blockquote>
+<p>HashTable`源码</p>
+</blockquote>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// put操作</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">synchronized</span> V <span class="title">put</span><span class="params">(K key, V value)</span> </span>&#123;</span><br><span class="line">        <span class="comment">// Make sure the value is not null</span></span><br><span class="line">        <span class="keyword">if</span> (value == <span class="keyword">null</span>) &#123;</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> NullPointerException();</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// Makes sure the key is not already in the hashtable.</span></span><br><span class="line">        Entry tab[] = table;</span><br><span class="line">  </span><br><span class="line">  			<span class="comment">// 对key进行hash</span></span><br><span class="line">        <span class="keyword">int</span> hash = hash(key);</span><br><span class="line">  			</span><br><span class="line">  			<span class="comment">// 根据hash结果获取bucket的下标</span></span><br><span class="line">  			<span class="comment">// 查询所在下标并对重复key对应的value进行替换</span></span><br><span class="line">        <span class="keyword">int</span> index = (hash &amp; <span class="number">0x7FFFFFFF</span>) % tab.length;</span><br><span class="line">        <span class="keyword">for</span> (Entry&lt;K,V&gt; e = tab[index] ; e != <span class="keyword">null</span> ; e = e.next) &#123;</span><br><span class="line">            <span class="keyword">if</span> ((e.hash == hash) &amp;&amp; e.key.equals(key)) &#123;</span><br><span class="line">                V old = e.value;</span><br><span class="line">                e.value = value;</span><br><span class="line">                <span class="keyword">return</span> old;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        modCount++;</span><br><span class="line">        <span class="keyword">if</span> (count &gt;= threshold) &#123;</span><br><span class="line">            <span class="comment">// Rehash the table if the threshold is exceeded</span></span><br><span class="line">          	<span class="comment">// 动态扩容</span></span><br><span class="line">            rehash();</span><br><span class="line"></span><br><span class="line">            tab = table;</span><br><span class="line">            hash = hash(key);</span><br><span class="line">            index = (hash &amp; <span class="number">0x7FFFFFFF</span>) % tab.length;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// Creates the new entry.</span></span><br><span class="line">        Entry&lt;K,V&gt; e = tab[index];</span><br><span class="line">        tab[index] = <span class="keyword">new</span> Entry&lt;&gt;(hash, key, value, e);</span><br><span class="line">        count++;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line"> &#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// putAll操作</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">synchronized</span> <span class="keyword">void</span> <span class="title">putAll</span><span class="params">(Map&lt;? extends K, ? extends V&gt; t)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">for</span> (Map.Entry&lt;? extends K, ? extends V&gt; e : t.entrySet())</span><br><span class="line">            put(e.getKey(), e.getValue());</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>put&amp;putAll的核心要点</p>
+</blockquote>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// hash算法</span></span><br><span class="line">hash(key);</span><br><span class="line"><span class="comment">// 分配计算bucket的下标</span></span><br><span class="line"><span class="keyword">int</span> index = (hash &amp; <span class="number">0x7FFFFFFF</span>) % tab.length;</span><br><span class="line"><span class="comment">// 扩容</span></span><br><span class="line">rehash();</span><br><span class="line"><span class="comment">// 创建新的entry</span></span><br><span class="line"><span class="keyword">new</span> Entry&lt;&gt;(hash, key, value, e);</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>Hash算法</li>
+</ul>
+<ol>
+<li>对象之间的 == 与 equals区分</li>
+</ol>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// == 是对象存储的内存地址比较</span></span><br><span class="line"><span class="comment">// equals是对象属性引用的比较,可以自定义两个对象是否相同的原则</span></span><br><span class="line"><span class="comment">// 两者之间存在歧义的等价关系,jdk的Object定义的源码说明如下:</span></span><br><span class="line"><span class="comment">// The &#123;@code equals&#125; method for class &#123;@code Object&#125; implements</span></span><br><span class="line"><span class="comment">//     * the most discriminating possible equivalence relation on objects;</span></span><br><span class="line"><span class="comment">//     * that is, for any non-null reference values &#123;@code x&#125; and</span></span><br><span class="line"><span class="comment">//     * &#123;@code y&#125;, this method returns &#123;@code true&#125; if and only</span></span><br><span class="line"><span class="comment">//     * if &#123;@code x&#125; and &#123;@code y&#125; refer to the same object</span></span><br><span class="line"><span class="comment">//     * (&#123;@code x == y&#125; has the value &#123;@code true&#125;).</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Person</span> </span>&#123;</span><br><span class="line">  </span><br><span class="line">    <span class="keyword">private</span> String name;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">int</span> age;</span><br><span class="line">    <span class="keyword">private</span> String hobby;</span><br><span class="line"> 	</span><br><span class="line">  	</span><br><span class="line">  	 <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">equals</span><span class="params">(Object o)</span> </span>&#123;</span><br><span class="line">      	<span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">    &#125;</span><br><span class="line">  </span><br><span class="line">  	 <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">        Person p4 = <span class="keyword">new</span> Person(<span class="string">&quot;1113&quot;</span>, <span class="number">4</span>, <span class="string">&quot;xxx3&quot;</span>);</span><br><span class="line">        Person p5 = p4;</span><br><span class="line">       	</span><br><span class="line">       <span class="comment">// 很明显,下面equals是不合理的,引用同一份内存地址,对象存储的属性以及地址分配空间应当是保持一致性的</span></span><br><span class="line">       <span class="comment">// 于是在逻辑上,如果a1 == a2, 那么一定会有a1.equals(a2), 反之不一定成立,于是&quot;==&quot;是&quot;equals&quot;的充分条件,而&quot;equals&quot;是&quot;==&quot;的必要条件.</span></span><br><span class="line">        System.out.println(p4 == p5);       <span class="comment">// 地址相同,true</span></span><br><span class="line">        System.out.println(p4.equals(p5));	<span class="comment">// 上述自定义为false,所以永远为false</span></span><br><span class="line">     &#125;</span><br><span class="line">&#125; </span><br><span class="line"></span><br><span class="line"><span class="comment">// 根据jdk语法含义,equals方法是值的比较,或者说是对象属性值的比较,于是重写equals方法应当如下:</span></span><br><span class="line"> <span class="meta">@Override</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">equals</span><span class="params">(Object o)</span> </span>&#123;</span><br><span class="line">  <span class="comment">// 引用同一份内存地址,必须返回true</span></span><br><span class="line">  <span class="keyword">if</span> (<span class="keyword">this</span> == o) <span class="keyword">return</span> <span class="keyword">true</span>;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (!(o <span class="keyword">instanceof</span> Person)) <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line"></span><br><span class="line">  Person person = (Person) o;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 不同对象但是具备相同的属性也作为两个对象相同.</span></span><br><span class="line">  <span class="keyword">return</span> <span class="keyword">new</span> EqualsBuilder()</span><br><span class="line">    .append(age, person.age)</span><br><span class="line">    .append(name, person.name)</span><br><span class="line">    .append(hobby, person.hobby)</span><br><span class="line">    .isEquals();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ol start="2">
+<li>hash算法需要将对象进行<code>hashCode</code>以及<code>equals</code>方法的必要性</li>
+</ol>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 基于Java语法规范</span></span><br><span class="line"><span class="comment">// The method equals definesanotion of object equality,which is based on value,not reference, comparison</span></span><br><span class="line"><span class="comment">// The method hashCode is very useful, together with the method equals, in hashtables such as java.util.HashMap</span></span><br><span class="line"><span class="comment">//The equals method in Enum is a final method that merely invokes super.equals on its argument and returns the result, thus performing an identity comparison</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// Object定义的equals方法以及hashcode方法</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Object</span> </span>&#123;</span><br><span class="line">	</span><br><span class="line">  <span class="comment">// Object的hashCode是基于底层C语言实现</span></span><br><span class="line">  <span class="comment">// 存在的含义: 返回一个对象的hashcode,如果对象是存储在HashMap数据结构中,将有利于hashMap进行hash运算来存储到对应HashTable的桶中</span></span><br><span class="line">  <span class="comment">// 1. 如果两个对象通过equals比较是相同的,那么两个对象的hashcode也必须是一致的</span></span><br><span class="line">  <span class="comment">// 2. 如果两个对象通过equals比较返回为false,那么对应的hashcode不一定是需要相等的,对于不相等的对象(地址空间不同)但是具备相同的hashcode数值,可以考虑重写equals的方法以确保对象保持相同的hashcode以及equals来提升hashMap的性能.</span></span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">native</span> <span class="keyword">int</span> <span class="title">hashCode</span><span class="params">()</span></span>;</span><br><span class="line">  </span><br><span class="line">  <span class="comment">// equals方法的含义,对于非空的x,y,z</span></span><br><span class="line">  <span class="comment">// 1. 具备自反性,x.equals(x) - true</span></span><br><span class="line">  <span class="comment">// 2. 具备对称性,x.equals(y) 与 y.equals(x) 是一致的</span></span><br><span class="line">  <span class="comment">// 3. 具备传递性,x.equals(y), y.equals(z) =》x.equals(z) 结果相同</span></span><br><span class="line">  <span class="comment">// 4. 总是返回false,对于任意非空x,y,z有 x.equals(null) = false</span></span><br><span class="line">  <span class="comment">// 根据上述hashCode的源码说明,当使用HashMap存储对象作为key的时候,需要将对象的equals方法以及hashCode进行覆盖重写以保持通过equals比较返回的对象为true具备相同的hascode值,以提升hashMap的性能.</span></span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">equals</span><span class="params">(Object obj)</span> </span>&#123;</span><br><span class="line">       <span class="keyword">return</span> (<span class="keyword">this</span> == obj);</span><br><span class="line">  &#125;</span><br><span class="line">&#125; </span><br><span class="line"></span><br><span class="line"><span class="comment">// HashTable以及HashMap的存储源码(为什么需要重写hashcode的同时也要重写equals方法能提升map的性能)</span></span><br><span class="line"><span class="comment">// 在put方法中存在以下代码</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">int</span> hash = hash(key);</span><br><span class="line"><span class="keyword">int</span> index = (hash &amp; <span class="number">0x7FFFFFFF</span>) % tab.length;</span><br><span class="line"><span class="keyword">for</span> (Entry&lt;K,V&gt; e = tab[index] ; e != <span class="keyword">null</span> ; e = e.next) &#123;</span><br><span class="line">  <span class="comment">// 判断hashCode以及equals方法来确定是否属于同一个key,是的话直接覆盖</span></span><br><span class="line">  <span class="comment">// 存在两个不同对象但是具备相同的hash,属性值不同的情况,因此在这里比较hash以及equals来保证是相同key.</span></span><br><span class="line">  <span class="comment">// 不同属性值但是相同的hash会存放在链表中</span></span><br><span class="line">  <span class="keyword">if</span> ((e.hash == hash) &amp;&amp; e.key.equals(key)) &#123;</span><br><span class="line">    V old = e.value;</span><br><span class="line">    e.value = value;</span><br><span class="line">    <span class="keyword">return</span> old;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// hashcode相同但是equals不相同以及hashCode不相同的情况</span></span><br><span class="line">modCount++;</span><br><span class="line"><span class="keyword">if</span> (count &gt;= threshold) &#123;</span><br><span class="line">  <span class="comment">// Rehash the table if the threshold is exceeded</span></span><br><span class="line">  rehash();</span><br><span class="line"></span><br><span class="line">  tab = table;</span><br><span class="line">  hash = hash(key);</span><br><span class="line">  index = (hash &amp; <span class="number">0x7FFFFFFF</span>) % tab.length;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// Creates the new entry.</span></span><br><span class="line">Entry&lt;K,V&gt; e = tab[index];</span><br><span class="line"></span><br><span class="line"><span class="comment">// 如果hashCode不同,那么直接插入hashTable对应的桶位置</span></span><br><span class="line"><span class="comment">// 如果hashCode相同,那么将会以链表的形式插入链表头部,并指向hashTbale的桶位置中</span></span><br><span class="line"><span class="comment">// 因此我们可以知道,当不重写equals方法的时候,这个时候产生的链表长度会越来越长,查询的时间复杂度为O(N),影响hashMap的查询效率</span></span><br><span class="line">tab[index] = <span class="keyword">new</span> Entry&lt;&gt;(hash, key, value, e);</span><br></pre></td></tr></table></figure>
+
+<ol start="4">
+<li>hash算法实现原理</li>
+</ol>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment">  * A randomizing value associated with this instance that is applied to</span></span><br><span class="line"><span class="comment">  * hash code of keys to make hash collisions harder to find.</span></span><br><span class="line"><span class="comment">  */</span></span><br><span class="line"><span class="keyword">transient</span> <span class="keyword">int</span> hashSeed;  <span class="comment">// 与此实例相关联的随机值，应用于键的哈希码，降低hash冲突</span></span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment">  * Initialize the hashing mask value.</span></span><br><span class="line"><span class="comment">  */</span></span><br><span class="line"><span class="function"><span class="keyword">final</span> <span class="keyword">boolean</span> <span class="title">initHashSeedAsNeeded</span><span class="params">(<span class="keyword">int</span> capacity)</span> </span>&#123;</span><br><span class="line">  <span class="keyword">boolean</span> currentAltHashing = hashSeed != <span class="number">0</span>;</span><br><span class="line">  <span class="keyword">boolean</span> useAltHashing = sun.misc.VM.isBooted() &amp;&amp;</span><br><span class="line">    (capacity &gt;= Holder.ALTERNATIVE_HASHING_THRESHOLD);</span><br><span class="line">  <span class="keyword">boolean</span> switching = currentAltHashing ^ useAltHashing;</span><br><span class="line">  <span class="keyword">if</span> (switching) &#123;</span><br><span class="line">    hashSeed = useAltHashing</span><br><span class="line">      ? sun.misc.Hashing.randomHashSeed(<span class="keyword">this</span>)</span><br><span class="line">      : <span class="number">0</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> switching;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 进行异或运算</span></span><br><span class="line"><span class="comment">// 如果vm.isBooted 开启并且容量大于threshold会分配hashSeed</span></span><br><span class="line"><span class="comment">// 配置jdk.map.althashing.threshold</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// -Djdk.map.althashing.threshold=-1:表示不做优化（不配置这个值作用一样）</span></span><br><span class="line"><span class="comment">// -Djdk.map.althashing.threshold&lt;0:报错</span></span><br><span class="line"><span class="comment">// -Djdk.map.althashing.threshold=1:表示总是启用随机HashSeed</span></span><br><span class="line"><span class="comment">// -Djdk.map.althashing.threshold&gt;=0:便是hashMap内部的数组长度超过该值了就使用随机HashSeed，降低碰撞</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 使用hashSeed主要是为了降低hash冲突</span></span><br><span class="line"> <span class="function"><span class="keyword">private</span> <span class="keyword">int</span> <span class="title">hash</span><span class="params">(Object k)</span> </span>&#123;</span><br><span class="line">    <span class="comment">// hashSeed will be zero if alternative hashing is disabled.</span></span><br><span class="line">    <span class="comment">// key的hashcode 与 hashSeed 进行异或</span></span><br><span class="line">     <span class="keyword">return</span> hashSeed ^ k.hashCode();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>分配并计算key对应的桶的位置</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// hashTable的put方法</span></span><br><span class="line">put() &#123;</span><br><span class="line"> 				 <span class="comment">// ...</span></span><br><span class="line">        <span class="keyword">int</span> index = (hash &amp; <span class="number">0x7FFFFFFF</span>) % tab.length;</span><br><span class="line">        <span class="keyword">for</span> (Entry&lt;K,V&gt; e = tab[index] ; e != <span class="keyword">null</span> ; e = e.next) &#123;</span><br><span class="line">            <span class="keyword">if</span> ((e.hash == hash) &amp;&amp; e.key.equals(key)) &#123;</span><br><span class="line">                V old = e.value;</span><br><span class="line">                e.value = value;</span><br><span class="line">                <span class="keyword">return</span> old;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        modCount++;</span><br><span class="line">        <span class="keyword">if</span> (count &gt;= threshold) &#123;</span><br><span class="line">            <span class="comment">// Rehash the table if the threshold is exceeded</span></span><br><span class="line">            rehash();</span><br><span class="line"></span><br><span class="line">            tab = table;</span><br><span class="line">            hash = hash(key);</span><br><span class="line">            index = (hash &amp; <span class="number">0x7FFFFFFF</span>) % tab.length;</span><br><span class="line">        &#125;</span><br><span class="line">  <span class="comment">// ...</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>通过上述的代码,有几个细节需要注意:</p>
+<ol>
+<li>其一,在java中最大以及最小的整数值为</li>
+</ol>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">final</span> <span class="class"><span class="keyword">class</span> <span class="title">Integer</span> <span class="keyword">extends</span> <span class="title">Number</span> <span class="keyword">implements</span> <span class="title">Comparable</span>&lt;<span class="title">Integer</span>&gt; </span>&#123;</span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * A constant holding the minimum value an &#123;<span class="doctag">@code</span> int&#125; can</span></span><br><span class="line"><span class="comment">     * have, -2&lt;sup&gt;31&lt;/sup&gt;.</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="meta">@Native</span> <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span>   MIN_VALUE = <span class="number">0x80000000</span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * A constant holding the maximum value an &#123;<span class="doctag">@code</span> int&#125; can</span></span><br><span class="line"><span class="comment">     * have, 2&lt;sup&gt;31&lt;/sup&gt;-1.</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="meta">@Native</span> <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span>   MAX_VALUE = <span class="number">0x7fffffff</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>通过上述可知,hash在java中取值范围是在MIN_VALUE - MAX_VALUE之间,那么对于hash &amp; MAX_VALUE得到最终的结果为 0 - 2147483647,也就是说不论hash是否为负数还是正数,都能够保证得到的index一定是落在大于等于0的区间,这样就不会导致分配的hashTable计算出现不合法的index,即index &lt; 0的情况.</p>
+<ol start="2">
+<li><p>其二是跟进hashTable的桶长度进行取模,得到最终的index下标一定是落在(0 - len-1)的下标范围内</p>
+</li>
+<li><p>其三是不同的key但是hash相同的数据,会查找hashTable桶对应下标的位置并逐个遍历链表,通过比较hashcode以及equals方法来定位是否存在相同的key来进行覆盖更新,如下代码</p>
+</li>
+</ol>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 在这里我们可以思考一件事情,如果重写hashcode的同时不重写equals方法,会导致什么结果?</span></span><br><span class="line"><span class="comment">// 1. 不会覆盖更新,那么就是在相同的hashTable桶中的index位置插入新的entry</span></span><br><span class="line"><span class="comment">// 2. 这个时候产生的问题就是entry链条增加,那么查询的时间复杂度也会相应增加.</span></span><br><span class="line"><span class="comment">// 3. 这也是为什么在进行使用map/set存储的对象中,如果是作为key,需要重写hashcode并重写equals方法的原因,提升查询效率,减少时间复杂度.</span></span><br><span class="line"><span class="keyword">if</span> ((e.hash == hash) &amp;&amp; e.key.equals(key)) &#123;</span><br><span class="line">  V old = e.value;</span><br><span class="line">  e.value = value;</span><br><span class="line">  <span class="keyword">return</span> old;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ol start="4">
+<li>这里有三个变量<code>count</code>,<code>modCount</code>以及<code>threshold</code></li>
+</ol>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 记录hashTable的结构发生变化的次数,即相同位置对应的entry长度发生变化异或是hashTable因rahash内部发生变化</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">transient</span> <span class="keyword">int</span> modCount = <span class="number">0</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// hashTable中entry的总个数</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">transient</span> <span class="keyword">int</span> count;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 当hashTable的entry个数大小超过阀值时会进行rehash</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">int</span> threshold;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>扩容机制Rehash (当hash链的entry个数大于等于(<code>容量大小capacity*负载因子loadFactor</code>)threshold将会进行rehash)</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">rehash</span><span class="params">()</span> </span>&#123;</span><br><span class="line">  <span class="keyword">int</span> oldCapacity = table.length;</span><br><span class="line">  Entry&lt;K,V&gt;[] oldMap = table;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// overflow-conscious code</span></span><br><span class="line">  <span class="comment">// 新的容量 = 旧有的容量加 + 1</span></span><br><span class="line">  <span class="keyword">int</span> newCapacity = (oldCapacity &lt;&lt; <span class="number">1</span>) + <span class="number">1</span>;</span><br><span class="line">  <span class="keyword">if</span> (newCapacity - MAX_ARRAY_SIZE &gt; <span class="number">0</span>) &#123;</span><br><span class="line">    <span class="keyword">if</span> (oldCapacity == MAX_ARRAY_SIZE)</span><br><span class="line">      <span class="comment">// Keep running with MAX_ARRAY_SIZE buckets</span></span><br><span class="line">      <span class="keyword">return</span>;</span><br><span class="line">    newCapacity = MAX_ARRAY_SIZE;</span><br><span class="line">  &#125;</span><br><span class="line">  Entry&lt;K,V&gt;[] newMap = <span class="keyword">new</span> Entry[newCapacity];</span><br><span class="line"></span><br><span class="line">  <span class="comment">// rehash,改变hashTable结构,自增加</span></span><br><span class="line">  modCount++;</span><br><span class="line">  threshold = (<span class="keyword">int</span>)Math.min(newCapacity * loadFactor, MAX_ARRAY_SIZE + <span class="number">1</span>);</span><br><span class="line">  </span><br><span class="line">  <span class="comment">// 重新分配hash种子</span></span><br><span class="line">  <span class="keyword">boolean</span> rehash = initHashSeedAsNeeded(newCapacity);</span><br><span class="line"></span><br><span class="line">  table = newMap;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">for</span> (<span class="keyword">int</span> i = oldCapacity ; i-- &gt; <span class="number">0</span> ;) &#123;</span><br><span class="line">    <span class="keyword">for</span> (Entry&lt;K,V&gt; old = oldMap[i] ; old != <span class="keyword">null</span> ; ) &#123;</span><br><span class="line">      Entry&lt;K,V&gt; e = old;</span><br><span class="line">      old = old.next;</span><br><span class="line"></span><br><span class="line">      <span class="comment">// hash seed是否变更进行重新hash</span></span><br><span class="line">      <span class="keyword">if</span> (rehash) &#123;</span><br><span class="line">        e.hash = hash(e.key);</span><br><span class="line">      &#125;</span><br><span class="line">      <span class="keyword">int</span> index = (e.hash &amp; <span class="number">0x7FFFFFFF</span>) % newCapacity;</span><br><span class="line">      e.next = newMap[index];</span><br><span class="line">      newMap[index] = e;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>创建新的Entry并追加到hashTable中</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Creates the new entry.</span></span><br><span class="line"><span class="comment">// entry个数增加 </span></span><br><span class="line">Entry&lt;K,V&gt; e = tab[index];</span><br><span class="line">tab[index] = <span class="keyword">new</span> Entry&lt;&gt;(hash, key, value, e);</span><br><span class="line">count++;</span><br></pre></td></tr></table></figure>
+
+<h5 id="删除Remove"><a href="#删除Remove" class="headerlink" title="删除Remove"></a>删除Remove</h5><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 同步删除并返回删除对应key的value数据值</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">synchronized</span> V <span class="title">remove</span><span class="params">(Object key)</span> </span>&#123;</span><br><span class="line">       <span class="comment">// 获取下标索引位置</span></span><br><span class="line">        Entry tab[] = table;</span><br><span class="line">        <span class="keyword">int</span> hash = hash(key);</span><br><span class="line">        <span class="keyword">int</span> index = (hash &amp; <span class="number">0x7FFFFFFF</span>) % tab.length;</span><br><span class="line">      <span class="comment">// 判断下标索引对应的链表信息</span></span><br><span class="line">        <span class="keyword">for</span> (Entry&lt;K,V&gt; e = tab[index], prev = <span class="keyword">null</span> ; e != <span class="keyword">null</span> ; prev = e, e = e.next) &#123;</span><br><span class="line">           <span class="comment">// 根据hashcode以及equals方法判断 </span></span><br><span class="line">            <span class="keyword">if</span> ((e.hash == hash) &amp;&amp; e.key.equals(key)) &#123;</span><br><span class="line">                modCount++;</span><br><span class="line">                <span class="keyword">if</span> (prev != <span class="keyword">null</span>) &#123;</span><br><span class="line">                    prev.next = e.next;</span><br><span class="line">                &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                    tab[index] = e.next;</span><br><span class="line">                &#125;</span><br><span class="line">                count--;</span><br><span class="line">                V oldValue = e.value;</span><br><span class="line">                e.value = <span class="keyword">null</span>;</span><br><span class="line">                <span class="keyword">return</span> oldValue;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">null</span>;</span><br></pre></td></tr></table></figure>
+
+<h5 id="遍历查询"><a href="#遍历查询" class="headerlink" title="遍历查询"></a>遍历查询</h5><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 同步加锁遍历</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">synchronized</span> V <span class="title">get</span><span class="params">(Object key)</span> </span>&#123;</span><br><span class="line">  <span class="comment">// 获取hash下标并遍历下标对应的链表,直到查找到相同的key为止</span></span><br><span class="line">  Entry tab[] = table;</span><br><span class="line">  <span class="keyword">int</span> hash = hash(key);</span><br><span class="line">  <span class="keyword">int</span> index = (hash &amp; <span class="number">0x7FFFFFFF</span>) % tab.length;</span><br><span class="line">  <span class="keyword">for</span> (Entry&lt;K,V&gt; e = tab[index] ; e != <span class="keyword">null</span> ; e = e.next) &#123;</span><br><span class="line">    <span class="keyword">if</span> ((e.hash == hash) &amp;&amp; e.key.equals(key)) &#123;</span><br><span class="line">      <span class="keyword">return</span> e.value;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line">    </span><br></pre></td></tr></table></figure>
+
+<h4 id="HashMap"><a href="#HashMap" class="headerlink" title="HashMap"></a>HashMap</h4><h5 id="HashMap简述"><a href="#HashMap简述" class="headerlink" title="HashMap简述"></a>HashMap简述</h5><ul>
+<li>实现<code>Map</code>接口,提供了所有可选<code>Map</code>的可选方法操作,与<code>HashTable</code>类基本一致,但是区分在于<code>HashMap</code>不存在同步操作,即线程安全以及<code>HashMap</code>允许存储的Key和Value数据为空.</li>
+<li>初始化容量</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 初始化容量</span></span><br><span class="line"><span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> DEFAULT_INITIAL_CAPACITY = <span class="number">1</span> &lt;&lt; <span class="number">4</span>; <span class="comment">// aka 16</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 默认负载因子</span></span><br><span class="line"><span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">float</span> DEFAULT_LOAD_FACTOR = <span class="number">0.75f</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 最大容量</span></span><br><span class="line"><span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> MAXIMUM_CAPACITY = <span class="number">1</span> &lt;&lt; <span class="number">30</span>;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="title">HashMap</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>(DEFAULT_INITIAL_CAPACITY, DEFAULT_LOAD_FACTOR);</span><br><span class="line"> &#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>对于HashMap的<code>put</code>方法如下:</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br></pre></td><td class="code"><pre><span class="line"> <span class="function"><span class="keyword">public</span> V <span class="title">put</span><span class="params">(K key, V value)</span> </span>&#123;</span><br><span class="line">   <span class="comment">// 如果hash桶为空,那么膨胀桶为2^15大小的hashMap信息</span></span><br><span class="line">        <span class="keyword">if</span> (table == EMPTY_TABLE) &#123;</span><br><span class="line">            inflateTable(threshold);</span><br><span class="line">        &#125;</span><br><span class="line">   <span class="comment">// key为空,也会存储在hashMap中</span></span><br><span class="line">        <span class="keyword">if</span> (key == <span class="keyword">null</span>)</span><br><span class="line">            <span class="keyword">return</span> putForNullKey(value);</span><br><span class="line">        <span class="keyword">int</span> hash = hash(key);</span><br><span class="line">        <span class="keyword">int</span> i = indexFor(hash, table.length);</span><br><span class="line">        <span class="keyword">for</span> (Entry&lt;K,V&gt; e = table[i]; e != <span class="keyword">null</span>; e = e.next) &#123;</span><br><span class="line">            Object k;</span><br><span class="line">            <span class="keyword">if</span> (e.hash == hash &amp;&amp; ((k = e.key) == key || key.equals(k))) &#123;</span><br><span class="line">                V oldValue = e.value;</span><br><span class="line">                e.value = value;</span><br><span class="line">                <span class="comment">// 不论value是否被覆盖都会唤醒当前方法并记录访问</span></span><br><span class="line">                e.recordAccess(<span class="keyword">this</span>);</span><br><span class="line">                <span class="keyword">return</span> oldValue;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">				</span><br><span class="line">   <span class="comment">// hashTable结构发生变更,次数+1</span></span><br><span class="line">        modCount++;</span><br><span class="line">        addEntry(hash, key, value, i);</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 存放key为null的数据</span></span><br><span class="line"> <span class="function"><span class="keyword">private</span> V <span class="title">putForNullKey</span><span class="params">(V value)</span> </span>&#123;</span><br><span class="line">   <span class="keyword">for</span> (Entry&lt;K,V&gt; e = table[<span class="number">0</span>]; e != <span class="keyword">null</span>; e = e.next) &#123;</span><br><span class="line">     <span class="keyword">if</span> (e.key == <span class="keyword">null</span>) &#123;</span><br><span class="line">       V oldValue = e.value;</span><br><span class="line">       e.value = value;</span><br><span class="line">       e.recordAccess(<span class="keyword">this</span>);</span><br><span class="line">       <span class="keyword">return</span> oldValue;</span><br><span class="line">     &#125;</span><br><span class="line">   &#125;</span><br><span class="line">   modCount++;</span><br><span class="line">   addEntry(<span class="number">0</span>, <span class="keyword">null</span>, value, <span class="number">0</span>);</span><br><span class="line">   <span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line"> &#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 添加链表的entry</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">addEntry</span><span class="params">(<span class="keyword">int</span> hash, K key, V value, <span class="keyword">int</span> bucketIndex)</span> </span>&#123;</span><br><span class="line">  </span><br><span class="line">  <span class="comment">// 如果当前的大小大于等于最大的entry个数并且对应的桶位置非空(也就是存在hashTable桶下的链表非空)才会进行扩容</span></span><br><span class="line">  <span class="keyword">if</span> ((size &gt;= threshold) &amp;&amp; (<span class="keyword">null</span> != table[bucketIndex])) &#123;</span><br><span class="line">    resize(<span class="number">2</span> * table.length);</span><br><span class="line">    hash = (<span class="keyword">null</span> != key) ? hash(key) : <span class="number">0</span>;</span><br><span class="line">    bucketIndex = indexFor(hash, table.length);</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  createEntry(hash, key, value, bucketIndex);</span><br><span class="line">&#125; </span><br><span class="line"></span><br><span class="line"><span class="comment">// 扩容为原来大小的2倍</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">resize</span><span class="params">(<span class="keyword">int</span> newCapacity)</span> </span>&#123;</span><br><span class="line">  Entry[] oldTable = table;</span><br><span class="line">  <span class="keyword">int</span> oldCapacity = oldTable.length;</span><br><span class="line">  <span class="keyword">if</span> (oldCapacity == MAXIMUM_CAPACITY) &#123;</span><br><span class="line">    threshold = Integer.MAX_VALUE;</span><br><span class="line">    <span class="keyword">return</span>;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  Entry[] newTable = <span class="keyword">new</span> Entry[newCapacity];</span><br><span class="line">  </span><br><span class="line">  <span class="comment">// 重新分配hashSeed并将旧的hashTable复制到newTable中</span></span><br><span class="line">  transfer(newTable, initHashSeedAsNeeded(newCapacity));</span><br><span class="line">  table = newTable;</span><br><span class="line">  threshold = (<span class="keyword">int</span>)Math.min(newCapacity * loadFactor, MAXIMUM_CAPACITY + <span class="number">1</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 创建entry并追加到链表中</span></span><br><span class="line"> <span class="function"><span class="keyword">void</span> <span class="title">createEntry</span><span class="params">(<span class="keyword">int</span> hash, K key, V value, <span class="keyword">int</span> bucketIndex)</span> </span>&#123;</span><br><span class="line">        Entry&lt;K,V&gt; e = table[bucketIndex];</span><br><span class="line">        table[bucketIndex] = <span class="keyword">new</span> Entry&lt;&gt;(hash, key, value, e);</span><br><span class="line">        size++;</span><br><span class="line"> &#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 追加entry到链表中</span></span><br><span class="line"> Entry(<span class="keyword">int</span> h, K k, V v, Entry&lt;K,V&gt; n) &#123;</span><br><span class="line">   value = v;</span><br><span class="line">   next = n;</span><br><span class="line">   key = k;</span><br><span class="line">   hash = h;</span><br><span class="line"> &#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>HashMap的<code>remove</code>方法</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> V <span class="title">remove</span><span class="params">(Object key)</span> </span>&#123;</span><br><span class="line">  Entry&lt;K,V&gt; e = removeEntryForKey(key);</span><br><span class="line">  <span class="keyword">return</span> (e == <span class="keyword">null</span> ? <span class="keyword">null</span> : e.value);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"> <span class="function"><span class="keyword">final</span> Entry&lt;K,V&gt; <span class="title">removeEntryForKey</span><span class="params">(Object key)</span> </span>&#123;</span><br><span class="line">   <span class="keyword">if</span> (size == <span class="number">0</span>) &#123;</span><br><span class="line">     <span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line">   &#125;</span><br><span class="line">   <span class="keyword">int</span> hash = (key == <span class="keyword">null</span>) ? <span class="number">0</span> : hash(key);</span><br><span class="line">   <span class="keyword">int</span> i = indexFor(hash, table.length);</span><br><span class="line">   Entry&lt;K,V&gt; prev = table[i];</span><br><span class="line">   Entry&lt;K,V&gt; e = prev;</span><br><span class="line"></span><br><span class="line">   <span class="comment">// 遍历链表并根据key查询对应的entry,并从链表中删除</span></span><br><span class="line">   <span class="keyword">while</span> (e != <span class="keyword">null</span>) &#123;</span><br><span class="line">     Entry&lt;K,V&gt; next = e.next;</span><br><span class="line">     Object k;</span><br><span class="line">     <span class="keyword">if</span> (e.hash == hash &amp;&amp;</span><br><span class="line">         ((k = e.key) == key || (key != <span class="keyword">null</span> &amp;&amp; key.equals(k)))) &#123;</span><br><span class="line">       modCount++;</span><br><span class="line">       size--;</span><br><span class="line">       <span class="keyword">if</span> (prev == e)</span><br><span class="line">         table[i] = next;</span><br><span class="line">       <span class="keyword">else</span></span><br><span class="line">         prev.next = next;</span><br><span class="line">       e.recordRemoval(<span class="keyword">this</span>);</span><br><span class="line">       <span class="keyword">return</span> e;</span><br><span class="line">     &#125;</span><br><span class="line">     prev = e;</span><br><span class="line">     e = next;</span><br><span class="line">   &#125;</span><br><span class="line"></span><br><span class="line">   <span class="keyword">return</span> e;</span><br><span class="line"> &#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>HashMap的<code>get</code>方法</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 根据key获取value信息 </span></span><br><span class="line"><span class="function"><span class="keyword">public</span> V <span class="title">get</span><span class="params">(Object key)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (key == <span class="keyword">null</span>)</span><br><span class="line">            <span class="keyword">return</span> getForNullKey();</span><br><span class="line">        Entry&lt;K,V&gt; entry = getEntry(key);</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">null</span> == entry ? <span class="keyword">null</span> : entry.getValue();</span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h4 id="ConcurrentHashMap"><a href="#ConcurrentHashMap" class="headerlink" title="ConcurrentHashMap"></a>ConcurrentHashMap</h4><h3 id="JDK1-8版本的Hash"><a href="#JDK1-8版本的Hash" class="headerlink" title="JDK1.8版本的Hash"></a>JDK1.8版本的Hash</h3><h4 id="HashTable-1"><a href="#HashTable-1" class="headerlink" title="HashTable"></a>HashTable</h4><h4 id="HashMap-1"><a href="#HashMap-1" class="headerlink" title="HashMap"></a>HashMap</h4><h4 id="ConcurrentHashMap-1"><a href="#ConcurrentHashMap-1" class="headerlink" title="ConcurrentHashMap"></a>ConcurrentHashMap</h4>
+    </div>
+
+    <div>全文完。</div>
+  </article>
+  <div class="toc-container">
+    
+  <div id="toc" class="toc-article">
+    <strong class="toc-title">目录</strong>
+    <ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#JDK1-7%E7%89%88%E6%9C%AC%E7%9A%84Hash"><span class="toc-text">JDK1.7版本的Hash</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#HashTable"><span class="toc-text">HashTable</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#HashTabale%E7%AE%80%E8%BF%B0"><span class="toc-text">HashTabale简述</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#HashTable%E7%9A%84%E7%B1%BB%E5%85%B3%E7%B3%BB%E5%9B%BE"><span class="toc-text">HashTable的类关系图</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#put-amp-putAll%E6%93%8D%E4%BD%9C"><span class="toc-text">put&amp;putAll操作</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%E5%88%A0%E9%99%A4Remove"><span class="toc-text">删除Remove</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%E9%81%8D%E5%8E%86%E6%9F%A5%E8%AF%A2"><span class="toc-text">遍历查询</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#HashMap"><span class="toc-text">HashMap</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#HashMap%E7%AE%80%E8%BF%B0"><span class="toc-text">HashMap简述</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#ConcurrentHashMap"><span class="toc-text">ConcurrentHashMap</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#JDK1-8%E7%89%88%E6%9C%AC%E7%9A%84Hash"><span class="toc-text">JDK1.8版本的Hash</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#HashTable-1"><span class="toc-text">HashTable</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#HashMap-1"><span class="toc-text">HashMap</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#ConcurrentHashMap-1"><span class="toc-text">ConcurrentHashMap</span></a></li></ol></li></ol>
+  </div>
+
+
+  </div>
+</div>
+<div class="copyright">
+    <span>本作品采用</span>
+    <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by/4.0/">知识共享署名 4.0 国际许可协议</a>
+    <span>进行许可。 转载时请注明原文链接。</span>
+</div>
+<div class="share" style="width: 100%;">
+  <img src="/images/wechat-small.jpg" alt="Running Geek" style="margin: auto; display: block;"/>
+
+  <div style="margin: auto; text-align: center; font-size: 0.8em; color: grey;">老铁们关注走一走，不迷路</div>
+  
+</div>
+
+  
+    <div class="post-nav">
+      <div class="post-nav-item post-nav-next">
+        
+          <span>〈 </span>
+          <a href="/2020/08/24/raft02/" rel="next" title="raft算法增强与总结">
+          raft算法增强与总结
+          </a>
+        
+      </div>
+  
+      <div class="post-nav-item post-nav-prev">
+          
+          <a href="/2021/04/13/design/" rel="prev" title="设计原则">
+            设计原则
+          </a>
+          <span>〉</span>
+        
+      </div>
+    </div>
+  
+
+
+    </div>
+
+    
+
+  </div>
+  <footer class="footer text-center">
+    <div id="bottom-inner">
+        <a class="bottom-item" href="https://xiaokunliu.github.io">首页</a> |
+        <a class="bottom-item" href="https://xiaokunliu.github.io" target="_blank">主站</a> |
+        <a class="bottom-item" href="https://github.com/xiaokunliu" target="_blank">GitHub</a> |
+        <a class="bottom-item" href="https://hexo.io" target="_blank">Powered by hexo</a> |
+        <a class="bottom-item" href="https://github.com/KevinOfNeu/hexo-theme-xoxo" target="_blank">Theme xoxo</a>
+    </div>
+</footer>
+  
+
+<script>
+  (function(window, document, undefined) {
+
+    var timer = null;
+
+    function returnTop() {
+      cancelAnimationFrame(timer);
+      timer = requestAnimationFrame(function fn() {
+        var oTop = document.body.scrollTop || document.documentElement.scrollTop;
+        if (oTop > 0) {
+          document.body.scrollTop = document.documentElement.scrollTop = oTop - 50;
+          timer = requestAnimationFrame(fn);
+        } else {
+          cancelAnimationFrame(timer);
+        }
+      });
+    }
+
+    var hearts = [];
+    window.requestAnimationFrame = (function() {
+      return window.requestAnimationFrame ||
+        window.webkitRequestAnimationFrame ||
+        window.mozRequestAnimationFrame ||
+        window.oRequestAnimationFrame ||
+        window.msRequestAnimationFrame ||
+        function(callback) {
+          setTimeout(callback, 1000 / 60);
+        }
+    })();
+    init();
+
+    function init() {
+      css(".heart{z-index:9999;width: 10px;height: 10px;position: fixed;background: #f00;transform: rotate(45deg);-webkit-transform: rotate(45deg);-moz-transform: rotate(45deg);}.heart:after,.heart:before{content: '';width: inherit;height: inherit;background: inherit;border-radius: 50%;-webkit-border-radius: 50%;-moz-border-radius: 50%;position: absolute;}.heart:after{top: -5px;}.heart:before{left: -5px;}");
+      attachEvent();
+      gameloop();
+      addMenuEvent();
+    }
+
+    function gameloop() {
+      for (var i = 0; i < hearts.length; i++) {
+        if (hearts[i].alpha <= 0) {
+          document.body.removeChild(hearts[i].el);
+          hearts.splice(i, 1);
+          continue;
+        }
+        hearts[i].y--;
+        hearts[i].scale += 0.004;
+        hearts[i].alpha -= 0.013;
+        hearts[i].el.style.cssText = "left:" + hearts[i].x + "px;top:" + hearts[i].y + "px;opacity:" + hearts[i].alpha + ";transform:scale(" + hearts[i].scale + "," + hearts[i].scale + ") rotate(45deg);background:" + hearts[i].color;
+      }
+      requestAnimationFrame(gameloop);
+    }
+
+    /**
+     * 给logo设置点击事件
+     * 
+     * - 回到顶部
+     * - 出现爱心
+     */
+    function attachEvent() {
+      var old = typeof window.onclick === "function" && window.onclick;
+      var logo = document.getElementById("logo");
+      if (logo) {
+        logo.onclick = function(event) {
+          returnTop();
+          old && old();
+          createHeart(event);
+        }
+      }
+      
+    }
+
+    function createHeart(event) {
+      var d = document.createElement("div");
+      d.className = "heart";
+      hearts.push({
+        el: d,
+        x: event.clientX - 5,
+        y: event.clientY - 5,
+        scale: 1,
+        alpha: 1,
+        color: randomColor()
+      });
+      document.body.appendChild(d);
+    }
+
+    function css(css) {
+      var style = document.createElement("style");
+      style.type = "text/css";
+      try {
+        style.appendChild(document.createTextNode(css));
+      } catch (ex) {
+        style.styleSheet.cssText = css;
+      }
+      document.getElementsByTagName('head')[0].appendChild(style);
+    }
+
+    function randomColor() {
+      // return "rgb(" + (~~(Math.random() * 255)) + "," + (~~(Math.random() * 255)) + "," + (~~(Math.random() * 255)) + ")";
+      return "#F44336";
+    }
+
+    function addMenuEvent() {
+      var menu = document.getElementById('menu-main-post');
+      if (menu) {
+        var toc = document.getElementById('toc');
+        if (toc) {
+          menu.onclick = function() {
+            if (toc) {
+              if (toc.style.display == 'block') {
+                toc.style.display = 'none';
+              } else {
+                toc.style.display = 'block';
+              }
+            }
+          };
+        } else {
+          menu.style.display = 'none';
+        }
+      }
+    }
+
+  })(window, document);
+</script>
+
+  
+
+
+
+</body>
+</html>

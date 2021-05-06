@@ -1,0 +1,370 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<!--
+config header
+-->
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#202020"/>
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  <script src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" async></script>
+
+  
+      <meta name="google-site-verification" content="{{ theme.google_site_verification }}" />
+  
+
+  
+    <meta name="keywords" content="Python," />
+  
+
+  
+    <meta name="description" content="分享个人学习工作的技术知识" />
+  
+  
+  <link rel="icon" type="image/x-icon" href="/logo.jpg">
+  <title>category: Python [ 疾风先生 ]</title>
+  
+    <!-- stylesheets list from config.yml -->
+    
+      <link rel="stylesheet" href="//cdn.bootcss.com/pure/1.0.0/pure-min.css">
+    
+      <link rel="stylesheet" href="/css/xoxo.css">
+    
+  
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+
+<body>
+  <div class="nav-container">
+    <nav class="home-menu pure-menu pure-menu-horizontal">
+  <a class="pure-menu-heading" href="/">
+    <img class="avatar" src="https://xiaokunliu.github.io/images/logo.jpg">
+    <span class="title">疾风先生</span>
+  </a>
+
+  <ul class="pure-menu-list clearfix">
+      
+          
+            <li class="pure-menu-item"><a href="/" class="pure-menu-link">首页</a></li>
+          
+      
+          
+            <li class="pure-menu-item"><a href="/archives" class="pure-menu-link">归档</a></li>
+          
+      
+          
+            <li class="pure-menu-item"><a href="/tags" class="pure-menu-link">标签</a></li>
+          
+      
+          
+            <li class="pure-menu-item"><a href="/categories" class="pure-menu-link">分类</a></li>
+          
+      
+          
+            <li class="pure-menu-item"><a href="/search" class="pure-menu-link">搜索</a></li>
+          
+      
+  </ul>
+   
+</nav>
+  </div>
+
+  <div class="container" id="content-outer">
+    <div class="inner" id="content-inner">
+      <div class="post-container">
+  <article class="post" id="post">
+    <header class="post-header text-center">
+      <h1 class="title">
+        python装饰器小结
+      </h1>
+      <span>
+        
+        <time class="time" datetime="2019-12-31T23:21:11.000Z">
+        2019-12-31
+      </time>
+        
+      </span>
+      <span class="slash">/</span>
+      <span class="post-meta">
+      <span class="post-tags">
+        <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/" rel="tag">Python</a></li></ul>
+      </span>
+    </span>
+      <span class="slash">/</span>
+      <span class="read">
+      <span id="busuanzi_value_page_pv"></span> 点击
+    </span>
+    </header>
+
+    <div class="post-content">
+      <span id="more"></span>
+
+<p>主要有以下几点：</p>
+<ul>
+<li>装饰器定义与作用</li>
+<li>函数装饰器</li>
+<li>类装饰器</li>
+<li>装饰器的嵌套</li>
+<li>带参数的装饰器</li>
+<li>装饰器是如何管理函数和类</li>
+</ul>
+<h5 id="装饰器定义与作用"><a href="#装饰器定义与作用" class="headerlink" title="装饰器定义与作用"></a>装饰器定义与作用</h5><blockquote>
+<p>定义</p>
+</blockquote>
+<ul>
+<li>在定义的函数或者类的方法或者类使用<code>@</code>的修饰符修饰,<code>@</code>后面可以是一个函数或者是一个类</li>
+</ul>
+<blockquote>
+<p>作用</p>
+</blockquote>
+<ul>
+<li>可以理解为对原函数对象或者类对象进行代理或者包装，增强原有的函数和类功能</li>
+<li>能够管理函数对象和函数调用，也能够管理定义类对象的类本身和实例对象</li>
+</ul>
+<h5 id="函数装饰器"><a href="#函数装饰器" class="headerlink" title="函数装饰器"></a>函数装饰器</h5><p>函数装饰器：函数实际被调用的时候会直接返回一个由函数装饰器包装好的函数对象进行回调,可以修饰在函数或定义的类方法</p>
+<blockquote>
+<p>编写基本的函数装饰器</p>
+</blockquote>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">decorator_fn</span>(<span class="params">call_fn</span>):</span></span><br><span class="line">    <span class="keyword">if</span> auth():</span><br><span class="line">        <span class="string">u&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">        如果是授权成功则直接调用函数</span></span><br><span class="line"><span class="string">        &quot;&quot;&quot;</span></span><br><span class="line">        <span class="keyword">return</span> call_fn</span><br><span class="line">    <span class="comment"># 没有权限，不执行函数，返回一个包装None的可调用对象</span></span><br><span class="line">    <span class="keyword">return</span> <span class="built_in">callable</span>(<span class="literal">None</span>)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="meta">@decorator_fn</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">call_fn</span>():</span></span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&quot;call fn ...&quot;</span>)</span><br><span class="line">    </span><br><span class="line"><span class="comment"># 上述的call_fn对象等价于</span></span><br><span class="line"></span><br><span class="line">call_fn = decorator_fn(call_fn)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 之后再根据参数进行调用</span></span><br><span class="line">call_fn()   <span class="comment"># 此时该函数已增加授权校验功能</span></span><br></pre></td></tr></table></figure>
+
+<h5 id="类装饰器"><a href="#类装饰器" class="headerlink" title="类装饰器"></a>类装饰器</h5><p>类装饰器：类实际被调用的时候会直接返回一个由函数装饰器包装好的类进行回调,让该类具有某种属性或行为</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">decorator</span>(<span class="params">aClass</span>):</span></span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&quot;intercept ....&quot;</span>)</span><br><span class="line">    <span class="keyword">return</span> aClass</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="meta">@decorator</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Person</span>(<span class="params"><span class="built_in">object</span></span>):</span></span><br><span class="line">    <span class="keyword">pass</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 注意上述使用装饰器修饰的Person已经是调用装饰器函数并返回Person对象，</span></span><br><span class="line"><span class="comment"># 即定义类的时候已经拥有装饰器的功能，因此不论如何调用Person()创建实例，</span></span><br><span class="line"><span class="comment"># 上面仅会打印一次intercept</span></span><br><span class="line"></span><br><span class="line">Person()分两步：</span><br><span class="line">其一，Person = decorator(Person) ，<span class="comment"># 执行包装的intercept然后返回原Person类</span></span><br><span class="line">其二，利用装饰器返回的Person类再创建对象</span><br></pre></td></tr></table></figure>
+
+<h5 id="嵌套的装饰器"><a href="#嵌套的装饰器" class="headerlink" title="嵌套的装饰器"></a>嵌套的装饰器</h5><blockquote>
+<p>函数装饰器嵌套</p>
+</blockquote>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@fn1</span></span><br><span class="line"><span class="meta">@fn2</span></span><br><span class="line"><span class="meta">@fn3</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">fn</span>(<span class="params">*args, **kwargs</span>):</span></span><br><span class="line">    <span class="keyword">pass</span></span><br><span class="line">    </span><br><span class="line"><span class="comment"># fn对象等价于</span></span><br><span class="line"></span><br><span class="line">fn = fn1(fn2(fn3(fn)))</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>类装饰器嵌套</p>
+</blockquote>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@fn1</span></span><br><span class="line"><span class="meta">@fn2</span></span><br><span class="line"><span class="meta">@fn3</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Person</span>(<span class="params"><span class="built_in">object</span></span>):</span></span><br><span class="line">    <span class="keyword">pass</span></span><br><span class="line">    </span><br><span class="line"><span class="comment"># 上述定义的类Person已经是具有fn1,fn2,fn3的所有装饰器功能</span></span><br><span class="line">Person = fn1(fn2(fn3(Person)))</span><br></pre></td></tr></table></figure>
+
+<h5 id="带参数的装饰器"><a href="#带参数的装饰器" class="headerlink" title="带参数的装饰器"></a><code>带参数</code>的装饰器</h5><blockquote>
+<p>修饰带有参数的函数的装饰器,这时候装饰器的作用就是返回一个函数的代理</p>
+</blockquote>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">decorator</span>(<span class="params">fn</span>):</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">proxy</span>(<span class="params">*args, **kwargs</span>):</span></span><br><span class="line">        <span class="string">u&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">        作为代理函数来调用原有的函数，并对原来的函数进行auth的校验</span></span><br><span class="line"><span class="string">        :param args:</span></span><br><span class="line"><span class="string">        :param kwargs:</span></span><br><span class="line"><span class="string">        :return:</span></span><br><span class="line"><span class="string">        &quot;&quot;&quot;</span></span><br><span class="line">        <span class="built_in">print</span>(<span class="string">&quot;auth checking&quot;</span>)</span><br><span class="line">        <span class="keyword">return</span> fn(*args, **kwargs)</span><br><span class="line">    <span class="keyword">return</span> proxy</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="meta">@decorator</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">fn</span>(<span class="params">a=<span class="number">9</span>, b=<span class="number">10</span></span>):</span></span><br><span class="line">    <span class="built_in">print</span>(a+b)</span><br><span class="line">    </span><br><span class="line"><span class="comment"># 上述的被装饰器修饰的fn等价于proxy，在函数proxy中已经保存了fn函数的对象</span></span><br><span class="line">因此调用fn()就等价于调用proxy(),而proxy()函数增加了auth认证校验，即</span><br><span class="line">fn(*args, **kwargs) =  decorator(fn)(*args, **kwargs),再进一步拆分，即</span><br><span class="line">fn = decorator(fn)</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>修饰带有参数初始化类的装饰器</p>
+</blockquote>
+<ul>
+<li>定义一个装饰器函数并传递类对象</li>
+<li>在定义的装饰器函数内部定义一个代理函数对象，此代理函数对象与原函数传递的参数一致，并负责处理日志，认证等工作，最后返回一个类对象</li>
+<li>此时使用装饰器修饰类必须重载运算符<code>__call__</code>保证可被动态调用（类似与反射创建类对象）</li>
+</ul>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">decorator</span>(<span class="params">aClass</span>):</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">proxy</span>(<span class="params">*args, **kwargs</span>):</span></span><br><span class="line">        <span class="string">u&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">        作为代理函数来调用原有的函数，并对原来的函数进行auth的校验</span></span><br><span class="line"><span class="string">        :param args:</span></span><br><span class="line"><span class="string">        :param kwargs:</span></span><br><span class="line"><span class="string">        :return:</span></span><br><span class="line"><span class="string">        &quot;&quot;&quot;</span></span><br><span class="line">        <span class="built_in">print</span>(<span class="string">&quot;auth checking&quot;</span>)</span><br><span class="line">        <span class="keyword">return</span> aClass(*args, **kwargs)</span><br><span class="line">    <span class="keyword">return</span> proxy</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="meta">@decorator</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Person</span>(<span class="params"><span class="built_in">object</span></span>):</span></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__call__</span>(<span class="params">self, *args, **kwargs</span>):</span></span><br><span class="line">        <span class="built_in">print</span>(<span class="string">&quot;person ...&quot;</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 注意体会与上述定义类装饰器的区别,这个时候定义的Person并非Person类，</span></span><br><span class="line">而是一个定义在decorator函数内部的一个代理函数，这个代理函数保存了aClass这个类对象</span><br><span class="line">Person(*args, **kwargs) = decorator(Person)(*args, **kwargs)，进一步拆分，即</span><br><span class="line">Person = decorator(Person)</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>定义的装饰器函数传递参数</p>
+</blockquote>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">decorator</span>(<span class="params">cache_time, strategy</span>):</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">actual_decorator</span>(<span class="params">fn</span>):</span></span><br><span class="line">        <span class="built_in">print</span>(<span class="string">&quot;using cache_time[%s] and strategy[%s] do the first job&quot;</span> % (cache_time, strategy))</span><br><span class="line">        <span class="function"><span class="keyword">def</span> <span class="title">proxy</span>(<span class="params">*args, **kwargs</span>):</span></span><br><span class="line">            <span class="built_in">print</span>(<span class="string">&quot;before call must be do the second job..&quot;</span>)</span><br><span class="line">            fn(*args, **kwargs)</span><br><span class="line">        <span class="keyword">return</span> proxy</span><br><span class="line">    <span class="keyword">return</span> actual_decorator</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="meta">@decorator(<span class="params">cache_time=<span class="number">10</span>, strategy=<span class="string">&quot;&quot;</span></span>)</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">call_fn</span>(<span class="params">a, b=<span class="number">10</span></span>):</span></span><br><span class="line">    <span class="keyword">if</span> a &lt; b:</span><br><span class="line">        <span class="built_in">print</span>(<span class="string">&quot;a &lt; b&quot;</span>)</span><br><span class="line">    <span class="keyword">elif</span> a &gt; b:</span><br><span class="line">        <span class="built_in">print</span>(<span class="string">&quot;a &gt; b&quot;</span>)</span><br><span class="line">    <span class="keyword">else</span>:</span><br><span class="line">        <span class="built_in">print</span>(<span class="string">&quot;a = b&quot;</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 使用上述的装饰器修饰的call_fn等价于</span></span><br><span class="line"><span class="comment"># call_fn = decorator(cache_time=10, strategy=&quot;&quot;)(call_fn) # 调用了两次函数,最终返回代理proxy</span></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Person</span>(<span class="params"><span class="built_in">object</span></span>):</span></span><br><span class="line"></span><br><span class="line"><span class="meta">    @decorator(<span class="params">cache_time=<span class="number">10</span>, strategy=<span class="string">&quot;nio&quot;</span></span>)</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">cal</span>(<span class="params">self,a, b=<span class="number">10</span></span>):</span></span><br><span class="line">        <span class="keyword">if</span> a &lt; b:</span><br><span class="line">            <span class="built_in">print</span>(<span class="string">&quot;a &lt; b&quot;</span>)</span><br><span class="line">        <span class="keyword">elif</span> a &gt; b:</span><br><span class="line">            <span class="built_in">print</span>(<span class="string">&quot;a &gt; b&quot;</span>)</span><br><span class="line">        <span class="keyword">else</span>:</span><br><span class="line">            <span class="built_in">print</span>(<span class="string">&quot;a = b&quot;</span>)</span><br><span class="line">            </span><br><span class="line"><span class="comment"># 同理，定义的cal函数等价于</span></span><br><span class="line">cal = decorator(cache_time=<span class="number">10</span>, strategy=<span class="string">&quot;nio&quot;</span>)(cal)   <span class="comment"># 调用了两次函数并返回代理函数</span></span><br></pre></td></tr></table></figure>
+
+<h5 id="利用装饰器有效地管理函数和类"><a href="#利用装饰器有效地管理函数和类" class="headerlink" title="利用装饰器有效地管理函数和类"></a>利用装饰器有效地管理函数和类</h5><p>使用装饰器要分清楚以下几点：</p>
+<ul>
+<li>使用装饰器修饰的函数或者类主要应用场景是什么,是直接返回原函数(类)还是嵌套定义的代理函数对象</li>
+<li>如果是直接返回园函数或者是类，那么可以保证修饰前后的数据属性是一致的，并且能够获取原数据的属性信息</li>
+<li>如果返回的是一个包装原函数或者类的代理函数对象，那么此时数据属性便发生改变，这种情况下只适用于调用的方式而非使用元数据进行下一步业务操作</li>
+</ul>
+
+    </div>
+
+    <div>全文完。</div>
+  </article>
+  <div class="toc-container">
+    
+  <div id="toc" class="toc-article">
+    <strong class="toc-title">目录</strong>
+    <ol class="toc"><li class="toc-item toc-level-5"><a class="toc-link" href="#%E8%A3%85%E9%A5%B0%E5%99%A8%E5%AE%9A%E4%B9%89%E4%B8%8E%E4%BD%9C%E7%94%A8"><span class="toc-text">装饰器定义与作用</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%E5%87%BD%E6%95%B0%E8%A3%85%E9%A5%B0%E5%99%A8"><span class="toc-text">函数装饰器</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%E7%B1%BB%E8%A3%85%E9%A5%B0%E5%99%A8"><span class="toc-text">类装饰器</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%E5%B5%8C%E5%A5%97%E7%9A%84%E8%A3%85%E9%A5%B0%E5%99%A8"><span class="toc-text">嵌套的装饰器</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%E5%B8%A6%E5%8F%82%E6%95%B0%E7%9A%84%E8%A3%85%E9%A5%B0%E5%99%A8"><span class="toc-text">带参数的装饰器</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%E5%88%A9%E7%94%A8%E8%A3%85%E9%A5%B0%E5%99%A8%E6%9C%89%E6%95%88%E5%9C%B0%E7%AE%A1%E7%90%86%E5%87%BD%E6%95%B0%E5%92%8C%E7%B1%BB"><span class="toc-text">利用装饰器有效地管理函数和类</span></a></li></ol>
+  </div>
+
+
+  </div>
+</div>
+<div class="copyright">
+    <span>本作品采用</span>
+    <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by/4.0/">知识共享署名 4.0 国际许可协议</a>
+    <span>进行许可。 转载时请注明原文链接。</span>
+</div>
+<div class="share" style="width: 100%;">
+  <img src="/images/wechat-small.jpg" alt="Running Geek" style="margin: auto; display: block;"/>
+
+  <div style="margin: auto; text-align: center; font-size: 0.8em; color: grey;">老铁们关注走一走，不迷路</div>
+  
+</div>
+
+  
+    <div class="post-nav">
+      <div class="post-nav-item post-nav-next">
+        
+          <span>〈 </span>
+          <a href="/2019/12/31/super/" rel="next" title="python3.x之super()用法小结">
+          python3.x之super()用法小结
+          </a>
+        
+      </div>
+  
+      <div class="post-nav-item post-nav-prev">
+          
+          <a href="/2020/01/02/aqs/" rel="prev" title="基于AQS原理实现的锁">
+            基于AQS原理实现的锁
+          </a>
+          <span>〉</span>
+        
+      </div>
+    </div>
+  
+
+
+    </div>
+
+    
+
+  </div>
+  <footer class="footer text-center">
+    <div id="bottom-inner">
+        <a class="bottom-item" href="https://xiaokunliu.github.io">首页</a> |
+        <a class="bottom-item" href="https://xiaokunliu.github.io" target="_blank">主站</a> |
+        <a class="bottom-item" href="https://github.com/xiaokunliu" target="_blank">GitHub</a> |
+        <a class="bottom-item" href="https://hexo.io" target="_blank">Powered by hexo</a> |
+        <a class="bottom-item" href="https://github.com/KevinOfNeu/hexo-theme-xoxo" target="_blank">Theme xoxo</a>
+    </div>
+</footer>
+  
+
+<script>
+  (function(window, document, undefined) {
+
+    var timer = null;
+
+    function returnTop() {
+      cancelAnimationFrame(timer);
+      timer = requestAnimationFrame(function fn() {
+        var oTop = document.body.scrollTop || document.documentElement.scrollTop;
+        if (oTop > 0) {
+          document.body.scrollTop = document.documentElement.scrollTop = oTop - 50;
+          timer = requestAnimationFrame(fn);
+        } else {
+          cancelAnimationFrame(timer);
+        }
+      });
+    }
+
+    var hearts = [];
+    window.requestAnimationFrame = (function() {
+      return window.requestAnimationFrame ||
+        window.webkitRequestAnimationFrame ||
+        window.mozRequestAnimationFrame ||
+        window.oRequestAnimationFrame ||
+        window.msRequestAnimationFrame ||
+        function(callback) {
+          setTimeout(callback, 1000 / 60);
+        }
+    })();
+    init();
+
+    function init() {
+      css(".heart{z-index:9999;width: 10px;height: 10px;position: fixed;background: #f00;transform: rotate(45deg);-webkit-transform: rotate(45deg);-moz-transform: rotate(45deg);}.heart:after,.heart:before{content: '';width: inherit;height: inherit;background: inherit;border-radius: 50%;-webkit-border-radius: 50%;-moz-border-radius: 50%;position: absolute;}.heart:after{top: -5px;}.heart:before{left: -5px;}");
+      attachEvent();
+      gameloop();
+      addMenuEvent();
+    }
+
+    function gameloop() {
+      for (var i = 0; i < hearts.length; i++) {
+        if (hearts[i].alpha <= 0) {
+          document.body.removeChild(hearts[i].el);
+          hearts.splice(i, 1);
+          continue;
+        }
+        hearts[i].y--;
+        hearts[i].scale += 0.004;
+        hearts[i].alpha -= 0.013;
+        hearts[i].el.style.cssText = "left:" + hearts[i].x + "px;top:" + hearts[i].y + "px;opacity:" + hearts[i].alpha + ";transform:scale(" + hearts[i].scale + "," + hearts[i].scale + ") rotate(45deg);background:" + hearts[i].color;
+      }
+      requestAnimationFrame(gameloop);
+    }
+
+    /**
+     * 给logo设置点击事件
+     * 
+     * - 回到顶部
+     * - 出现爱心
+     */
+    function attachEvent() {
+      var old = typeof window.onclick === "function" && window.onclick;
+      var logo = document.getElementById("logo");
+      if (logo) {
+        logo.onclick = function(event) {
+          returnTop();
+          old && old();
+          createHeart(event);
+        }
+      }
+      
+    }
+
+    function createHeart(event) {
+      var d = document.createElement("div");
+      d.className = "heart";
+      hearts.push({
+        el: d,
+        x: event.clientX - 5,
+        y: event.clientY - 5,
+        scale: 1,
+        alpha: 1,
+        color: randomColor()
+      });
+      document.body.appendChild(d);
+    }
+
+    function css(css) {
+      var style = document.createElement("style");
+      style.type = "text/css";
+      try {
+        style.appendChild(document.createTextNode(css));
+      } catch (ex) {
+        style.styleSheet.cssText = css;
+      }
+      document.getElementsByTagName('head')[0].appendChild(style);
+    }
+
+    function randomColor() {
+      // return "rgb(" + (~~(Math.random() * 255)) + "," + (~~(Math.random() * 255)) + "," + (~~(Math.random() * 255)) + ")";
+      return "#F44336";
+    }
+
+    function addMenuEvent() {
+      var menu = document.getElementById('menu-main-post');
+      if (menu) {
+        var toc = document.getElementById('toc');
+        if (toc) {
+          menu.onclick = function() {
+            if (toc) {
+              if (toc.style.display == 'block') {
+                toc.style.display = 'none';
+              } else {
+                toc.style.display = 'block';
+              }
+            }
+          };
+        } else {
+          menu.style.display = 'none';
+        }
+      }
+    }
+
+  })(window, document);
+</script>
+
+  
+
+
+
+</body>
+</html>

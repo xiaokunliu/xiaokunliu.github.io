@@ -1,0 +1,395 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<!--
+config header
+-->
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#202020"/>
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  <script src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" async></script>
+
+  
+      <meta name="google-site-verification" content="{{ theme.google_site_verification }}" />
+  
+
+  
+    <meta name="keywords" content="MySQL技术," />
+  
+
+  
+    <meta name="description" content="分享个人学习工作的技术知识" />
+  
+  
+  <link rel="icon" type="image/x-icon" href="/logo.jpg">
+  <title>category: MySQL技术 [ 疾风先生 ]</title>
+  
+    <!-- stylesheets list from config.yml -->
+    
+      <link rel="stylesheet" href="//cdn.bootcss.com/pure/1.0.0/pure-min.css">
+    
+      <link rel="stylesheet" href="/css/xoxo.css">
+    
+  
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+
+<body>
+  <div class="nav-container">
+    <nav class="home-menu pure-menu pure-menu-horizontal">
+  <a class="pure-menu-heading" href="/">
+    <img class="avatar" src="https://xiaokunliu.github.io/images/logo.jpg">
+    <span class="title">疾风先生</span>
+  </a>
+
+  <ul class="pure-menu-list clearfix">
+      
+          
+            <li class="pure-menu-item"><a href="/" class="pure-menu-link">首页</a></li>
+          
+      
+          
+            <li class="pure-menu-item"><a href="/archives" class="pure-menu-link">归档</a></li>
+          
+      
+          
+            <li class="pure-menu-item"><a href="/tags" class="pure-menu-link">标签</a></li>
+          
+      
+          
+            <li class="pure-menu-item"><a href="/categories" class="pure-menu-link">分类</a></li>
+          
+      
+          
+            <li class="pure-menu-item"><a href="/search" class="pure-menu-link">搜索</a></li>
+          
+      
+  </ul>
+   
+</nav>
+  </div>
+
+  <div class="container" id="content-outer">
+    <div class="inner" id="content-inner">
+      <div class="post-container">
+  <article class="post" id="post">
+    <header class="post-header text-center">
+      <h1 class="title">
+        MySQL数据类型设计
+      </h1>
+      <span>
+        
+        <time class="time" datetime="2018-04-02T20:47:28.000Z">
+        2018-04-02
+      </time>
+        
+      </span>
+      <span class="slash">/</span>
+      <span class="post-meta">
+      <span class="post-tags">
+        <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/MySQL%E6%8A%80%E6%9C%AF/" rel="tag">MySQL技术</a></li></ul>
+      </span>
+    </span>
+      <span class="slash">/</span>
+      <span class="read">
+      <span id="busuanzi_value_page_pv"></span> 点击
+    </span>
+    </header>
+
+    <div class="post-content">
+      <span id="more"></span>
+
+<blockquote>
+<p>整数类型</p>
+</blockquote>
+<ul>
+<li>整数:tinyint(8bit存储空间)、smallint(16bit存储空间)、mediumint(24bit存储空间)、int(32bit存储空间)、bigint(64bit存储空间)</li>
+<li>整数有可选的unsigned属性,表示不允许为负值,无符号和有符号类型使用相同的存储空间,并具有相同的性能</li>
+<li>整数计算一般使用64bit的bigint整数,即使在32bit的环境也是如此</li>
+</ul>
+<blockquote>
+<p>实数</p>
+</blockquote>
+<ul>
+<li>float和double支持使用标准的浮点运算进行近似计算</li>
+<li>decimal类型用于存储精确的小数,在数据量比较大的时候,可以考虑bigint代替decimal,即将需要存储的货币单位根据小数位数乘以相应的倍数</li>
+</ul>
+<blockquote>
+<p>字符串类型</p>
+</blockquote>
+<ul>
+<li><p>varchar</p>
+<ul>
+<li>存储可变长的字符串,比定长类型的字符串更加节省空间,仅仅使用必要的空间,但是如果mysql使用row_format=fixed创建表的时候将使用定长存储</li>
+<li>varchar需要使用额外的1-2bit记录字符串的长度,若列的最大长度&lt;=255bit,则只使用1个字节表示,否则使用2个字节表示</li>
+<li>由于行是可变长的,导致在做update的时候会变得比原来更长</li>
+<li>如果一个行占用的空间增长,并且在页内没有更多的空间可以存储<ul>
+<li>对于MyISAM的执行引擎:会将行拆分成不通的片段进行压缩</li>
+<li>InnoDB:需要分裂页来使行可以放进页内</li>
+</ul>
+</li>
+<li>MySQL5.0以上的在存储和检索的时候会保留末尾的空格,但是在4.1的时候或更老的版本中会剔除空格</li>
+<li>使用场景:<ul>
+<li>1)字符串列的最大长度比平均长度大很多;</li>
+<li>2)列的更新很少,所以碎片不是问题;</li>
+<li>3)使用像UTF-8这样复杂的字符集,每个字符都使用不同的字节数来进行存储</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>char</p>
+<ul>
+<li>MySQL总是根据定义的字符串长度分配足够的空间,使用char类型进行存储的时候,mysql会删除所有的末尾空格</li>
+<li>使用场景:<ul>
+<li>1)对于经常变更的数据,char定长存储不容易产生碎片,因而会有更好的性能</li>
+<li>2)char可以用来存储密码的md5值</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>Blob与Text类型</p>
+<ul>
+<li>字符类型:tinytext、smalltext、text、mediumtext、longtext</li>
+<li>二进制类型:tinyblob、smallblob、blob、mediumblob、longblob</li>
+<li>Innodb在blob和text存储过大的时候,会使用外部存储区域来进行存储,此时需要每个值在行内需要1-4个字节存储一个指针,然后在外部存储区域存储实际的值</li>
+</ul>
+</li>
+<li><p>日期和时间类型</p>
+<ul>
+<li>DateTime:能保存大范围的值,精度是秒,它把日期和时间封装到格式为YYYYMMDDHHMMSS的整数中,与时区无关,使用8个字节的存储空间</li>
+<li>TimeStamp:只使用4个字节的存储空间,因此它的范围比DateTime小得多,一般情况下尽量使用TimeStamp,因为它的空间效率更高</li>
+<li>如果需要存储更小的细粒度时间,可以使用bigint或者是double存储秒之后的小数部分或者使用MariaDB</li>
+</ul>
+</li>
+<li><p>位数据类型（从技术上角度都是字符串类型,但都尽量避免使用）    </p>
+<ul>
+<li>bit（尽量避免使用）<ul>
+<li>mysql把bit当做字符串类型,而不是数字类型,检索的时候是一个包含二进制0或1值的字符串</li>
+<li>在数字的上下文中,是将位字符串转换层数字</li>
+<li>若在一个bit的存储空间上存储一个true/false的值,可以考虑使用一个为空的CHAR(0)列,该列可以保存空值NULL或者长度为0的字符串</li>
+</ul>
+</li>
+<li>set（修改字段是整表修改的,并且也无法在SET列上通过索引查找）– 应用场景不强,不深入</li>
+</ul>
+</li>
+<li><p>Id的标识符选择</p>
+<ul>
+<li>选择的思考:一个是考虑存储类型,一个是MySQL对这种存储类型的执行计算和比较如何</li>
+<li>落地的原则:一旦选择相应的存储类型,要保证关联的表中也尽量靠近或者是选择相同的存储类型</li>
+<li>最小原则:选择的标识符既要考虑当前的业务情况还要考虑未来可能增长的情况,比如建立一个列Id来存储省份的名称标识,这时候是不需要几千或者几万的值,可以考虑tinyint</li>
+<li>选择的类型比较:<ul>
+<li>整数:可以使用AUTO_INCREMENT并且在建立索引抑或是查询的时候具有良好的性能（存储在磁盘中占用的空间按照指定的整数类型存储,不像字符串那样分散）</li>
+<li>字符串:比较消耗空间,并且如果使用MyISAM的执行引擎时会对字符串进行压缩,这样会导致磁盘查询比较慢<ul>
+<li>存储UUID,应当移除’-‘符号,并用unhex()函数转换为16字节的数字并存储在一个binary(16)列中,检索时通过hex()函数格式化为16进制格式</li>
+<li>UUID、散列函数（md5/sha1）等生成的数据会任意分布在很大的空间内,会导致insert以及一些select语句变得很慢</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>特殊类型</p>
+<ul>
+<li>存储地址IP,可以使用无符号的32位整数进行存储,IP实际上就是32位无符号整数类型,不是字符串,可以使用MySQL的函数</li>
+<li>IMET_ATON():将IP地址转换为32位无符号整数</li>
+<li>INET_NTOA():将32位无符号整数转换为IP地址</li>
+</ul>
+</li>
+</ul>
+
+    </div>
+
+    <div>全文完。</div>
+  </article>
+  <div class="toc-container">
+    
+
+  </div>
+</div>
+<div class="copyright">
+    <span>本作品采用</span>
+    <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by/4.0/">知识共享署名 4.0 国际许可协议</a>
+    <span>进行许可。 转载时请注明原文链接。</span>
+</div>
+<div class="share" style="width: 100%;">
+  <img src="/images/wechat-small.jpg" alt="Running Geek" style="margin: auto; display: block;"/>
+
+  <div style="margin: auto; text-align: center; font-size: 0.8em; color: grey;">老铁们关注走一走，不迷路</div>
+  
+</div>
+
+  
+    <div class="post-nav">
+      <div class="post-nav-item post-nav-next">
+        
+          <span>〈 </span>
+          <a href="/2018/04/01/class_design/" rel="next" title="python类设计浅谈">
+          python类设计浅谈
+          </a>
+        
+      </div>
+  
+      <div class="post-nav-item post-nav-prev">
+          
+          <a href="/2018/04/06/produce/" rel="prev" title="mysql存储过程案例">
+            mysql存储过程案例
+          </a>
+          <span>〉</span>
+        
+      </div>
+    </div>
+  
+
+
+    </div>
+
+    
+
+  </div>
+  <footer class="footer text-center">
+    <div id="bottom-inner">
+        <a class="bottom-item" href="https://xiaokunliu.github.io">首页</a> |
+        <a class="bottom-item" href="https://xiaokunliu.github.io" target="_blank">主站</a> |
+        <a class="bottom-item" href="https://github.com/xiaokunliu" target="_blank">GitHub</a> |
+        <a class="bottom-item" href="https://hexo.io" target="_blank">Powered by hexo</a> |
+        <a class="bottom-item" href="https://github.com/KevinOfNeu/hexo-theme-xoxo" target="_blank">Theme xoxo</a>
+    </div>
+</footer>
+  
+
+<script>
+  (function(window, document, undefined) {
+
+    var timer = null;
+
+    function returnTop() {
+      cancelAnimationFrame(timer);
+      timer = requestAnimationFrame(function fn() {
+        var oTop = document.body.scrollTop || document.documentElement.scrollTop;
+        if (oTop > 0) {
+          document.body.scrollTop = document.documentElement.scrollTop = oTop - 50;
+          timer = requestAnimationFrame(fn);
+        } else {
+          cancelAnimationFrame(timer);
+        }
+      });
+    }
+
+    var hearts = [];
+    window.requestAnimationFrame = (function() {
+      return window.requestAnimationFrame ||
+        window.webkitRequestAnimationFrame ||
+        window.mozRequestAnimationFrame ||
+        window.oRequestAnimationFrame ||
+        window.msRequestAnimationFrame ||
+        function(callback) {
+          setTimeout(callback, 1000 / 60);
+        }
+    })();
+    init();
+
+    function init() {
+      css(".heart{z-index:9999;width: 10px;height: 10px;position: fixed;background: #f00;transform: rotate(45deg);-webkit-transform: rotate(45deg);-moz-transform: rotate(45deg);}.heart:after,.heart:before{content: '';width: inherit;height: inherit;background: inherit;border-radius: 50%;-webkit-border-radius: 50%;-moz-border-radius: 50%;position: absolute;}.heart:after{top: -5px;}.heart:before{left: -5px;}");
+      attachEvent();
+      gameloop();
+      addMenuEvent();
+    }
+
+    function gameloop() {
+      for (var i = 0; i < hearts.length; i++) {
+        if (hearts[i].alpha <= 0) {
+          document.body.removeChild(hearts[i].el);
+          hearts.splice(i, 1);
+          continue;
+        }
+        hearts[i].y--;
+        hearts[i].scale += 0.004;
+        hearts[i].alpha -= 0.013;
+        hearts[i].el.style.cssText = "left:" + hearts[i].x + "px;top:" + hearts[i].y + "px;opacity:" + hearts[i].alpha + ";transform:scale(" + hearts[i].scale + "," + hearts[i].scale + ") rotate(45deg);background:" + hearts[i].color;
+      }
+      requestAnimationFrame(gameloop);
+    }
+
+    /**
+     * 给logo设置点击事件
+     * 
+     * - 回到顶部
+     * - 出现爱心
+     */
+    function attachEvent() {
+      var old = typeof window.onclick === "function" && window.onclick;
+      var logo = document.getElementById("logo");
+      if (logo) {
+        logo.onclick = function(event) {
+          returnTop();
+          old && old();
+          createHeart(event);
+        }
+      }
+      
+    }
+
+    function createHeart(event) {
+      var d = document.createElement("div");
+      d.className = "heart";
+      hearts.push({
+        el: d,
+        x: event.clientX - 5,
+        y: event.clientY - 5,
+        scale: 1,
+        alpha: 1,
+        color: randomColor()
+      });
+      document.body.appendChild(d);
+    }
+
+    function css(css) {
+      var style = document.createElement("style");
+      style.type = "text/css";
+      try {
+        style.appendChild(document.createTextNode(css));
+      } catch (ex) {
+        style.styleSheet.cssText = css;
+      }
+      document.getElementsByTagName('head')[0].appendChild(style);
+    }
+
+    function randomColor() {
+      // return "rgb(" + (~~(Math.random() * 255)) + "," + (~~(Math.random() * 255)) + "," + (~~(Math.random() * 255)) + ")";
+      return "#F44336";
+    }
+
+    function addMenuEvent() {
+      var menu = document.getElementById('menu-main-post');
+      if (menu) {
+        var toc = document.getElementById('toc');
+        if (toc) {
+          menu.onclick = function() {
+            if (toc) {
+              if (toc.style.display == 'block') {
+                toc.style.display = 'none';
+              } else {
+                toc.style.display = 'block';
+              }
+            }
+          };
+        } else {
+          menu.style.display = 'none';
+        }
+      }
+    }
+
+  })(window, document);
+</script>
+
+  
+
+
+
+</body>
+</html>

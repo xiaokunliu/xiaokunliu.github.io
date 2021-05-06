@@ -1,0 +1,446 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<!--
+config header
+-->
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#202020"/>
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  <script src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" async></script>
+
+  
+      <meta name="google-site-verification" content="{{ theme.google_site_verification }}" />
+  
+
+  
+    <meta name="keywords" content="tools," />
+  
+
+  
+    <meta name="description" content="分享个人学习工作的技术知识" />
+  
+  
+  <link rel="icon" type="image/x-icon" href="/logo.jpg">
+  <title>category: tools [ 疾风先生 ]</title>
+  
+    <!-- stylesheets list from config.yml -->
+    
+      <link rel="stylesheet" href="//cdn.bootcss.com/pure/1.0.0/pure-min.css">
+    
+      <link rel="stylesheet" href="/css/xoxo.css">
+    
+  
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+
+<body>
+  <div class="nav-container">
+    <nav class="home-menu pure-menu pure-menu-horizontal">
+  <a class="pure-menu-heading" href="/">
+    <img class="avatar" src="https://xiaokunliu.github.io/images/logo.jpg">
+    <span class="title">疾风先生</span>
+  </a>
+
+  <ul class="pure-menu-list clearfix">
+      
+          
+            <li class="pure-menu-item"><a href="/" class="pure-menu-link">首页</a></li>
+          
+      
+          
+            <li class="pure-menu-item"><a href="/archives" class="pure-menu-link">归档</a></li>
+          
+      
+          
+            <li class="pure-menu-item"><a href="/tags" class="pure-menu-link">标签</a></li>
+          
+      
+          
+            <li class="pure-menu-item"><a href="/categories" class="pure-menu-link">分类</a></li>
+          
+      
+          
+            <li class="pure-menu-item"><a href="/search" class="pure-menu-link">搜索</a></li>
+          
+      
+  </ul>
+   
+</nav>
+  </div>
+
+  <div class="container" id="content-outer">
+    <div class="inner" id="content-inner">
+      <div class="post-container">
+  <article class="post" id="post">
+    <header class="post-header text-center">
+      <h1 class="title">
+        git发版使用
+      </h1>
+      <span>
+        
+        <time class="time" datetime="2019-04-02T20:47:28.000Z">
+        2019-04-02
+      </time>
+        
+      </span>
+      <span class="slash">/</span>
+      <span class="post-meta">
+      <span class="post-tags">
+        <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/tools/" rel="tag">tools</a></li></ul>
+      </span>
+    </span>
+      <span class="slash">/</span>
+      <span class="read">
+      <span id="busuanzi_value_page_pv"></span> 点击
+    </span>
+    </header>
+
+    <div class="post-content">
+      <span id="more"></span>
+
+<h5 id="使用git打包发布版本"><a href="#使用git打包发布版本" class="headerlink" title="使用git打包发布版本"></a>使用git打包发布版本</h5><blockquote>
+<p>拉取git项目的代码(仅执行一次)</p>
+</blockquote>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 拉取项目</span></span><br><span class="line">git <span class="built_in">clone</span> projects.git  <span class="comment"># url</span></span><br><span class="line"><span class="built_in">cd</span> projects</span><br><span class="line">git checkout master &amp;&amp; git pull</span><br><span class="line"><span class="comment"># 创建基于master的git flow的实例化操作</span></span><br><span class="line">git flow init -d</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>基于develop分支进行发版</p>
+</blockquote>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 拉取开发分支</span></span><br><span class="line">git checkout develop &amp;&amp; git pull</span><br><span class="line"></span><br><span class="line"><span class="comment"># 查看当前项目的版本号(自定义于所属项目中),如</span></span><br><span class="line">projects/</span><br><span class="line">    projects/</span><br><span class="line">        __init__.py</span><br><span class="line">            __version__ = <span class="string">&quot;1.2.0&quot;</span></span><br><span class="line">            __release_date__ = <span class="string">&quot;2018-02-02&quot;</span></span><br><span class="line"><span class="comment"># 版本号规定为三位数字x.y.z</span></span><br><span class="line">    <span class="comment"># x表示为项目大的改动,比如重构,换新的技术等,在原有的基础递增</span></span><br><span class="line">    <span class="comment"># y表示在一个周期时间段内的版本发布,如每隔2周发布新的功能,在原有的基础递增</span></span><br><span class="line">    <span class="comment"># z可以表示紧急修复抑或是bug修复抑或功能上的改进等等,在原有的基础递增</span></span><br><span class="line">    </span><br><span class="line"><span class="comment"># 基于当前的一个版本号,根据项目实际情况进行发版,比如现在是新功能发布,则版本号为1.3.0</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 基于当前的release版本进行打包</span></span><br><span class="line">git flow release start 1.3.0  <span class="comment"># 此版本仅用于bug或者是功能上的修复,不做新功能的发布</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 修改版本号以及changelog</span></span><br><span class="line"><span class="comment"># 将上述修正为</span></span><br><span class="line">__version__ = <span class="string">&quot;1.3.0&quot;</span></span><br><span class="line">__release_date__ = <span class="string">&quot;2018-02-06&quot;</span>   <span class="comment"># 以当前时间为准</span></span><br><span class="line"> </span><br><span class="line"><span class="comment"># 添加修改的日志记录在changelog,添加的内容视团队以及项目规范而定</span></span><br><span class="line">...</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>git log查看上次打包以来的修改日志，对比CHANGELOG.txt中的是否有遗漏</p>
+</blockquote>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">git <span class="built_in">log</span> &lt;tag&gt;..HEAD                  <span class="comment"># 获取某Tag以来的日志，如：git log 1.0.8..HEAD</span></span><br><span class="line">git <span class="built_in">log</span> --since=&lt;last-release-date&gt;  <span class="comment"># 获取某个时间以来的日志，如：git log --since=2015-01-14</span></span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>将新建的release分支publish到服务器</p>
+</blockquote>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">git add files   <span class="comment"># 本次发版修改的文件内容</span></span><br><span class="line">git commit -m <span class="string">&quot;commit message&quot;</span></span><br><span class="line">git flow release publish 1.3.0</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>通知团队其他可以签出该分支</p>
+</blockquote>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git flow release track 1.3.0</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>进行bug修复和提交</p>
+</blockquote>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">git pull --rebase              <span class="comment"># 定期拉取别人提交的代码</span></span><br><span class="line">                                       <span class="comment"># 如果pull出现冲突，则解决冲突后git add xxx</span></span><br><span class="line">                                       <span class="comment"># 然后git rebase --continue继续操作。</span></span><br><span class="line"></span><br><span class="line">git status                     <span class="comment"># 查看有哪些文件修改</span></span><br><span class="line">git diff                       <span class="comment"># 查看具体修改内容</span></span><br><span class="line">git add xxx                    <span class="comment"># 添加准备提交的文件或文件夹</span></span><br><span class="line">git commit -m<span class="string">&quot;fix #xxx xxx&quot;</span>    <span class="comment"># 提交代码</span></span><br><span class="line"></span><br><span class="line">git push                       <span class="comment"># 定期将自己的代码推到服务器</span></span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>将release分支合并到本地master和develop</p>
+</blockquote>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">git checkout master &amp;&amp; git pull</span><br><span class="line">git checkout develop &amp;&amp; git pull</span><br><span class="line">git checkout release/1.3.0</span><br><span class="line">git pull &amp;&amp; git flow release finish 1.3.0</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>合并分支的时候可能遇到冲突，注意解决冲突方法(无则跳过)</p>
+</blockquote>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 查看冲突的文件</span></span><br><span class="line">git status</span><br><span class="line"></span><br><span class="line"><span class="comment"># 先处理二进制文件</span></span><br><span class="line">git checkout --thires -- a.swf a.jpg   <span class="comment"># 使用release的二进制文件</span></span><br><span class="line">git checkout --ours   -- b.swf b.jpg   <span class="comment"># 使用本地的二进制文件</span></span><br><span class="line">git add c.swf c.jpg                    <span class="comment"># 同上，使用本地的二进制文件</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 再处理文本文件</span></span><br><span class="line">git mergetool -t vimdiff               <span class="comment"># 使用mergetool，也可手工编辑文件，然后git add</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 然后再commit提交，注释参考：`Merge branch &#x27;release/x.x.x&#x27;`</span></span><br><span class="line"><span class="comment"># 在该操作中会提示输入Tag描述，比如`发布WebCC x.x.x版本`然后保存</span></span><br><span class="line"><span class="comment"># git flow会自动创建一个以版本号为名的Tag</span></span><br><span class="line"></span><br><span class="line">NOTE: 如果合并分支错误，且已Push到master，可以重新合并</span><br><span class="line">        git reflog                     <span class="comment"># 找回被删的release分支的版本号[sha1]</span></span><br><span class="line">        git checkout [sha1]            <span class="comment"># 将被删release checkout到本地</span></span><br><span class="line">        git checkout -b release/x.x.x  <span class="comment"># 将分支名改为release/x.x.x</span></span><br><span class="line">        git checkout master            <span class="comment"># 切回master分支</span></span><br><span class="line">        git rebase --hard [sha2]       <span class="comment"># 将master分支设置回错误合并前（如上一版本HEAD^）</span></span><br><span class="line">        git merge release/x.x.x        <span class="comment"># 重新合并release/x.x.x分支，合并成功后再提交</span></span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>删除远程分支</p>
+</blockquote>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git push origin --delete release/x.x.x</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>将合并后的本地master,develop,tag推送到服务器上</p>
+</blockquote>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git push origin master &amp;&amp; git push origin develop &amp;&amp; git push --tags</span><br></pre></td></tr></table></figure>
+
+<h4 id="紧急修复bug"><a href="#紧急修复bug" class="headerlink" title="紧急修复bug"></a>紧急修复bug</h4><ul>
+<li><p>当线上遇到必须要紧急修复的BUG，不能推到下个版本修复时，可以在master基础上创建hotfix分支来修复BUG。BUG修复后，将修改内容合并回master和develop分支。</p>
+</li>
+<li><p>新发布版本号规则为：</p>
+<ul>
+<li>如果上一个版本没有第4位，则设置第4位为1</li>
+<li>如果上一个版本含有第4位，则递增第4位</li>
+</ul>
+</li>
+<li><p>clone代码，初始化git flow，该操作只做一次</p>
+</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">git <span class="built_in">clone</span> git@projects.git</span><br><span class="line"><span class="built_in">cd</span> projects</span><br><span class="line">git checkout master  <span class="comment"># 由于默认分支改成了develop，需要先导入master分支</span></span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>更新本地master分支到最新版本</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git checkout master &amp;&amp; git pull</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>创建基于本地master的hotfix分支</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 创建分支（分支名尽量能提示修复什么bug）</span></span><br><span class="line">git flow hotfix start fix-xxx</span><br><span class="line"></span><br><span class="line"><span class="comment"># 在projects查看当前版本号，按规则确定新版本号并修改(视项目以及团队定义的版本文件为准)</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 在CHANGELOG.txt添加该版本的BUG修复说明</span></span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>进行bug修复和提交（hostfix分支不能做新功能开发，只修bug）</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">git status                     <span class="comment"># 查看有哪些文件修改</span></span><br><span class="line">git diff                       <span class="comment"># 查看具体修改内容</span></span><br><span class="line">git add xxx                    <span class="comment"># 添加准备提交的文件或文件夹</span></span><br><span class="line">git commit -m<span class="string">&quot;fix #xxx xxx&quot;</span>    <span class="comment"># 提交代码</span></span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>Bug修复完成后，将hotfix分支合并到本地master和develop</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">git checkout master &amp;&amp; git pull</span><br><span class="line">git checkout develop &amp;&amp; git pull</span><br><span class="line">git checkout hotfix/fix-xxx</span><br><span class="line">git flow hotfix finish fix-xxx</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>合并分支的时候可能遇到冲突，注意解决冲突方法</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 查看冲突的文件</span></span><br><span class="line">git status</span><br><span class="line"></span><br><span class="line"><span class="comment"># 先处理二进制文件</span></span><br><span class="line">git checkout --thires -- a.swf a.jpg   <span class="comment"># 使用release的二进制文件</span></span><br><span class="line">git checkout --ours   -- b.swf b.jpg   <span class="comment"># 使用本地的二进制文件</span></span><br><span class="line">git add c.swf c.jpg                    <span class="comment"># 同上，使用本地的二进制文件</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 再处理文本文件</span></span><br><span class="line">git mergetool -t vimdiff               <span class="comment"># 使用mergetool，也可手工编辑文件，然后git add</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 然后再commit提交，注释参考：`Merge branch &#x27;hotfix/fix-xxx&#x27;`</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 在该操作中会提示输入Tag描述，比如`修复xxx问题`，然后保存退出（比如VI编辑器按Esc，再按:wq）。</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># git flow会自动创建一个hotfix同名的Tag</span></span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>最后将合并后的本地master,develop,tag推送到服务器上</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git push origin master &amp;&amp; git push origin develop &amp;&amp; git push --tags</span><br></pre></td></tr></table></figure>
+
+<h4 id="git使用分支进行开发"><a href="#git使用分支进行开发" class="headerlink" title="git使用分支进行开发"></a>git使用分支进行开发</h4><ul>
+<li>当要做的功能不是一两行代码就可以完成的时候，需要在本地创建基于develop的feature分支</li>
+<li>如果是多人合作，可以将分支publish到服务器上</li>
+<li>分支完成并自己测试通过后才合并到develop，再由QA在develop上进行测试和修复bug</li>
+</ul>
+<blockquote>
+<p>clone代码，初始化git flow，该操作只做一次</p>
+</blockquote>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">git <span class="built_in">clone</span> git@projects.git</span><br><span class="line"><span class="built_in">cd</span> projects</span><br><span class="line">git checkout master  <span class="comment"># webcc默认分支为develop，首次clone需先导入master分支</span></span><br><span class="line">git flow init -d</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>更新本地develop分支到最新版本</p>
+</blockquote>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git checkout develop &amp;&amp; git pull</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>创建基于本地develop的feature分支</p>
+</blockquote>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 创建分支</span></span><br><span class="line">git flow feature start feature-xxx</span><br><span class="line"></span><br><span class="line"><span class="comment"># 如果是多人合作开发某个功能</span></span><br><span class="line"><span class="comment"># 可以将该分支推送到服务器上</span></span><br><span class="line">git flow feature publish feature-xxx</span><br><span class="line"></span><br><span class="line"><span class="comment"># 然后通知其他人可以使用track签出该分支</span></span><br><span class="line">git flow feature track feature-xxx</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>进行代码修改和提交</p>
+</blockquote>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">git pull --rebase               <span class="comment"># 如果合作开发，定期拉取别人提交的代码</span></span><br><span class="line">                                <span class="comment"># 如果pull出现冲突，则解决冲突后git add xxx</span></span><br><span class="line">                                <span class="comment"># 然后git rebase --continue继续操作。</span></span><br><span class="line"></span><br><span class="line">git status                      <span class="comment"># 查看有哪些文件修改</span></span><br><span class="line">git diff                        <span class="comment"># 查看具体修改内容</span></span><br><span class="line">git add xxx                     <span class="comment"># 添加准备提交的文件或文件夹</span></span><br><span class="line">git commit -m<span class="string">&quot;close #xxx xxx&quot;</span>   <span class="comment"># 提交代码</span></span><br><span class="line"></span><br><span class="line">git push                        <span class="comment"># 如果合作开发，定期将自己的代码推到服务器</span></span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>功能开发完成且自己测试OK后</p>
+</blockquote>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 基于该feature分支测试，所有发现的问题列出一个列表并收集起来</span></span><br><span class="line"><span class="comment"># 测试完成且确定放该功能后将feature分支合并到develop</span></span><br><span class="line">git checkout develop &amp;&amp; git pull              <span class="comment"># 拉取最新的develop</span></span><br><span class="line">git checkout feature/feature-xxx &amp;&amp; git pull  <span class="comment"># 如果合作开发，则先拉取服务器上的最新代码</span></span><br><span class="line">git flow feature finish feature-xxx           <span class="comment"># 完成分支开发，合并代码到本地develop</span></span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>合并分支的时候可能遇到冲突，注意解决冲突方法</p>
+</blockquote>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 查看冲突的文件</span></span><br><span class="line">git status</span><br><span class="line"></span><br><span class="line"><span class="comment"># 先处理二进制文件</span></span><br><span class="line">git checkout --thires -- a.swf a.jpg   <span class="comment"># 使用release的二进制文件</span></span><br><span class="line">git checkout --ours   -- b.swf b.jpg   <span class="comment"># 使用本地的二进制文件</span></span><br><span class="line">git add c.swf c.jpg                    <span class="comment"># 同上，使用本地的二进制文件</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 再处理文本文件</span></span><br><span class="line">git mergetool -t vimdiff               <span class="comment"># 使用mergetool，也可手工编辑文件，然后git add</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 然后再commit提交，注释参考：`Merge branch &#x27;feature/x.x.x&#x27;`</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 在该操作中会提示输入Tag描述，比如`发布WebCC x.x.x版本`然后保存（比如VI编辑器按Esc，再按:wq）。</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># git flow会自动创建一个以版本号为名的Tag。</span></span><br><span class="line"><span class="comment"># 然后在CHANGELOG.txt顶部in development段添加功能说明，并提交修改：</span></span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>最后将合并后的本地develop推送到服务器上</p>
+</blockquote>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git push origin develop</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>如果合作开发，在新功能发布到线上后再删除远程分支</p>
+</blockquote>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git push origin --delete feature/x.x.x</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>git打标签</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">git tag version     # git打标签版本</span><br><span class="line">git push --tags     # git打标签推到服务器上</span><br><span class="line">git tag             # 查看标签</span><br></pre></td></tr></table></figure>
+
+    </div>
+
+    <div>全文完。</div>
+  </article>
+  <div class="toc-container">
+    
+  <div id="toc" class="toc-article">
+    <strong class="toc-title">目录</strong>
+    <ol class="toc"><li class="toc-item toc-level-5"><a class="toc-link" href="#%E4%BD%BF%E7%94%A8git%E6%89%93%E5%8C%85%E5%8F%91%E5%B8%83%E7%89%88%E6%9C%AC"><span class="toc-text">使用git打包发布版本</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%B4%A7%E6%80%A5%E4%BF%AE%E5%A4%8Dbug"><span class="toc-text">紧急修复bug</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#git%E4%BD%BF%E7%94%A8%E5%88%86%E6%94%AF%E8%BF%9B%E8%A1%8C%E5%BC%80%E5%8F%91"><span class="toc-text">git使用分支进行开发</span></a>
+  </div>
+
+
+  </div>
+</div>
+<div class="copyright">
+    <span>本作品采用</span>
+    <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by/4.0/">知识共享署名 4.0 国际许可协议</a>
+    <span>进行许可。 转载时请注明原文链接。</span>
+</div>
+<div class="share" style="width: 100%;">
+  <img src="/images/wechat-small.jpg" alt="Running Geek" style="margin: auto; display: block;"/>
+
+  <div style="margin: auto; text-align: center; font-size: 0.8em; color: grey;">老铁们关注走一走，不迷路</div>
+  
+</div>
+
+  
+    <div class="post-nav">
+      <div class="post-nav-item post-nav-next">
+        
+          <span>〈 </span>
+          <a href="/2019/04/02/git_used/" rel="next" title="git常用命令">
+          git常用命令
+          </a>
+        
+      </div>
+  
+      <div class="post-nav-item post-nav-prev">
+          
+          <a href="/2019/06/02/linux01/" rel="prev" title="linux工作常用命令小结1">
+            linux工作常用命令小结1
+          </a>
+          <span>〉</span>
+        
+      </div>
+    </div>
+  
+
+
+    </div>
+
+    
+
+  </div>
+  <footer class="footer text-center">
+    <div id="bottom-inner">
+        <a class="bottom-item" href="https://xiaokunliu.github.io">首页</a> |
+        <a class="bottom-item" href="https://xiaokunliu.github.io" target="_blank">主站</a> |
+        <a class="bottom-item" href="https://github.com/xiaokunliu" target="_blank">GitHub</a> |
+        <a class="bottom-item" href="https://hexo.io" target="_blank">Powered by hexo</a> |
+        <a class="bottom-item" href="https://github.com/KevinOfNeu/hexo-theme-xoxo" target="_blank">Theme xoxo</a>
+    </div>
+</footer>
+  
+
+<script>
+  (function(window, document, undefined) {
+
+    var timer = null;
+
+    function returnTop() {
+      cancelAnimationFrame(timer);
+      timer = requestAnimationFrame(function fn() {
+        var oTop = document.body.scrollTop || document.documentElement.scrollTop;
+        if (oTop > 0) {
+          document.body.scrollTop = document.documentElement.scrollTop = oTop - 50;
+          timer = requestAnimationFrame(fn);
+        } else {
+          cancelAnimationFrame(timer);
+        }
+      });
+    }
+
+    var hearts = [];
+    window.requestAnimationFrame = (function() {
+      return window.requestAnimationFrame ||
+        window.webkitRequestAnimationFrame ||
+        window.mozRequestAnimationFrame ||
+        window.oRequestAnimationFrame ||
+        window.msRequestAnimationFrame ||
+        function(callback) {
+          setTimeout(callback, 1000 / 60);
+        }
+    })();
+    init();
+
+    function init() {
+      css(".heart{z-index:9999;width: 10px;height: 10px;position: fixed;background: #f00;transform: rotate(45deg);-webkit-transform: rotate(45deg);-moz-transform: rotate(45deg);}.heart:after,.heart:before{content: '';width: inherit;height: inherit;background: inherit;border-radius: 50%;-webkit-border-radius: 50%;-moz-border-radius: 50%;position: absolute;}.heart:after{top: -5px;}.heart:before{left: -5px;}");
+      attachEvent();
+      gameloop();
+      addMenuEvent();
+    }
+
+    function gameloop() {
+      for (var i = 0; i < hearts.length; i++) {
+        if (hearts[i].alpha <= 0) {
+          document.body.removeChild(hearts[i].el);
+          hearts.splice(i, 1);
+          continue;
+        }
+        hearts[i].y--;
+        hearts[i].scale += 0.004;
+        hearts[i].alpha -= 0.013;
+        hearts[i].el.style.cssText = "left:" + hearts[i].x + "px;top:" + hearts[i].y + "px;opacity:" + hearts[i].alpha + ";transform:scale(" + hearts[i].scale + "," + hearts[i].scale + ") rotate(45deg);background:" + hearts[i].color;
+      }
+      requestAnimationFrame(gameloop);
+    }
+
+    /**
+     * 给logo设置点击事件
+     * 
+     * - 回到顶部
+     * - 出现爱心
+     */
+    function attachEvent() {
+      var old = typeof window.onclick === "function" && window.onclick;
+      var logo = document.getElementById("logo");
+      if (logo) {
+        logo.onclick = function(event) {
+          returnTop();
+          old && old();
+          createHeart(event);
+        }
+      }
+      
+    }
+
+    function createHeart(event) {
+      var d = document.createElement("div");
+      d.className = "heart";
+      hearts.push({
+        el: d,
+        x: event.clientX - 5,
+        y: event.clientY - 5,
+        scale: 1,
+        alpha: 1,
+        color: randomColor()
+      });
+      document.body.appendChild(d);
+    }
+
+    function css(css) {
+      var style = document.createElement("style");
+      style.type = "text/css";
+      try {
+        style.appendChild(document.createTextNode(css));
+      } catch (ex) {
+        style.styleSheet.cssText = css;
+      }
+      document.getElementsByTagName('head')[0].appendChild(style);
+    }
+
+    function randomColor() {
+      // return "rgb(" + (~~(Math.random() * 255)) + "," + (~~(Math.random() * 255)) + "," + (~~(Math.random() * 255)) + ")";
+      return "#F44336";
+    }
+
+    function addMenuEvent() {
+      var menu = document.getElementById('menu-main-post');
+      if (menu) {
+        var toc = document.getElementById('toc');
+        if (toc) {
+          menu.onclick = function() {
+            if (toc) {
+              if (toc.style.display == 'block') {
+                toc.style.display = 'none';
+              } else {
+                toc.style.display = 'block';
+              }
+            }
+          };
+        } else {
+          menu.style.display = 'none';
+        }
+      }
+    }
+
+  })(window, document);
+</script>
+
+  
+
+
+
+</body>
+</html>

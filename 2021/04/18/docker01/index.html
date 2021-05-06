@@ -1,0 +1,432 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<!--
+config header
+-->
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#202020"/>
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  <script src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" async></script>
+
+  
+      <meta name="google-site-verification" content="{{ theme.google_site_verification }}" />
+  
+
+  
+    <meta name="keywords" content="Docker," />
+  
+
+  
+    <meta name="description" content="分享个人学习工作的技术知识" />
+  
+  
+  <link rel="icon" type="image/x-icon" href="/logo.jpg">
+  <title>category: docker使用笔记 [ 疾风先生 ]</title>
+  
+    <!-- stylesheets list from config.yml -->
+    
+      <link rel="stylesheet" href="//cdn.bootcss.com/pure/1.0.0/pure-min.css">
+    
+      <link rel="stylesheet" href="/css/xoxo.css">
+    
+  
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+
+<body>
+  <div class="nav-container">
+    <nav class="home-menu pure-menu pure-menu-horizontal">
+  <a class="pure-menu-heading" href="/">
+    <img class="avatar" src="https://xiaokunliu.github.io/images/logo.jpg">
+    <span class="title">疾风先生</span>
+  </a>
+
+  <ul class="pure-menu-list clearfix">
+      
+          
+            <li class="pure-menu-item"><a href="/" class="pure-menu-link">首页</a></li>
+          
+      
+          
+            <li class="pure-menu-item"><a href="/archives" class="pure-menu-link">归档</a></li>
+          
+      
+          
+            <li class="pure-menu-item"><a href="/tags" class="pure-menu-link">标签</a></li>
+          
+      
+          
+            <li class="pure-menu-item"><a href="/categories" class="pure-menu-link">分类</a></li>
+          
+      
+          
+            <li class="pure-menu-item"><a href="/search" class="pure-menu-link">搜索</a></li>
+          
+      
+  </ul>
+   
+</nav>
+  </div>
+
+  <div class="container" id="content-outer">
+    <div class="inner" id="content-inner">
+      <div class="post-container">
+  <article class="post" id="post">
+    <header class="post-header text-center">
+      <h1 class="title">
+        Docker
+      </h1>
+      <span>
+        
+        <time class="time" datetime="2021-04-18T11:44:43.000Z">
+        2021-04-18
+      </time>
+        
+      </span>
+      <span class="slash">/</span>
+      <span class="post-meta">
+      <span class="post-tags">
+        <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Docker/" rel="tag">Docker</a></li></ul>
+      </span>
+    </span>
+      <span class="slash">/</span>
+      <span class="read">
+      <span id="busuanzi_value_page_pv"></span> 点击
+    </span>
+    </header>
+
+    <div class="post-content">
+      <span id="more"></span>
+
+<h3 id="docker-相关命令小结"><a href="#docker-相关命令小结" class="headerlink" title="docker 相关命令小结"></a>docker 相关命令小结</h3><h4 id="查看镜像地址"><a href="#查看镜像地址" class="headerlink" title="查看镜像地址"></a>查看镜像地址</h4><ul>
+<li>docker info<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br></pre></td><td class="code"><pre><span class="line">Client:</span><br><span class="line"> Context:    default</span><br><span class="line"> Debug Mode: false</span><br><span class="line"> Plugins:</span><br><span class="line">  app: Docker App (Docker Inc., v0.9.1-beta3)</span><br><span class="line">  buildx: Build with BuildKit (Docker Inc., v0.5.1-docker)</span><br><span class="line">  scan: Docker Scan (Docker Inc., v0.6.0)</span><br><span class="line"></span><br><span class="line">Server:</span><br><span class="line"> Containers: 1</span><br><span class="line">  Running: 0</span><br><span class="line">  Paused: 0</span><br><span class="line">  Stopped: 1</span><br><span class="line"> Images: 1</span><br><span class="line"> Server Version: 20.10.5</span><br><span class="line"> Storage Driver: overlay2</span><br><span class="line">  Backing Filesystem: extfs</span><br><span class="line">  Supports d_type: true</span><br><span class="line">  Native Overlay Diff: true</span><br><span class="line"> Logging Driver: json-file</span><br><span class="line"> Cgroup Driver: cgroupfs</span><br><span class="line"> Cgroup Version: 1</span><br><span class="line"> Plugins:</span><br><span class="line">  Volume: local</span><br><span class="line">  Network: bridge host ipvlan macvlan null overlay</span><br><span class="line">  Log: awslogs fluentd gcplogs gelf journald json-file local logentries splunk syslog</span><br><span class="line"> Swarm: inactive</span><br><span class="line"> Runtimes: io.containerd.runc.v2 io.containerd.runtime.v1.linux runc</span><br><span class="line"> Default Runtime: runc</span><br><span class="line"> Init Binary: docker-init</span><br><span class="line"> containerd version: 05f951a3781f4f2c1911b05e61c160e9c30eaa8e</span><br><span class="line"> runc version: 12644e614e25b05da6fd08a38ffa0cfe1903fdec</span><br><span class="line"> init version: de40ad0</span><br><span class="line"> Security Options:</span><br><span class="line">  seccomp</span><br><span class="line">   Profile: default</span><br><span class="line"> Kernel Version: 5.10.25-linuxkit</span><br><span class="line"> Operating System: Docker Desktop</span><br><span class="line"> OSType: linux</span><br><span class="line"> Architecture: x86_64</span><br><span class="line"> CPUs: 4</span><br><span class="line"> Total Memory: 1.941GiB</span><br><span class="line"> Name: docker-desktop</span><br><span class="line"> ID: CVY7:NOBR:D337:VCRN:D24O:ZFH2:DJTN:TBXE:QO6K:ZOXP:A444:XIZN</span><br><span class="line"> Docker Root Dir: /var/lib/docker</span><br><span class="line"> Debug Mode: false</span><br><span class="line"> HTTP Proxy: http.docker.internal:3128</span><br><span class="line"> HTTPS Proxy: http.docker.internal:3128</span><br><span class="line"> Registry: https://index.docker.io/v1/</span><br><span class="line"> Labels:</span><br><span class="line"> Experimental: false</span><br><span class="line"> Insecure Registries:</span><br><span class="line">  127.0.0.0/8</span><br><span class="line"> Live Restore Enabled: false</span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+<h4 id="docker-镜像操作"><a href="#docker-镜像操作" class="headerlink" title="docker 镜像操作"></a>docker 镜像操作</h4><ul>
+<li><p>docker pull</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">## docker pull keithl20160828/dev:1.0</span></span><br><span class="line"><span class="comment">## docker pull ubuntu:lastest</span></span><br></pre></td></tr></table></figure>
+</li>
+<li><p>docker基于镜像创建容器实例</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">## docker run -d -p 3306:3306 -p 32005:80 -p 32006:22 --name dev -v $PWD/data:/opt/data keithl20160828/dev:1.0</span></span><br><span class="line"><span class="comment">## -d 后台执行</span></span><br><span class="line"><span class="comment">## -p 端口映射</span></span><br><span class="line"><span class="comment">## --name 创建的容器名称</span></span><br><span class="line"><span class="comment">## -v docker容器数据挂载在本地磁盘</span></span><br><span class="line"><span class="comment">## 镜像以及版本</span></span><br></pre></td></tr></table></figure>
+</li>
+<li><p>列出镜像</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">## 列出镜像</span></span><br><span class="line">docker image ls</span><br><span class="line"></span><br><span class="line"><span class="comment">## 查看容器的详细信息</span></span><br><span class="line">docker inspect name/Id</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>悬虚镜像</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">## 仓库名称以及镜像标签版本为none的镜像</span></span><br><span class="line"><span class="comment">## 删除悬虚镜像</span></span><br><span class="line">docker image prune</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>删除镜像</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">## 删除一个镜像</span></span><br><span class="line">docker image rm imageName/Id</span><br><span class="line"><span class="comment">## 删除所有redis镜像</span></span><br><span class="line">docker image rm $(docker image ls -q redis)</span><br><span class="line"><span class="comment">## 删除redis:2.0版本之前的版本镜像</span></span><br><span class="line">docker imgage rm $(docker imgae ls -q -f before=redis:2.0)</span><br><span class="line"></span><br><span class="line">docker rmi imageId</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>基于已有的容器进行创建</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker [container] commit -m <span class="string">&quot;commit msg&quot;</span> -a <span class="string">&quot;author&quot;</span> containerId newImage:tag </span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+<h4 id="容器操作"><a href="#容器操作" class="headerlink" title="容器操作"></a>容器操作</h4><ul>
+<li><p>启动与关闭</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">docker [container] start containerName or docker start containerName</span><br><span class="line">docker [container] stop containerName or docker stop containerName</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>第一次运行的容器</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">docker run -d -p 80:8080 --name nginx-dev nginx:1.0</span><br><span class="line"><span class="comment">## -i 标准输入打开，默认为false</span></span><br><span class="line"><span class="comment">## -t 是否分配一个终端，默认为false</span></span><br><span class="line">docker run -d -it -p 80:8080 --name nginx-dev nginx:1.0 </span><br></pre></td></tr></table></figure>
+</li>
+<li><p>查看启容器日志</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker logs [OPTIONS] CONTAINER</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>查看容器</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">## 查看所有容器</span></span><br><span class="line">docker ps -a</span><br><span class="line"><span class="comment">## 查看运行的容器</span></span><br><span class="line">docker ps</span><br><span class="line"><span class="comment">## 查看容器的详细信息</span></span><br><span class="line">docker inspect name/Id</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>进入容器</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">## docker 进入容器</span></span><br><span class="line">docker <span class="built_in">exec</span> -it containerName/Id /bin/bash</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>导入与导出容器</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">## 导出</span></span><br><span class="line">docker <span class="built_in">export</span> containerName/Id container.tar</span><br><span class="line"></span><br><span class="line"><span class="comment">## 从已有的容器文件导入</span></span><br><span class="line">cat container.tar | docker import keithl20160828/container:tag</span><br><span class="line"><span class="comment">## 从uri导入</span></span><br><span class="line">docker import uri</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>暂停与重启容器</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">## 暂停容器</span></span><br><span class="line">docker [container] pause containerName/Id</span><br><span class="line"><span class="comment">## 重启</span></span><br><span class="line">docker [container] restart containerName/Id </span><br></pre></td></tr></table></figure>
+</li>
+<li><p>删除容器</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">## 删除一个终止的容器</span></span><br><span class="line">docker rm containerName/Id</span><br><span class="line"><span class="comment">## 删除所有终止的容器</span></span><br><span class="line">docker container prune</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>容器文件复制</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">## container cp命令支持在容器和主机之间复制文件</span></span><br><span class="line"><span class="comment">## 将本地的data文件复制到dev容器下的/tmp</span></span><br><span class="line">docker [container] cp data dev:/tmp</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>查看文件系统变更</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">## docker [container] diff containerName/Id</span></span><br><span class="line">docker diff dev</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>查看端口映射</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">## docker [container] port containerName/Id </span></span><br><span class="line">docker port dev</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>更新配置</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">## container update命令可以更新容器的一些运行时配置，主要是一些资源限制份</span></span><br><span class="line">docker update --<span class="built_in">help</span> 查看可以更新容器运行时的配置</span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+<h4 id="定制镜像"><a href="#定制镜像" class="headerlink" title="定制镜像"></a>定制镜像</h4><ul>
+<li><p>Dockerfile文件示例</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line">FROM ubuntu:16.04</span><br><span class="line">MAINTAINER keithl@1248237617.com</span><br><span class="line"></span><br><span class="line">RUN mv /etc/apt/sources.list /etc/apt/sources.list-backup</span><br><span class="line">COPY $PWD/config/sources.list /etc/apt/sources.list</span><br><span class="line">COPY $PWD/config/.vimrc /root/.vimrc</span><br><span class="line"></span><br><span class="line">RUN apt-get update &amp;&amp; apt-get install -y openssh-server</span><br><span class="line">RUN mkdir /var/run/sshd</span><br><span class="line">RUN echo &#x27;root:root123&#x27; | chpasswd</span><br><span class="line">RUN sed -i &#x27;s/PermitRootLogin prohibit-password/PermitRootLogin yes/&#x27; /etc/ssh/sshd_config</span><br><span class="line"></span><br><span class="line"># SSH login fix. Otherwise user is kicked off after login</span><br><span class="line">RUN sed &#x27;s@session\s*required\s*pam_loginuid.so@session optional pam_loginuid.so@g&#x27; -i /etc/pam.d/sshd</span><br><span class="line"></span><br><span class="line">#ENV NOTVISIBLE &quot;in users profile&quot;</span><br><span class="line">RUN echo &quot;export VISIBLE=now&quot; &gt;&gt; /etc/profile</span><br><span class="line"></span><br><span class="line">## install nginx</span><br><span class="line">##RUN apt-get install nginx</span><br><span class="line"></span><br><span class="line">## install mysql</span><br><span class="line">##RUN apt-get install mysql-server-5.7</span><br><span class="line"></span><br><span class="line">## install vim</span><br><span class="line">RUN apt-get install -y vim</span><br><span class="line"></span><br><span class="line">## use netstat</span><br><span class="line">RUN apt-get install -y net-tools</span><br><span class="line"></span><br><span class="line">EXPOSE 22 80 3306 50000</span><br><span class="line">CMD [&quot;/usr/sbin/sshd&quot;, &quot;-D&quot;]</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>基于Dockerfile构建镜像</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># cd /path/dockerfilepath (ls -al # have Dockerfile file)</span></span><br><span class="line">docker build -t imageName:tag .</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>基于容器定制镜像</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">docker commit containerName keithl20160828/dev:1.0</span><br><span class="line">docker images</span><br><span class="line">docker push keithl20160828/dev:1.0</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>基于已有的镜像构建为自己的私有库镜像</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">docker tag session-web:lastest keithl20160828/session-web:1.0</span><br><span class="line">docker push keithl20160828/session-web:1.0</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>保存镜像并拷贝到新机器重建镜像</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">## 在机器A上保存</span></span><br><span class="line">docker save nginx | gzip &gt; nginx-lastest.tar.gz</span><br><span class="line"><span class="comment">## 在机器B上加载nginx镜像</span></span><br><span class="line">docker load -i nginx-lastest.tar.gz </span><br><span class="line">docker load &lt; nginx-lastest.tar.gz </span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+<h4 id="数据持久化"><a href="#数据持久化" class="headerlink" title="数据持久化"></a>数据持久化</h4><ul>
+<li>docker数据管理方式</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">## 使用-v以及--mount方式来挂载数据卷(创建docker的数据卷会持久化到操作系统上的文件系统),同时还可以通过指定--mount type=bind挂载在当前宿主机器上的文件目录，</span></span><br><span class="line"><span class="comment">## 也可以通过--mount bind=tmpfs来挂载到内存,而使用-v是挂载到数据卷上，即使持久化到docker创建的指定数据卷上</span></span><br><span class="line"><span class="comment">## --mount or -v 挂载到数据卷，生产环境</span></span><br><span class="line"><span class="comment">## --mount type=bind,挂载到主机目录，需要使用主机目录的决定路径，用于测试</span></span><br><span class="line"><span class="comment">## --mount type=tmpfs，挂载到内存中</span></span><br><span class="line"><span class="comment">## 于是使用docker进行挂载使用--mount能够更为明确自己做的事情</span></span><br><span class="line"><span class="comment">## 用户需要在多个容器之间共享一些持续更新的数据,需要使用数据卷进行挂载</span></span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><p>挂载形式</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">--mount选项支持三种类型的数据卷，</span><br><span class="line">包括：</span><br><span class="line">- volume：普通数据卷，映射到主机/var/lib/docker/volumes路径下；</span><br><span class="line">- bind：绑定数据卷，映射到主机指定路径下；</span><br><span class="line">- tmpfs：临时数据卷，只存在于内存中,还可以使用tmpfs类型的数据卷,其中数据只存在于内存中,容器退出后自动删除.</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>创建数据卷</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">## 创建数据卷</span></span><br><span class="line">docker volume create -d volumeName</span><br><span class="line"><span class="comment">## 存储在本地主机目录</span></span><br><span class="line">/var/lib/docker/volumes</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>查看数据卷</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">## 列出数据卷</span></span><br><span class="line">docker volumn ls</span><br><span class="line"><span class="comment">## 查看指定数据卷信息</span></span><br><span class="line">docker inspect volumn volumeName</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>删除悬虚数据卷</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">## 删除悬虚数据卷 </span></span><br><span class="line">docker volume prune</span><br><span class="line"></span><br><span class="line"><span class="comment">## 删除数据卷</span></span><br><span class="line">docker volume rm volumeName</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>数据卷挂载</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">## 使用持久化</span></span><br><span class="line"><span class="comment">## 创建一个数据卷并基于数据进行挂载</span></span><br><span class="line">docker volume create myVolume</span><br><span class="line">docker run -d -p 8080:80 --name nginx-dev -v myVolume:/etc/nginx nginx:1.0 </span><br><span class="line">docker run -d -p 8080:80 --name nginx-dev --mount <span class="built_in">source</span>=myVolume,target=/etc/nginx nginx:1.0</span><br><span class="line"></span><br><span class="line"><span class="comment">## 数据卷挂载在主机文件夹上</span></span><br><span class="line">docker run -d -p 8080:80 --name nginx-dev -v /opt/nginx/:/etc/nginx nginx:1.0  <span class="comment">## 本地目录不存在会创建</span></span><br><span class="line">docker run -d -p 8080:80 --name nginx-dev --mount <span class="built_in">type</span>=<span class="built_in">bind</span>,<span class="built_in">source</span>=/opt/nginx,target=/etc/nginx nginx:1.0   <span class="comment">## 本地目录不存在会报错</span></span><br><span class="line"></span><br><span class="line"><span class="comment">## 挂载文件</span></span><br><span class="line">docker run -d -p 8080:80 --name nginx-dev -v /opt/nginx/nginx.conf:/etc/nginx/nginx.conf nginx:1.0</span><br><span class="line">docker run -d -p 8080:80 --name nginx-dev --mount <span class="built_in">type</span>=<span class="built_in">bind</span>,<span class="built_in">source</span>=/opt/nginx/nginx.conf,target=/etc/nginx/nginx.conf nginx:1.0 </span><br><span class="line"></span><br><span class="line"><span class="comment">## Docker挂载数据卷的默认权限是读写（rw），用户也可以通过ro指定为只读</span></span><br><span class="line">docker run -d -p --name web -v /webapp:/opt/webapp:ro trainning/webapp python app.py</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>数据卷共享</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">## 多个容器之间共享数据卷 - 数据卷容器</span><br><span class="line">## 创建数据卷容器，仅用于多个容器进行共享</span><br><span class="line">## 此时进入容器根目录即可看到dbdata目录,容器最好命名与共享的文件夹名称一致，一眼就知道共享的文件夹名称</span><br><span class="line">docker run -it -d -v /dbdata --name db ubuntu:latest</span><br><span class="line"></span><br><span class="line">## 其他容器进行共享</span><br><span class="line">## 使用--volumes-from参数所挂载数据卷的容器自身并不需要保持在运行状态</span><br><span class="line">## 如果删除了挂载的容器（包括db、db1和db2），数据卷并不会被自动删除。</span><br><span class="line">## 如果要删除一个数据卷，必须在删除最后一个还挂载着它的容器时显式使用docker rm -v命令来指定同时删除关联的容器</span><br><span class="line">docker run -it -d --volumes-from db --name db1 ubuntu:latest</span><br><span class="line">docker run -it -d --volumes-from db --name db2 ubuntu:latest</span><br><span class="line"></span><br><span class="line">## 此时在进入上述容器db/db1/db2的根目录下的dbdata为三个容器共享，此时其中一个容器在此目录进行写变化，则其他容器也能接收到最新的数据变化</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>数据备份与恢复</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">## 挂载宿主机器并备份dbdata数据目录</span></span><br><span class="line">docker run --volumes-from db -v $(<span class="built_in">pwd</span>):/backup --name backup-docker ubuntu:lastest tar cvf /backup/backup.tar /dbdata</span><br><span class="line"></span><br><span class="line"><span class="comment">## 恢复</span></span><br><span class="line"><span class="comment">## 先创建一个数据卷</span></span><br><span class="line">docker run -it -d -v /dbdata2 --name dbdata2 ubuntu:lastest</span><br><span class="line">docker run -it -d --volumes-from dbdata2 -v $(<span class="built_in">pwd</span>):/backup restore-docker ubuntu:lastest tar xvf /backup/backup.tar</span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+<h4 id="docker网络"><a href="#docker网络" class="headerlink" title="docker网络"></a>docker网络</h4><ul>
+<li><p>宿主机器与docker容器之间的互通</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">## -P, 随机分配端口</span></span><br><span class="line">docker run -d -it -P --name dev keithl20160828/dev:1.0</span><br><span class="line"></span><br><span class="line"><span class="comment">## -p 指定端口</span></span><br><span class="line">docker run -d -it -p 8080:80 --name dev keithl20160828/dev:1.0</span><br><span class="line"></span><br><span class="line"><span class="comment">## 映射指定地址的任意端口</span></span><br><span class="line"><span class="comment">## 将容器的80端口映射到192.168.10.9地址下的随机分配的端口</span></span><br><span class="line">docker run -d -it -p 192.168.10.9::80 --name dev keithl20160828/dev:1.0 </span><br></pre></td></tr></table></figure>
+</li>
+<li><p>查看绑定的端口</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">## 查看容器端口绑定到对应的地址与端口</span></span><br><span class="line">docker [container] port containerName/Id containerPort</span><br><span class="line"></span><br><span class="line"><span class="comment">## 查看容器的网络配置</span></span><br><span class="line">docker inspect containerName/Id </span><br></pre></td></tr></table></figure>
+</li>
+<li><p>容器之间的服务互通</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">## 创建一个db的容器并绑定数据卷</span></span><br><span class="line">docker volume create db</span><br><span class="line">docker run -it -d -p 3306:3306 --name mysql-db -v db:/opt/mysql/data mysql:1.0</span><br><span class="line"></span><br><span class="line"><span class="comment">## 实现web容器与db互联</span></span><br><span class="line"><span class="comment">## --link 实现互联</span></span><br><span class="line"><span class="comment">## --link linkedContainerName:linkedContainerAlias</span></span><br><span class="line">docker run -it -d -p 80:80 --name web -v <span class="variable">$PWD</span>/go:/opt/web --link mysql-db:mysql web:1.0 go run main.go</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>Docker通过两种方式公开连接信息</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">## 1）环境变量env</span></span><br><span class="line"><span class="comment">## 查看环境变量</span></span><br><span class="line">docker <span class="built_in">exec</span> -it dev /bin/bash</span><br><span class="line">env</span><br><span class="line"></span><br><span class="line">docker run -it -d --name dev ubuntu:1.0 env</span><br><span class="line"></span><br><span class="line"><span class="comment">## 2)更新/etc/hosts文件</span></span><br><span class="line">docker <span class="built_in">exec</span> -it dev /bin/bash</span><br><span class="line">cat /etc/hosts</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>网络相关的技术</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">SDN（软件定义网络）或NFV（网络功能虚拟化）的相关技术</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+
+    </div>
+
+    <div>全文完。</div>
+  </article>
+  <div class="toc-container">
+    
+  <div id="toc" class="toc-article">
+    <strong class="toc-title">目录</strong>
+    <ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#docker-%E7%9B%B8%E5%85%B3%E5%91%BD%E4%BB%A4%E5%B0%8F%E7%BB%93"><span class="toc-text">docker 相关命令小结</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%9F%A5%E7%9C%8B%E9%95%9C%E5%83%8F%E5%9C%B0%E5%9D%80"><span class="toc-text">查看镜像地址</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#docker-%E9%95%9C%E5%83%8F%E6%93%8D%E4%BD%9C"><span class="toc-text">docker 镜像操作</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%AE%B9%E5%99%A8%E6%93%8D%E4%BD%9C"><span class="toc-text">容器操作</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%AE%9A%E5%88%B6%E9%95%9C%E5%83%8F"><span class="toc-text">定制镜像</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%95%B0%E6%8D%AE%E6%8C%81%E4%B9%85%E5%8C%96"><span class="toc-text">数据持久化</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#docker%E7%BD%91%E7%BB%9C"><span class="toc-text">docker网络</span></a></li></ol></li></ol>
+  </div>
+
+
+  </div>
+</div>
+<div class="copyright">
+    <span>本作品采用</span>
+    <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by/4.0/">知识共享署名 4.0 国际许可协议</a>
+    <span>进行许可。 转载时请注明原文链接。</span>
+</div>
+<div class="share" style="width: 100%;">
+  <img src="/images/wechat-small.jpg" alt="Running Geek" style="margin: auto; display: block;"/>
+
+  <div style="margin: auto; text-align: center; font-size: 0.8em; color: grey;">老铁们关注走一走，不迷路</div>
+  
+</div>
+
+  
+    <div class="post-nav">
+      <div class="post-nav-item post-nav-next">
+        
+          <span>〈 </span>
+          <a href="/2021/04/13/design/" rel="next" title="设计原则">
+          设计原则
+          </a>
+        
+      </div>
+  
+      <div class="post-nav-item post-nav-prev">
+          
+          <a href="/2021/04/18/k8s01/" rel="prev" title="K8S容器化技术">
+            K8S容器化技术
+          </a>
+          <span>〉</span>
+        
+      </div>
+    </div>
+  
+
+
+    </div>
+
+    
+
+  </div>
+  <footer class="footer text-center">
+    <div id="bottom-inner">
+        <a class="bottom-item" href="https://xiaokunliu.github.io">首页</a> |
+        <a class="bottom-item" href="https://xiaokunliu.github.io" target="_blank">主站</a> |
+        <a class="bottom-item" href="https://github.com/xiaokunliu" target="_blank">GitHub</a> |
+        <a class="bottom-item" href="https://hexo.io" target="_blank">Powered by hexo</a> |
+        <a class="bottom-item" href="https://github.com/KevinOfNeu/hexo-theme-xoxo" target="_blank">Theme xoxo</a>
+    </div>
+</footer>
+  
+
+<script>
+  (function(window, document, undefined) {
+
+    var timer = null;
+
+    function returnTop() {
+      cancelAnimationFrame(timer);
+      timer = requestAnimationFrame(function fn() {
+        var oTop = document.body.scrollTop || document.documentElement.scrollTop;
+        if (oTop > 0) {
+          document.body.scrollTop = document.documentElement.scrollTop = oTop - 50;
+          timer = requestAnimationFrame(fn);
+        } else {
+          cancelAnimationFrame(timer);
+        }
+      });
+    }
+
+    var hearts = [];
+    window.requestAnimationFrame = (function() {
+      return window.requestAnimationFrame ||
+        window.webkitRequestAnimationFrame ||
+        window.mozRequestAnimationFrame ||
+        window.oRequestAnimationFrame ||
+        window.msRequestAnimationFrame ||
+        function(callback) {
+          setTimeout(callback, 1000 / 60);
+        }
+    })();
+    init();
+
+    function init() {
+      css(".heart{z-index:9999;width: 10px;height: 10px;position: fixed;background: #f00;transform: rotate(45deg);-webkit-transform: rotate(45deg);-moz-transform: rotate(45deg);}.heart:after,.heart:before{content: '';width: inherit;height: inherit;background: inherit;border-radius: 50%;-webkit-border-radius: 50%;-moz-border-radius: 50%;position: absolute;}.heart:after{top: -5px;}.heart:before{left: -5px;}");
+      attachEvent();
+      gameloop();
+      addMenuEvent();
+    }
+
+    function gameloop() {
+      for (var i = 0; i < hearts.length; i++) {
+        if (hearts[i].alpha <= 0) {
+          document.body.removeChild(hearts[i].el);
+          hearts.splice(i, 1);
+          continue;
+        }
+        hearts[i].y--;
+        hearts[i].scale += 0.004;
+        hearts[i].alpha -= 0.013;
+        hearts[i].el.style.cssText = "left:" + hearts[i].x + "px;top:" + hearts[i].y + "px;opacity:" + hearts[i].alpha + ";transform:scale(" + hearts[i].scale + "," + hearts[i].scale + ") rotate(45deg);background:" + hearts[i].color;
+      }
+      requestAnimationFrame(gameloop);
+    }
+
+    /**
+     * 给logo设置点击事件
+     * 
+     * - 回到顶部
+     * - 出现爱心
+     */
+    function attachEvent() {
+      var old = typeof window.onclick === "function" && window.onclick;
+      var logo = document.getElementById("logo");
+      if (logo) {
+        logo.onclick = function(event) {
+          returnTop();
+          old && old();
+          createHeart(event);
+        }
+      }
+      
+    }
+
+    function createHeart(event) {
+      var d = document.createElement("div");
+      d.className = "heart";
+      hearts.push({
+        el: d,
+        x: event.clientX - 5,
+        y: event.clientY - 5,
+        scale: 1,
+        alpha: 1,
+        color: randomColor()
+      });
+      document.body.appendChild(d);
+    }
+
+    function css(css) {
+      var style = document.createElement("style");
+      style.type = "text/css";
+      try {
+        style.appendChild(document.createTextNode(css));
+      } catch (ex) {
+        style.styleSheet.cssText = css;
+      }
+      document.getElementsByTagName('head')[0].appendChild(style);
+    }
+
+    function randomColor() {
+      // return "rgb(" + (~~(Math.random() * 255)) + "," + (~~(Math.random() * 255)) + "," + (~~(Math.random() * 255)) + ")";
+      return "#F44336";
+    }
+
+    function addMenuEvent() {
+      var menu = document.getElementById('menu-main-post');
+      if (menu) {
+        var toc = document.getElementById('toc');
+        if (toc) {
+          menu.onclick = function() {
+            if (toc) {
+              if (toc.style.display == 'block') {
+                toc.style.display = 'none';
+              } else {
+                toc.style.display = 'block';
+              }
+            }
+          };
+        } else {
+          menu.style.display = 'none';
+        }
+      }
+    }
+
+  })(window, document);
+</script>
+
+  
+
+
+
+</body>
+</html>

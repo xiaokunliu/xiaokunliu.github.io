@@ -1,0 +1,352 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<!--
+config header
+-->
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#202020"/>
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  <script src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" async></script>
+
+  
+      <meta name="google-site-verification" content="{{ theme.google_site_verification }}" />
+  
+
+  
+    <meta name="keywords" content="分布式架构设计," />
+  
+
+  
+    <meta name="description" content="分享个人学习工作的技术知识" />
+  
+  
+  <link rel="icon" type="image/x-icon" href="/logo.jpg">
+  <title>category: 分布式架构设计 [ 疾风先生 ]</title>
+  
+    <!-- stylesheets list from config.yml -->
+    
+      <link rel="stylesheet" href="//cdn.bootcss.com/pure/1.0.0/pure-min.css">
+    
+      <link rel="stylesheet" href="/css/xoxo.css">
+    
+  
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+
+<body>
+  <div class="nav-container">
+    <nav class="home-menu pure-menu pure-menu-horizontal">
+  <a class="pure-menu-heading" href="/">
+    <img class="avatar" src="https://xiaokunliu.github.io/images/logo.jpg">
+    <span class="title">疾风先生</span>
+  </a>
+
+  <ul class="pure-menu-list clearfix">
+      
+          
+            <li class="pure-menu-item"><a href="/" class="pure-menu-link">首页</a></li>
+          
+      
+          
+            <li class="pure-menu-item"><a href="/archives" class="pure-menu-link">归档</a></li>
+          
+      
+          
+            <li class="pure-menu-item"><a href="/tags" class="pure-menu-link">标签</a></li>
+          
+      
+          
+            <li class="pure-menu-item"><a href="/categories" class="pure-menu-link">分类</a></li>
+          
+      
+          
+            <li class="pure-menu-item"><a href="/search" class="pure-menu-link">搜索</a></li>
+          
+      
+  </ul>
+   
+</nav>
+  </div>
+
+  <div class="container" id="content-outer">
+    <div class="inner" id="content-inner">
+      <div class="post-container">
+  <article class="post" id="post">
+    <header class="post-header text-center">
+      <h1 class="title">
+        分布式架构设计概要总结(上)
+      </h1>
+      <span>
+        
+        <time class="time" datetime="2020-05-10T22:17:02.000Z">
+        2020-05-10
+      </time>
+        
+      </span>
+      <span class="slash">/</span>
+      <span class="post-meta">
+      <span class="post-tags">
+        <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E5%88%86%E5%B8%83%E5%BC%8F%E6%9E%B6%E6%9E%84%E8%AE%BE%E8%AE%A1/" rel="tag">分布式架构设计</a></li></ul>
+      </span>
+    </span>
+      <span class="slash">/</span>
+      <span class="read">
+      <span id="busuanzi_value_page_pv"></span> 点击
+    </span>
+    </header>
+
+    <div class="post-content">
+      <span id="more"></span>
+
+<h3 id="分布式架构设计总结"><a href="#分布式架构设计总结" class="headerlink" title="分布式架构设计总结"></a>分布式架构设计总结</h3><h4 id="架构的演进"><a href="#架构的演进" class="headerlink" title="架构的演进"></a>架构的演进</h4><p><img src="https://raw.githubusercontent.com/xiaokunliu/xiaokunliu.github.io/feature/writing/websites/zimages/arch/arch01.jpg"></p>
+<h4 id="分布式架构设计目标与实现"><a href="#分布式架构设计目标与实现" class="headerlink" title="分布式架构设计目标与实现"></a>分布式架构设计目标与实现</h4><h5 id="分布式架构设计的目标"><a href="#分布式架构设计的目标" class="headerlink" title="分布式架构设计的目标"></a>分布式架构设计的目标</h5><p>使用分布式系统主要有两方面原因:</p>
+<ul>
+<li>增大系统容量: 我们的业务量越来越大，而要能应对越来越大的业务量，一台机器的性能已经无法满足了，我们需要多台机器才能应对大规模的应用场景。所以，我们需要垂直或是水平拆分业务系统，让其变成一个分布式的架构.</li>
+<li>加强系统可用。我们的业务越来越关键，需要提高整个系统架构的可用性，这就意味着架构中不能存在单点故障。这样，整个系统不会因为一台机器出故障而导致整体不可用。所以，需要通过分布式架构来冗余系统以消除单点故障，从而提高系统的可用性. </li>
+</ul>
+<p>也就是说实现分布式要实现上述两个目标,即保证系统的高性能(增加系统的吞吐量以及快速地响应时间)以及系统的高可用(故障容错处理机制)</p>
+<h5 id="分布式架构设计技术手段"><a href="#分布式架构设计技术手段" class="headerlink" title="分布式架构设计技术手段"></a>分布式架构设计技术手段</h5><blockquote>
+<p>提升系统容量的技术手段</p>
+</blockquote>
+<ul>
+<li><strong>集群技术</strong>: 通过水平扩展业务处理能力来提升系统的并发处理能力.</li>
+<li><strong>缓存设计</strong>: 在我们的上述服务进行水平抑或是垂直扩展的时候,这个时候我们的业务吞吐量也会增加,这个时候会把所有的流量压力打到数据存储系统上,为了缓解数据存储系统的压力,这个时候我们会考虑将数据进行冷热划分,对于热点数据集中在缓存系统服务以降低我们的数据存储压力.对于缓存的设计存在以下三种模式:其一是Cache Aside更新模式,即失效 - 命中 - 更新策略;其二是Read/Write Through更新模式,即缓存更新对应用程序透明,对于应用程序而言只有一个数据存储操作,由cache负载更新数据操作;其三是Write Back模型,类似于Linux下的Page Cache算法,应用程序直接将数据更新到cache中,有cache异步批量更新到数据库中.</li>
+<li><strong>垂直拆分业务(服务化设计)</strong>: 当我们的一个服务节点承担复杂繁多的业务服务的时候,必然会影响到我们业务处理的能力,为了提升我们的并发处理能力,为了提升我们的系统并发能力,可以考虑将我们的业务进行垂直拆分,于是就有了一个请求的处理需要多个服务之间进行协作完成.</li>
+<li><strong>数据镜像与分区(读写分离/分库分表)</strong>: 尽管使用缓存可以缓解我们的服务压力,但是仍然无法从根源上缓解流量对数据存储的压力,于是我们一方面会做读写分离,做主从集群,主节点负责处理事务的数据写入,从节点数据负责数据的读取;另一方面为了提升单库单表的并发能力,这个时候我们也是借助分而治之的设计思想,采取分库分表的思路来缓解我们单库单表的流量压力.</li>
+<li><strong>借助MQ中间件实现异步处理</strong>: 可以通过中间件技术实现异步处理,对流量进行削峰缓冲,进一步提高了程序的并发处理能力以及系统的稳定性.</li>
+<li><strong>数据异构设计</strong>: 将同一个业务数据按照业务需求的用途划分为不同的数据仓库存储以适用相应的业务需求场景,比如对于爬虫的聚合资讯数据来源存在很多不确定的因素,我们可以通过MQ的方式接收数据变更并将数据持久化存储到ES存储的引擎中,抑或是查询一个用户的订单信息,如果按照订单表的订单ID进行拆分,则需要聚合多张表才能返回相应的聚合数据,这个时候可以采取按照用户维度来进行异构一个与用户相关的订单数据仓库的策略(存在数据冗余,但是提升读取性能).</li>
+</ul>
+<p>简而言之,实现分布式高性能的技术主要利用分而治之的设计思想,同时随着业务的发展与架构的演进,引入了服务化的架构设计方案,缓存技术以及更为底层的性能优化.</p>
+<blockquote>
+<p>实现高可用技术手段</p>
+</blockquote>
+<p>分布式架构设计同时还需要具备另一个很重要的目标就是服务高可用,纵然我们的服务性能再好,如果无法保证服务节点的可用性,那么性能再提高也于事无补,于是我们还需要关注分布式中高可用的技术手段,即如下:</p>
+<ul>
+<li><strong>服务冗余与负载均衡技术</strong>: 从集群角度上思考,我们需要考虑集群是流量如何分担到集群服务的节点,集群服务节点出现异常或者不可用的时候流量如何切换,这个时候我们就需要考虑到负载均衡技术来帮助我们实现流量分发的调度,对服务节点采取心跳检测以及当服务节点异常采取重试与流量切换重新调度分配可用服务节点来避免单点故障问题,简而言之服务的高可用可以是服务冗余与负载均衡技术来避免单点故障,实现故障自动的恢复.</li>
+<li><strong>隔离技术</strong>: 为了防止故障蔓延到其他服务节点,我们通常会采取隔离技术来隔离拆分的业务服务,每个业务服务分别各自独立部署,在分布式系统设计中,一般会服务的种类或者是用户来进行隔离.</li>
+<li><strong>降级与限流技术</strong>:当系统承担的并发流量服务压力十分庞大的时候,这个时候我们需要采取保护措施,通过降级或者限流的技术来停用部分业务服务或者是拒绝部分用户的请求操作以确保整个系统不会被流量冲垮导致整体不可用. </li>
+<li><strong>超时重试与熔断</strong>: 在服务化架构设计中,为了防止服务产生雪崩,需要在调用服务加入超时重试以及熔断机制,避免将错误蔓延到其他服务导致整个系统服务不可用.从而缩小部分服务.</li>
+<li><strong>高可用架构设计</strong>: 利用服务冗余来避免单点故障,比如多租户隔离,灾备多活抑或是数据副本保证一致性,高可用不仅是的服务集群的高可用,还有就是中间件实现高可用设计.</li>
+<li><strong>高可用的运维</strong>:实现devops的CI或者CD的持续集成计划任务,能够构建执行自动化测试,实现灰度发布部署以及线上系统的自动化控制.</li>
+<li><strong>缓存的高可用</strong>:对于缓存系统也需要采用集群高可用的方式来避免单点故障以及实现故障恢复,同时对于缓存系统要实现高可用,需要注意以下几个问题:<ol>
+<li>一个是缓存穿透,即对于不存在的数据缓存始终都是没有命中会直接将流量打到数据存储层上.</li>
+<li>一个是缓存雪崩,即在某一个时刻,所有的缓存都失效过期,这个时候流量都会打到数据存储层,很容易引起数据存储层的并发性能问题</li>
+<li>最后一个是缓存击穿,即针对某一个热点缓存在某一个时间点存在并发访问量请求并且当前时间点缓存时间已经过期需要刷新缓存,这样也会将流量打到数据存层上.<br>因此对于缓存的高可用不仅需要避免单点故障,同时还需要具备容错能力,比如增加布隆过滤器来控制缓存穿透,根据不同的业务场景可以采取随机时间段的缓存时间来避免同一个时间点缓存失效以及对于具备热点的共享资源缓存操作,需要借助中间件的协调者来管理和控制我们的应用服务的操作避免缓存击穿的产生.</li>
+</ol>
+</li>
+<li><strong>服务化架构的高可用技术</strong>: 对于垂直拆分的业务我们将会对其做成业务的服务化设计,这个时候对于服务化架构的设计,我们需要解决服务与服务之间的通信,同时随着服务越来越多,服务依赖越来越多以及调用链路也会越来越频繁,同时服务为了避免单点故障,会引入服务集群,那么这个时候我们就需要对我们系统的不同服务集群进行管理,于是我们需要减轻我们的服务维护管理等繁琐工作,就有了服务治理(服务通信RPC/服务版本管理与维护/服务注册与发现/服务容错处理/服务安全控制/服务部署与指标监控等).</li>
+</ul>
+<h4 id="分布式面临难点"><a href="#分布式面临难点" class="headerlink" title="分布式面临难点"></a>分布式面临难点</h4><p>基于上述的认知,我们认识到分布式架构设计基本是围绕着提升系统容量以及保证系统的高可用展开,但是也引入一些问题:</p>
+<ul>
+<li>服务治理: 服务拆分、服务调用、服务发现、服务依赖、服务的关键度定义……服务治理的最大意义是需要把服务间的依赖关系、服务调用链，以及关键的服务给梳理出来，并对这些服务进行性能和可用性方面的管理。</li>
+<li>架构软件管理: 服务之间有依赖，而且有兼容性问题，所以，整体服务所形成的架构需要有架构版本管理、整体架构的生命周期管理，以及对服务的编排、聚合、事务处理等服务调度功能。</li>
+<li>DevOps: 分布式系统可以更为快速地更新服务，但是对于服务的测试和部署都会是挑战。所以，还需要 DevOps 的全流程，其中包括环境构建、持续集成、持续部署等。</li>
+<li>自动化运维: 有了 DevOps 后，我们就可以对服务进行自动伸缩、故障迁移、配置管理、状态管理等一系列的自动化运维技术了。</li>
+<li>资源调度管理: 应用层的自动化运维需要基础层的调度支持，也就是云计算 IaaS 层的计算、存储、网络等资源调度、隔离和管理。</li>
+<li>整体架构监控:如果没有一个好的监控系统，那么自动化运维和资源调度管理只可能成为一个泡影，因为监控系统是你的眼睛。没有眼睛，没有数据，就无法进行高效的运维。所以说，监控是非常重要的部分。这里的监控需要对三层系统（应用层、中间件层、基础层）进行监控。</li>
+<li>流量控制: 最后是我们的流量控制，负载均衡、服务路由、熔断、降级、限流等和流量相关的调度都会在这里，包括灰度发布之类的功能也在这里</li>
+</ul>
+<p><img src="https://raw.githubusercontent.com/xiaokunliu/xiaokunliu.github.io/feature/writing/websites/zimages/arch/arch02.jpg"></p>
+
+    </div>
+
+    <div>全文完。</div>
+  </article>
+  <div class="toc-container">
+    
+  <div id="toc" class="toc-article">
+    <strong class="toc-title">目录</strong>
+    <ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%88%86%E5%B8%83%E5%BC%8F%E6%9E%B6%E6%9E%84%E8%AE%BE%E8%AE%A1%E6%80%BB%E7%BB%93"><span class="toc-text">分布式架构设计总结</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%9E%B6%E6%9E%84%E7%9A%84%E6%BC%94%E8%BF%9B"><span class="toc-text">架构的演进</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%88%86%E5%B8%83%E5%BC%8F%E6%9E%B6%E6%9E%84%E8%AE%BE%E8%AE%A1%E7%9B%AE%E6%A0%87%E4%B8%8E%E5%AE%9E%E7%8E%B0"><span class="toc-text">分布式架构设计目标与实现</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#%E5%88%86%E5%B8%83%E5%BC%8F%E6%9E%B6%E6%9E%84%E8%AE%BE%E8%AE%A1%E7%9A%84%E7%9B%AE%E6%A0%87"><span class="toc-text">分布式架构设计的目标</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%E5%88%86%E5%B8%83%E5%BC%8F%E6%9E%B6%E6%9E%84%E8%AE%BE%E8%AE%A1%E6%8A%80%E6%9C%AF%E6%89%8B%E6%AE%B5"><span class="toc-text">分布式架构设计技术手段</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%88%86%E5%B8%83%E5%BC%8F%E9%9D%A2%E4%B8%B4%E9%9A%BE%E7%82%B9"><span class="toc-text">分布式面临难点</span></a></li></ol></li></ol>
+  </div>
+
+
+  </div>
+</div>
+<div class="copyright">
+    <span>本作品采用</span>
+    <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by/4.0/">知识共享署名 4.0 国际许可协议</a>
+    <span>进行许可。 转载时请注明原文链接。</span>
+</div>
+<div class="share" style="width: 100%;">
+  <img src="/images/wechat-small.jpg" alt="Running Geek" style="margin: auto; display: block;"/>
+
+  <div style="margin: auto; text-align: center; font-size: 0.8em; color: grey;">老铁们关注走一走，不迷路</div>
+  
+</div>
+
+  
+    <div class="post-nav">
+      <div class="post-nav-item post-nav-next">
+        
+          <span>〈 </span>
+          <a href="/2020/05/01/netty04/" rel="next" title="深入分析Netty核心特性">
+          深入分析Netty核心特性
+          </a>
+        
+      </div>
+  
+      <div class="post-nav-item post-nav-prev">
+          
+          <a href="/2020/05/14/distributed02/" rel="prev" title="分布式架构设计概要总结(下)">
+            分布式架构设计概要总结(下)
+          </a>
+          <span>〉</span>
+        
+      </div>
+    </div>
+  
+
+
+    </div>
+
+    
+
+  </div>
+  <footer class="footer text-center">
+    <div id="bottom-inner">
+        <a class="bottom-item" href="https://xiaokunliu.github.io">首页</a> |
+        <a class="bottom-item" href="https://xiaokunliu.github.io" target="_blank">主站</a> |
+        <a class="bottom-item" href="https://github.com/xiaokunliu" target="_blank">GitHub</a> |
+        <a class="bottom-item" href="https://hexo.io" target="_blank">Powered by hexo</a> |
+        <a class="bottom-item" href="https://github.com/KevinOfNeu/hexo-theme-xoxo" target="_blank">Theme xoxo</a>
+    </div>
+</footer>
+  
+
+<script>
+  (function(window, document, undefined) {
+
+    var timer = null;
+
+    function returnTop() {
+      cancelAnimationFrame(timer);
+      timer = requestAnimationFrame(function fn() {
+        var oTop = document.body.scrollTop || document.documentElement.scrollTop;
+        if (oTop > 0) {
+          document.body.scrollTop = document.documentElement.scrollTop = oTop - 50;
+          timer = requestAnimationFrame(fn);
+        } else {
+          cancelAnimationFrame(timer);
+        }
+      });
+    }
+
+    var hearts = [];
+    window.requestAnimationFrame = (function() {
+      return window.requestAnimationFrame ||
+        window.webkitRequestAnimationFrame ||
+        window.mozRequestAnimationFrame ||
+        window.oRequestAnimationFrame ||
+        window.msRequestAnimationFrame ||
+        function(callback) {
+          setTimeout(callback, 1000 / 60);
+        }
+    })();
+    init();
+
+    function init() {
+      css(".heart{z-index:9999;width: 10px;height: 10px;position: fixed;background: #f00;transform: rotate(45deg);-webkit-transform: rotate(45deg);-moz-transform: rotate(45deg);}.heart:after,.heart:before{content: '';width: inherit;height: inherit;background: inherit;border-radius: 50%;-webkit-border-radius: 50%;-moz-border-radius: 50%;position: absolute;}.heart:after{top: -5px;}.heart:before{left: -5px;}");
+      attachEvent();
+      gameloop();
+      addMenuEvent();
+    }
+
+    function gameloop() {
+      for (var i = 0; i < hearts.length; i++) {
+        if (hearts[i].alpha <= 0) {
+          document.body.removeChild(hearts[i].el);
+          hearts.splice(i, 1);
+          continue;
+        }
+        hearts[i].y--;
+        hearts[i].scale += 0.004;
+        hearts[i].alpha -= 0.013;
+        hearts[i].el.style.cssText = "left:" + hearts[i].x + "px;top:" + hearts[i].y + "px;opacity:" + hearts[i].alpha + ";transform:scale(" + hearts[i].scale + "," + hearts[i].scale + ") rotate(45deg);background:" + hearts[i].color;
+      }
+      requestAnimationFrame(gameloop);
+    }
+
+    /**
+     * 给logo设置点击事件
+     * 
+     * - 回到顶部
+     * - 出现爱心
+     */
+    function attachEvent() {
+      var old = typeof window.onclick === "function" && window.onclick;
+      var logo = document.getElementById("logo");
+      if (logo) {
+        logo.onclick = function(event) {
+          returnTop();
+          old && old();
+          createHeart(event);
+        }
+      }
+      
+    }
+
+    function createHeart(event) {
+      var d = document.createElement("div");
+      d.className = "heart";
+      hearts.push({
+        el: d,
+        x: event.clientX - 5,
+        y: event.clientY - 5,
+        scale: 1,
+        alpha: 1,
+        color: randomColor()
+      });
+      document.body.appendChild(d);
+    }
+
+    function css(css) {
+      var style = document.createElement("style");
+      style.type = "text/css";
+      try {
+        style.appendChild(document.createTextNode(css));
+      } catch (ex) {
+        style.styleSheet.cssText = css;
+      }
+      document.getElementsByTagName('head')[0].appendChild(style);
+    }
+
+    function randomColor() {
+      // return "rgb(" + (~~(Math.random() * 255)) + "," + (~~(Math.random() * 255)) + "," + (~~(Math.random() * 255)) + ")";
+      return "#F44336";
+    }
+
+    function addMenuEvent() {
+      var menu = document.getElementById('menu-main-post');
+      if (menu) {
+        var toc = document.getElementById('toc');
+        if (toc) {
+          menu.onclick = function() {
+            if (toc) {
+              if (toc.style.display == 'block') {
+                toc.style.display = 'none';
+              } else {
+                toc.style.display = 'block';
+              }
+            }
+          };
+        } else {
+          menu.style.display = 'none';
+        }
+      }
+    }
+
+  })(window, document);
+</script>
+
+  
+
+
+
+</body>
+</html>

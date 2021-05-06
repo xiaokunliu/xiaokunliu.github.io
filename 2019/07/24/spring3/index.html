@@ -1,0 +1,377 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<!--
+config header
+-->
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#202020"/>
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  <script src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" async></script>
+
+  
+      <meta name="google-site-verification" content="{{ theme.google_site_verification }}" />
+  
+
+  
+    <meta name="keywords" content="Spring技术小结," />
+  
+
+  
+    <meta name="description" content="分享个人学习工作的技术知识" />
+  
+  
+  <link rel="icon" type="image/x-icon" href="/logo.jpg">
+  <title>Spring小结(3) [ 疾风先生 ]</title>
+  
+    <!-- stylesheets list from config.yml -->
+    
+      <link rel="stylesheet" href="//cdn.bootcss.com/pure/1.0.0/pure-min.css">
+    
+      <link rel="stylesheet" href="/css/xoxo.css">
+    
+  
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+
+<body>
+  <div class="nav-container">
+    <nav class="home-menu pure-menu pure-menu-horizontal">
+  <a class="pure-menu-heading" href="/">
+    <img class="avatar" src="https://xiaokunliu.github.io/images/logo.jpg">
+    <span class="title">疾风先生</span>
+  </a>
+
+  <ul class="pure-menu-list clearfix">
+      
+          
+            <li class="pure-menu-item"><a href="/" class="pure-menu-link">首页</a></li>
+          
+      
+          
+            <li class="pure-menu-item"><a href="/archives" class="pure-menu-link">归档</a></li>
+          
+      
+          
+            <li class="pure-menu-item"><a href="/tags" class="pure-menu-link">标签</a></li>
+          
+      
+          
+            <li class="pure-menu-item"><a href="/categories" class="pure-menu-link">分类</a></li>
+          
+      
+          
+            <li class="pure-menu-item"><a href="/search" class="pure-menu-link">搜索</a></li>
+          
+      
+  </ul>
+   
+</nav>
+  </div>
+
+  <div class="container" id="content-outer">
+    <div class="inner" id="content-inner">
+      <div class="post-container">
+  <article class="post" id="post">
+    <header class="post-header text-center">
+      <h1 class="title">
+        Spring小结(3)
+      </h1>
+      <span>
+        
+        <time class="time" datetime="2019-07-24T10:51:03.000Z">
+        2019-07-24
+      </time>
+        
+      </span>
+      <span class="slash">/</span>
+      <span class="post-meta">
+      <span class="post-tags">
+        <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Spring%E6%8A%80%E6%9C%AF%E5%B0%8F%E7%BB%93/" rel="tag">Spring技术小结</a></li></ul>
+      </span>
+    </span>
+      <span class="slash">/</span>
+      <span class="read">
+      <span id="busuanzi_value_page_pv"></span> 点击
+    </span>
+    </header>
+
+    <div class="post-content">
+      <span id="more"></span>
+
+<h5 id="Spring面向切面AOP编程"><a href="#Spring面向切面AOP编程" class="headerlink" title="Spring面向切面AOP编程"></a>Spring面向切面AOP编程</h5><h6 id="1-AOP编程原理"><a href="#1-AOP编程原理" class="headerlink" title="1. AOP编程原理"></a>1. AOP编程原理</h6><blockquote>
+<p>使用背景</p>
+</blockquote>
+<ul>
+<li>需要在原有的应用功能模块增加额外的辅助功能,但并不是所有的应用功能模块所必需的</li>
+<li>使用面向对象继承或者依赖技术增加辅助功能,会导致部分甚至所有的应用功能模块声明的类都会与辅助功能类在代码上存在耦合关系</li>
+<li>使用代理委托方式,存在对委托对象进行复杂调用,容易导致原来的功能模块出现问题</li>
+</ul>
+<blockquote>
+<p>AOP切面作用</p>
+</blockquote>
+<ul>
+<li>可以将上述增加辅助功能的问题转换为一个特殊类,集中处理,无须分散到各处的应用模块中</li>
+<li>当前的特殊类只关注该辅助功能的实现,更为集中也便于维护</li>
+</ul>
+<blockquote>
+<p>AOP原理</p>
+</blockquote>
+<p><strong>AOP可以比喻为我们要完成的一项任务工作, 一般做任何一项任务都具备目标,任务分解以及利用现有的工具资源来帮助任务推进,简言之可以将AOP对应的概念理解如下</strong>:</p>
+<ul>
+<li>目标: 最终要完成任务的目标 – <strong>AOP的通知Advice,设定的程序目标</strong></li>
+<li>工具: 完成一项任务的目标我们需要借助一项工具来帮助我们更有效地完成  –  <strong>AOP的连接点,提供信息/方法</strong></li>
+<li>任务分解: 任务比较多的时候我们可以采用任务分解的方式来完成,将任务逐一划分为可执行的区域 – <strong>AOP的切点,类似任务分解的区域,也就是where</strong></li>
+<li>最后,就是在做一项任务之前,我们都知道要完成这项任务的目标以及如何去划分任务,这个就是<strong>AOP的切面,包含了通知和切点,定义任务的全部内容(准确地说,还包含工具提供的信息在里面)</strong></li>
+</ul>
+<blockquote>
+<p>AOP 术语</p>
+</blockquote>
+<ul>
+<li>切面: 定义要完成一项任务的全部内容,即声明一个切面的类定义任务内容信息</li>
+<li>通知: 定义要完成任务的目标,即在一个切面类下的目标方法<ul>
+<li>前置通知（Before）：在目标方法被调用之前调用通知功能；</li>
+<li>后置通知（After）：在目标方法完成之后调用通知，此时不会关心方法的输出是什么；</li>
+<li>返回通知（After-returning）：在目标方法成功执行之后调用通知；</li>
+<li>异常通知（After-throwing）：在目标方法抛出异常后调用通知；</li>
+<li>环绕通知（Around）：通知包裹了被通知的方法，在被通知的方法调用之前和调用之后执行自定义的行为</li>
+</ul>
+</li>
+<li>切点: 定义要在什么地方执行,即在一个切面类下的目标方法中,告诉目标方法要在什么地方执行</li>
+<li>连接点: 定义要完成任务的工具,即从程序角度而言,是利用应用程序中已有的功能为完成任务提供辅助,从我们定义的业务而言,是指我们原有的业务功能</li>
+<li>引入: 在无须修改类的情况下, 向现有的业务功能的类添加方法或者属性, 让它们具有新的行为和状态</li>
+<li>织入: 是把切面应用到目标对象并创建新的代理对象的过程.切面在指定的连接点被织入到目标对象中<ul>
+<li>编译期：切面在目标类编译时被织入。这种方式需要特殊的编译器。AspectJ的织入编译器就是以这种方式织入切面的</li>
+<li>类加载期：切面在目标类加载到JVM时被织入。这种方式需要特殊的类加载器（ClassLoader），它可以在目标类被引入应用之前增强该目标类的字节码。AspectJ 5的加载时织入（load-timeweaving，LTW）就支持以这种方式织入切面</li>
+<li>运行期：切面在应用运行的某个时刻被织入。一般情况下，在织入切面时，AOP容器会为目标对象动态地创建一个代理对象。Spring AOP就是以这种方式织入切面</li>
+</ul>
+</li>
+</ul>
+<h6 id="2-AOP编程创建切面"><a href="#2-AOP编程创建切面" class="headerlink" title="2. AOP编程创建切面"></a>2. AOP编程创建切面</h6><blockquote>
+<p>AOP 基于注解的方式  </p>
+</blockquote>
+<p> Spring AOP是基于方法去做增强,也就是在<strong>类或对象的方法上做增强,需要区分AOP引入</strong></p>
+<ul>
+<li>定义连接点<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 定义连接点 -- 业务处理功能</span></span><br><span class="line"><span class="comment"> * 项目是基于SpringBoot</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"> <span class="comment">// AnnPerformance.java</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">AnnPerformance</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">perform</span><span class="params">()</span></span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 实现类AnnPerformanceImpl.java</span></span><br><span class="line"><span class="meta">@Component</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">AnnPerformanceImpl</span> <span class="keyword">implements</span> <span class="title">AnnPerformance</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">perform</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;AnnPerformanceImpl performance ... &quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+<li>定义切面<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// AnnAudience.java</span></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 使用注解定义一个切面类，包含定义通知以及切点，使用注解的切面声明必须能够为通知类添加注解，为此要做到这点，必须有源码</span></span><br><span class="line"><span class="comment"> * 使用原则，基于注解的配置优于Java的配置，基于Java的配置优于xml的配置</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@Aspect</span> 使用该注解，Spring会动态为该Bean以及对应的目标bean创建代理对象，通过代理对象来实现目标，也就是通知</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="meta">@Aspect</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">AnnAudience</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> Logger LOGGER = LoggerFactory.getLogger(AnnAudience.class);</span><br><span class="line"></span><br><span class="line">	<span class="comment">// 定义切点</span></span><br><span class="line">    <span class="meta">@Pointcut(&quot;execution(* com.xiaokunliu.study.springinaction.aop.annotation.AnnPerformance.perform(..))&quot;)</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">perform</span><span class="params">()</span></span>&#123;</span><br><span class="line">        <span class="comment">// 方法内容并不重要，只是作为注解的附体</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">	<span class="comment">// 定义通知方法</span></span><br><span class="line">    <span class="meta">@Before(&quot;perform()&quot;)</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">silenceCellPhones</span><span class="params">()</span></span>&#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;silencing cell phones ... &quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@After(&quot;perform()&quot;)</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">takeSeats</span><span class="params">()</span></span>&#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;taking seats ...&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@AfterReturning(&quot;perform()&quot;)</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">applause</span><span class="params">()</span></span>&#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;applause ...&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@AfterThrowing(&quot;perform()&quot;)</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">demandRefund</span><span class="params">()</span></span>&#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;demand refund ...&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Around(&quot;perform()&quot;)</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">watchPerformance</span><span class="params">(ProceedingJoinPoint proceedingJoinPoint)</span></span>&#123;</span><br><span class="line">        <span class="keyword">try</span>&#123;</span><br><span class="line">            LOGGER.info(<span class="string">&quot;silencing cell phones ....&quot;</span>);</span><br><span class="line">            LOGGER.info(<span class="string">&quot;taking seats ....&quot;</span>);</span><br><span class="line">            proceedingJoinPoint.proceed();</span><br><span class="line">            LOGGER.info(<span class="string">&quot;demand refund ..... &quot;</span>);</span><br><span class="line">        &#125;<span class="keyword">catch</span> (Throwable e)&#123;</span><br><span class="line">            LOGGER.error(<span class="string">&quot;catching error from watchPerformance,messages=%s&quot;</span>, e.getMessage());</span><br><span class="line">            <span class="comment">//demandRefund();</span></span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure></li>
+<li>定义配置<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// AnnConcertConfig.java</span></span><br><span class="line"><span class="meta">@Configuration</span></span><br><span class="line"><span class="meta">@EnableAspectJAutoProxy</span>    <span class="comment">// 启动AspectJ自动代理</span></span><br><span class="line"><span class="meta">@ComponentScan(basePackages = &#123;&quot;com.xiaokunliu.study.springinaction.aop.annotation&quot;&#125;)</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">AnnConcertConfig</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Bean</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> AnnAudience <span class="title">audience</span><span class="params">()</span></span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> AnnAudience();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+<li>编写单元测试<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// TestAnnAop.java</span></span><br><span class="line"><span class="meta">@RunWith(SpringJUnit4ClassRunner.class)</span></span><br><span class="line"><span class="meta">@ContextConfiguration(classes = AnnConcertConfig.class)</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">TestAnnAop</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Autowired</span></span><br><span class="line">    <span class="keyword">private</span> AnnPerformance annPerformance;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Test</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">testAnnAop</span><span class="params">()</span></span>&#123;</span><br><span class="line">        System.out.println(annPerformance.getClass());</span><br><span class="line">        <span class="comment">// 运行结果: class com.sun.proxy.$Proxy26</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+<li>AOP 注解注入参数定义切面<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 定义另一个切面来处理方法调用的统计</span></span><br><span class="line"><span class="meta">@Aspect</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">AopTrackCounter</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 处理通知中的参数</span></span><br><span class="line"><span class="comment">     * 目标： 需要记录每个磁道被播放的次数，此时需要将记录被播放的次数与播放本身分离出来</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">private</span> Map&lt;String, Integer&gt; trackedCounters = <span class="keyword">new</span> ConcurrentHashMap&lt;&gt;();</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Pointcut(&quot;execution(* com.xiaokunliu.study.springinaction.aop.annotation.AopCompactDisc.play(java.lang.String)) &amp;&amp; args(trackedNumber)&quot;)</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">trackedPlay</span><span class="params">(String trackedNumber)</span></span>&#123;&#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Before(&quot;trackedPlay(trackedNumber)&quot;)</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">countTracked</span><span class="params">(String trackerNumberKey)</span></span>&#123;</span><br><span class="line">        <span class="keyword">int</span> counter = getCountTrack(trackerNumberKey);</span><br><span class="line">        trackedCounters.put(trackerNumberKey, counter + <span class="number">1</span>);</span><br><span class="line">    &#125;</span><br><span class="line">	</span><br><span class="line">	<span class="comment">// 获取根据trackerNumberKey统计数据</span></span><br><span class="line">	<span class="comment">// 每一个方法对应一个key</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">getCountTrack</span><span class="params">(String trackerNumberKey)</span></span>&#123;</span><br><span class="line">        <span class="comment">// 1.8 版本 Map.getOrDefault</span></span><br><span class="line">        <span class="keyword">return</span> trackedCounters.getOrDefault(trackerNumberKey, <span class="number">0</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+<li>AOP注解注入参数定义连接点<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// AopCompactDisc.java</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">AopCompactDisc</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">play</span><span class="params">(String trackedNumber)</span></span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// AopBlankDisc.java</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">AopBlankDisc</span> <span class="keyword">implements</span> <span class="title">AopCompactDisc</span> </span>&#123;</span><br><span class="line">	 <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">play</span><span class="params">(String trackNumberKey)</span> </span>&#123;</span><br><span class="line">        System.out.println(trackNumberKey + <span class="string">&quot; AOP AopBlankDisc play .... &quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+<li>注入参数单元测试<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@RunWith(SpringJUnit4ClassRunner.class)</span></span><br><span class="line"><span class="meta">@ContextConfiguration(classes = AnnConcertConfig.class)</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">TestAspectAop</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Autowired</span></span><br><span class="line">    <span class="keyword">private</span> AopCompactDisc aopCompactDisc;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Autowired</span></span><br><span class="line">    <span class="keyword">private</span> AopTrackCounter trackCounter;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Test</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">testTrackCounter</span><span class="params">()</span></span>&#123;</span><br><span class="line">        System.out.println(aopCompactDisc.getClass());</span><br><span class="line">        String trackNumber = <span class="string">&quot;com.xiaokunliu.study.springinaction.aop.TestAspectAop.testTrackCounter&quot;</span>;</span><br><span class="line">        aopCompactDisc.play(trackNumber);   <span class="comment">// 3</span></span><br><span class="line">        System.out.println(trackCounter.getCountTrack(trackNumber)); <span class="comment">//4</span></span><br><span class="line">		</span><br><span class="line">		<span class="comment">// 重复3,4代码</span></span><br><span class="line">		<span class="comment">// ....</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;	</span><br></pre></td></tr></table></figure></li>
+<li>运行结果<br><img src="https://img-blog.csdnimg.cn/20190924131341971.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dpbmRfNjAy,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"></li>
+<li>AOP 注解引入,即切面能够为<strong>现有的对象或者类</strong>增加新的方法<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 比如现在需要为现有的类或者对象增加监控的方法</span></span><br><span class="line"><span class="comment">// 定义一个监控的接口以及对应的实现类处理监控 -- 注意只是处理监控相关的,和Performance没有关系</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">AnnMonitor</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 将这个接口的调用应用到Performance实现中</span></span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">performMonitor</span><span class="params">()</span></span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">AnnDefaultMonitor</span> <span class="keyword">implements</span> <span class="title">AnnMonitor</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">performMonitor</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="comment">// 处理监控的方法</span></span><br><span class="line">        System.out.println(<span class="string">&quot;AnnDefaultMonitor performMonitor ... &quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+<li>定义监控的切面<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Aspect</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">AnnMonitorAspect</span> </span>&#123;</span><br><span class="line">    <span class="meta">@DeclareParents(value = &quot;com.xiaokunliu.study.springinaction.aop.annotation.AnnPerformance+&quot;, defaultImpl = AnnDefaultMonitor.class)</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> AnnMonitor monitor;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+<li>单元测试<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@RunWith(SpringJUnit4ClassRunner.class)</span></span><br><span class="line"><span class="meta">@ContextConfiguration(classes = AnnConcertConfig.class)</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">TestAnnAop</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Autowired</span></span><br><span class="line">    <span class="keyword">private</span> AnnPerformance annPerformance;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Autowired</span></span><br><span class="line">    <span class="keyword">private</span> AnnMonitor monitor;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Test</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">testAnnAop</span><span class="params">()</span></span>&#123;</span><br><span class="line">        System.out.println(annPerformance.getClass());</span><br><span class="line">        System.out.println(monitor.getClass());</span><br><span class="line">        System.out.println(monitor.getClass() == annPerformance.getClass());</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+<li>运行结果<br><img src="https://img-blog.csdnimg.cn/2019092414043748.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dpbmRfNjAy,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"></li>
+<li>AOP引入可以用下图表示(引入Spring实战的图片)<br><img src="https://img-blog.csdnimg.cn/20190924140543762.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dpbmRfNjAy,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"><blockquote>
+<p>AOP 基于xml声明式</p>
+</blockquote>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br></pre></td><td class="code"><pre><span class="line">// java 代码省略,基本与上述一致,这里仅做xml相关的配置</span><br><span class="line">// bean_aop.xml</span><br><span class="line"><span class="meta">&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">beans</span> <span class="attr">xmlns</span>=<span class="string">&quot;http://www.springframework.org/schema/beans&quot;</span></span></span><br><span class="line"><span class="tag">       <span class="attr">xmlns:xsi</span>=<span class="string">&quot;http://www.w3.org/2001/XMLSchema-instance&quot;</span></span></span><br><span class="line"><span class="tag">       <span class="attr">xmlns:context</span>=<span class="string">&quot;http://www.springframework.org/schema/context&quot;</span></span></span><br><span class="line"><span class="tag">       <span class="attr">xmlns:aop</span>=<span class="string">&quot;http://www.springframework.org/schema/aop&quot;</span></span></span><br><span class="line"><span class="tag">       <span class="attr">xsi:schemaLocation</span>=<span class="string">&quot;http://www.springframework.org/schema/beans</span></span></span><br><span class="line"><span class="string"><span class="tag">                           http://www.springframework.org/schema/beans/spring-beans-4.0.xsd</span></span></span><br><span class="line"><span class="string"><span class="tag">                           http://www.springframework.org/schema/context</span></span></span><br><span class="line"><span class="string"><span class="tag">                           http://www.springframework.org/schema/context/spring-context-4.0.xsd</span></span></span><br><span class="line"><span class="string"><span class="tag">                           http://www.springframework.org/schema/aop</span></span></span><br><span class="line"><span class="string"><span class="tag">                           http://www.springframework.org/schema/aop/spring-aop-4.0.xsd&quot;</span>&gt;</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    <span class="comment">&lt;!--AOP 基于Xml配置, 自动扫描指定的包目录下的java --&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">context:component-scan</span> <span class="attr">base-package</span>=<span class="string">&quot;com.xiaokunliu.study.springinaction.aop.xml&quot;</span>/&gt;</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">&lt;!-- 声明面向切面，与注解@EnableAspectJAutoProxy对应,启动AspectJ自动代理 --&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">aop:aspectj-autoproxy</span> /&gt;</span></span><br><span class="line"></span><br><span class="line">     <span class="comment">&lt;!--</span></span><br><span class="line"><span class="comment">        声明需要的bean</span></span><br><span class="line"><span class="comment">     --&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">bean</span> <span class="attr">id</span>=<span class="string">&quot;aopPerformance&quot;</span> <span class="attr">class</span>=<span class="string">&quot;com.xiaokunliu.study.springinaction.aop.xml.AopPerformanceImpl&quot;</span>/&gt;</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">&lt;!--声明切面为一个bean--&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">bean</span> <span class="attr">id</span>=<span class="string">&quot;audience&quot;</span> <span class="attr">class</span>=<span class="string">&quot;com.xiaokunliu.study.springinaction.aop.xml.AopAudience&quot;</span>/&gt;</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    <span class="comment">&lt;!--</span></span><br><span class="line"><span class="comment">        定义spring配置的切面</span></span><br><span class="line"><span class="comment">    --&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">aop:config</span>&gt;</span></span><br><span class="line">        <span class="comment">&lt;!-- 切面 --&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">aop:aspect</span> <span class="attr">ref</span>=<span class="string">&quot;audience&quot;</span>&gt;</span></span><br><span class="line">            <span class="comment">&lt;!--  切点 --&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">aop:pointcut</span> <span class="attr">id</span>=<span class="string">&quot;performance&quot;</span> <span class="attr">expression</span>=<span class="string">&quot;execution(* com.xiaokunliu.study.springinaction.aop.xml.AopPerformance.perform(..))&quot;</span>/&gt;</span></span><br><span class="line">            <span class="comment">&lt;!-- 通知方法 --&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">aop:before</span> <span class="attr">method</span>=<span class="string">&quot;silenceCellPhones&quot;</span> <span class="attr">pointcut-ref</span>=<span class="string">&quot;performance&quot;</span>/&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">aop:after</span> <span class="attr">method</span>=<span class="string">&quot;takeSeats&quot;</span> <span class="attr">pointcut-ref</span>=<span class="string">&quot;performance&quot;</span>/&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">aop:after-returning</span> <span class="attr">method</span>=<span class="string">&quot;applause&quot;</span> <span class="attr">pointcut-ref</span>=<span class="string">&quot;performance&quot;</span>/&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">aop:after-throwing</span> <span class="attr">method</span>=<span class="string">&quot;demandRefund&quot;</span> <span class="attr">pointcut-ref</span>=<span class="string">&quot;performance&quot;</span>/&gt;</span></span><br><span class="line"></span><br><span class="line">            <span class="comment">&lt;!-- 声明环绕通知 --&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">aop:around</span> <span class="attr">method</span>=<span class="string">&quot;watchPerformance&quot;</span> <span class="attr">pointcut-ref</span>=<span class="string">&quot;performance&quot;</span>/&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">aop:aspect</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">aop:config</span>&gt;</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">&lt;!--</span></span><br><span class="line"><span class="comment">        AOP 传递通知参数</span></span><br><span class="line"><span class="comment">    --&gt;</span></span><br><span class="line">    <span class="comment">&lt;!-- 定义切面bean --&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">bean</span> <span class="attr">id</span>=<span class="string">&quot;aopBlankDisc&quot;</span> <span class="attr">class</span>=<span class="string">&quot;com.xiaokunliu.study.springinaction.aop.xml.AopBlankDisc&quot;</span>/&gt;</span></span><br><span class="line"></span><br><span class="line">    <span class="tag">&lt;<span class="name">bean</span> <span class="attr">id</span>=<span class="string">&quot;tracker&quot;</span> <span class="attr">class</span>=<span class="string">&quot;com.xiaokunliu.study.springinaction.aop.xml.AopTrackCounter&quot;</span>/&gt;</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">&lt;!--</span></span><br><span class="line"><span class="comment">           注意参数名称要方法名称对应上去</span></span><br><span class="line"><span class="comment">    --&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">aop:config</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">aop:aspect</span> <span class="attr">ref</span>=<span class="string">&quot;tracker&quot;</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">aop:pointcut</span> <span class="attr">id</span>=<span class="string">&quot;tracker_performance&quot;</span></span></span><br><span class="line"><span class="tag">                          <span class="attr">expression</span>=<span class="string">&quot;execution(* com.xiaokunliu.study.springinaction.aop.xml.AopCompactDisc.play(java.lang.String)) and args(trackedNumber)&quot;</span>/&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">aop:before</span> <span class="attr">method</span>=<span class="string">&quot;trackedPlay&quot;</span> <span class="attr">pointcut-ref</span>=<span class="string">&quot;tracker_performance&quot;</span> <span class="attr">arg-names</span>=<span class="string">&quot;trackedNumber&quot;</span>/&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">aop:aspect</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">aop:config</span>&gt;</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">&lt;!--</span></span><br><span class="line"><span class="comment">        AOP 引入新的功能</span></span><br><span class="line"><span class="comment">    --&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">aop:config</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">aop:aspect</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">aop:declare-parents</span> <span class="attr">types-matching</span>=<span class="string">&quot;com.xiaokunliu.study.springinaction.aop.xml.AopPerformance+&quot;</span></span></span><br><span class="line"><span class="tag">                                 <span class="attr">implement-interface</span>=<span class="string">&quot;com.xiaokunliu.study.springinaction.aop.xml.AopMonitor&quot;</span></span></span><br><span class="line"><span class="tag">                                 <span class="attr">default-impl</span>=<span class="string">&quot;com.xiaokunliu.study.springinaction.aop.xml.AopDefaultMonitor&quot;</span>/&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">aop:aspect</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">aop:config</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">beans</span>&gt;</span></span><br></pre></td></tr></table></figure></li>
+<li>基于SpringBoot定义配置<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Configuration</span></span><br><span class="line"><span class="meta">@ImportResource(value = &quot;classpath:spring/beans_aop.xml&quot;)</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">AopConfig</span> </span>&#123;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+<li>单元测试<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@RunWith(SpringJUnit4ClassRunner.class)</span></span><br><span class="line"><span class="meta">@ContextConfiguration(classes = AopConfig.class)</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">TestAspectXml</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Autowired</span></span><br><span class="line">    <span class="keyword">private</span> AopPerformance annPerformance;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Autowired</span></span><br><span class="line">    <span class="keyword">private</span> AopMonitor monitor;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Autowired</span></span><br><span class="line">    <span class="keyword">private</span> AopCompactDisc aopCompactDisc;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Autowired</span></span><br><span class="line">    <span class="keyword">private</span> AopTrackCounter trackCounter;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Test</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">testAnnAop</span><span class="params">()</span></span>&#123;</span><br><span class="line">    	<span class="comment">// 运行结果如下:</span></span><br><span class="line">    	<span class="comment">//  class com.sun.proxy.$Proxy20</span></span><br><span class="line">		<span class="comment">//  class com.sun.proxy.$Proxy20</span></span><br><span class="line">		<span class="comment">// true</span></span><br><span class="line">      	System.out.println(annPerformance.getClass());</span><br><span class="line">        System.out.println(monitor.getClass());</span><br><span class="line">        System.out.println(monitor.getClass() == annPerformance.getClass());</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Test</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">testTrackCounter</span><span class="params">()</span></span>&#123;</span><br><span class="line">    	<span class="comment">// 执行结果如下:</span></span><br><span class="line">    	<span class="comment">/**</span></span><br><span class="line"><span class="comment">    	*	class com.sun.proxy.$Proxy21</span></span><br><span class="line"><span class="comment">			trackingNumber AOP AopBlankDisc play .... </span></span><br><span class="line"><span class="comment">			1</span></span><br><span class="line"><span class="comment">			trackingNumber AOP AopBlankDisc play .... </span></span><br><span class="line"><span class="comment">			2</span></span><br><span class="line"><span class="comment">			trackingNumber AOP AopBlankDisc play .... </span></span><br><span class="line"><span class="comment">			3</span></span><br><span class="line"><span class="comment">			trackingNumber AOP AopBlankDisc play .... </span></span><br><span class="line"><span class="comment">			4</span></span><br><span class="line"><span class="comment">			trackingNumber AOP AopBlankDisc play .... </span></span><br><span class="line"><span class="comment">			5</span></span><br><span class="line"><span class="comment">			trackingNumber AOP AopBlankDisc play .... </span></span><br><span class="line"><span class="comment">			6</span></span><br><span class="line"><span class="comment">			trackingNumber AOP AopBlankDisc play .... </span></span><br><span class="line"><span class="comment">			7</span></span><br><span class="line"><span class="comment">			trackingNumber AOP AopBlankDisc play .... </span></span><br><span class="line"><span class="comment">			8</span></span><br><span class="line"><span class="comment">    	*/</span></span><br><span class="line">        System.out.println(aopCompactDisc.getClass());</span><br><span class="line">        String trackNumber = <span class="string">&quot;trackingNumber&quot;</span>;</span><br><span class="line">        aopCompactDisc.play(trackNumber);		<span class="comment">// 2</span></span><br><span class="line">        System.out.println(trackCounter.getCountTrack(trackNumber)); <span class="comment">//3</span></span><br><span class="line">		<span class="comment">// 重复2,3代码 ... </span></span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+
+    </div>
+
+    <div>全文完。</div>
+  </article>
+  <div class="toc-container">
+    
+  <div id="toc" class="toc-article">
+    <strong class="toc-title">目录</strong>
+    <ol class="toc"><li class="toc-item toc-level-5"><a class="toc-link" href="#Spring%E9%9D%A2%E5%90%91%E5%88%87%E9%9D%A2AOP%E7%BC%96%E7%A8%8B"><span class="toc-text">Spring面向切面AOP编程</span></a><ol class="toc-child"><li class="toc-item toc-level-6"><a class="toc-link" href="#1-AOP%E7%BC%96%E7%A8%8B%E5%8E%9F%E7%90%86"><span class="toc-text">1. AOP编程原理</span></a></li><li class="toc-item toc-level-6"><a class="toc-link" href="#2-AOP%E7%BC%96%E7%A8%8B%E5%88%9B%E5%BB%BA%E5%88%87%E9%9D%A2"><span class="toc-text">2. AOP编程创建切面</span></a></li></ol></li></ol>
+  </div>
+
+
+  </div>
+</div>
+<div class="copyright">
+    <span>本作品采用</span>
+    <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by/4.0/">知识共享署名 4.0 国际许可协议</a>
+    <span>进行许可。 转载时请注明原文链接。</span>
+</div>
+<div class="share" style="width: 100%;">
+  <img src="/images/wechat-small.jpg" alt="Running Geek" style="margin: auto; display: block;"/>
+
+  <div style="margin: auto; text-align: center; font-size: 0.8em; color: grey;">老铁们关注走一走，不迷路</div>
+  
+</div>
+
+  
+    <div class="post-nav">
+      <div class="post-nav-item post-nav-next">
+        
+          <span>〈 </span>
+          <a href="/2019/06/12/linux03/" rel="next" title="linux工作常用命令小结3">
+          linux工作常用命令小结3
+          </a>
+        
+      </div>
+  
+      <div class="post-nav-item post-nav-prev">
+          
+          <a href="/2019/07/24/spring2/" rel="prev" title="Spring小结(2)">
+            Spring小结(2)
+          </a>
+          <span>〉</span>
+        
+      </div>
+    </div>
+  
+
+
+    </div>
+
+    
+
+  </div>
+  <footer class="footer text-center">
+    <div id="bottom-inner">
+        <a class="bottom-item" href="https://xiaokunliu.github.io">首页</a> |
+        <a class="bottom-item" href="https://xiaokunliu.github.io" target="_blank">主站</a> |
+        <a class="bottom-item" href="https://github.com/xiaokunliu" target="_blank">GitHub</a> |
+        <a class="bottom-item" href="https://hexo.io" target="_blank">Powered by hexo</a> |
+        <a class="bottom-item" href="https://github.com/KevinOfNeu/hexo-theme-xoxo" target="_blank">Theme xoxo</a>
+    </div>
+</footer>
+  
+
+<script>
+  (function(window, document, undefined) {
+
+    var timer = null;
+
+    function returnTop() {
+      cancelAnimationFrame(timer);
+      timer = requestAnimationFrame(function fn() {
+        var oTop = document.body.scrollTop || document.documentElement.scrollTop;
+        if (oTop > 0) {
+          document.body.scrollTop = document.documentElement.scrollTop = oTop - 50;
+          timer = requestAnimationFrame(fn);
+        } else {
+          cancelAnimationFrame(timer);
+        }
+      });
+    }
+
+    var hearts = [];
+    window.requestAnimationFrame = (function() {
+      return window.requestAnimationFrame ||
+        window.webkitRequestAnimationFrame ||
+        window.mozRequestAnimationFrame ||
+        window.oRequestAnimationFrame ||
+        window.msRequestAnimationFrame ||
+        function(callback) {
+          setTimeout(callback, 1000 / 60);
+        }
+    })();
+    init();
+
+    function init() {
+      css(".heart{z-index:9999;width: 10px;height: 10px;position: fixed;background: #f00;transform: rotate(45deg);-webkit-transform: rotate(45deg);-moz-transform: rotate(45deg);}.heart:after,.heart:before{content: '';width: inherit;height: inherit;background: inherit;border-radius: 50%;-webkit-border-radius: 50%;-moz-border-radius: 50%;position: absolute;}.heart:after{top: -5px;}.heart:before{left: -5px;}");
+      attachEvent();
+      gameloop();
+      addMenuEvent();
+    }
+
+    function gameloop() {
+      for (var i = 0; i < hearts.length; i++) {
+        if (hearts[i].alpha <= 0) {
+          document.body.removeChild(hearts[i].el);
+          hearts.splice(i, 1);
+          continue;
+        }
+        hearts[i].y--;
+        hearts[i].scale += 0.004;
+        hearts[i].alpha -= 0.013;
+        hearts[i].el.style.cssText = "left:" + hearts[i].x + "px;top:" + hearts[i].y + "px;opacity:" + hearts[i].alpha + ";transform:scale(" + hearts[i].scale + "," + hearts[i].scale + ") rotate(45deg);background:" + hearts[i].color;
+      }
+      requestAnimationFrame(gameloop);
+    }
+
+    /**
+     * 给logo设置点击事件
+     * 
+     * - 回到顶部
+     * - 出现爱心
+     */
+    function attachEvent() {
+      var old = typeof window.onclick === "function" && window.onclick;
+      var logo = document.getElementById("logo");
+      if (logo) {
+        logo.onclick = function(event) {
+          returnTop();
+          old && old();
+          createHeart(event);
+        }
+      }
+      
+    }
+
+    function createHeart(event) {
+      var d = document.createElement("div");
+      d.className = "heart";
+      hearts.push({
+        el: d,
+        x: event.clientX - 5,
+        y: event.clientY - 5,
+        scale: 1,
+        alpha: 1,
+        color: randomColor()
+      });
+      document.body.appendChild(d);
+    }
+
+    function css(css) {
+      var style = document.createElement("style");
+      style.type = "text/css";
+      try {
+        style.appendChild(document.createTextNode(css));
+      } catch (ex) {
+        style.styleSheet.cssText = css;
+      }
+      document.getElementsByTagName('head')[0].appendChild(style);
+    }
+
+    function randomColor() {
+      // return "rgb(" + (~~(Math.random() * 255)) + "," + (~~(Math.random() * 255)) + "," + (~~(Math.random() * 255)) + ")";
+      return "#F44336";
+    }
+
+    function addMenuEvent() {
+      var menu = document.getElementById('menu-main-post');
+      if (menu) {
+        var toc = document.getElementById('toc');
+        if (toc) {
+          menu.onclick = function() {
+            if (toc) {
+              if (toc.style.display == 'block') {
+                toc.style.display = 'none';
+              } else {
+                toc.style.display = 'block';
+              }
+            }
+          };
+        } else {
+          menu.style.display = 'none';
+        }
+      }
+    }
+
+  })(window, document);
+</script>
+
+  
+
+
+
+</body>
+</html>

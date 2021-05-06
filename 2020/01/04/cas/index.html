@@ -1,0 +1,403 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<!--
+config header
+-->
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#202020"/>
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  <script src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" async></script>
+
+  
+      <meta name="google-site-verification" content="{{ theme.google_site_verification }}" />
+  
+
+  
+    <meta name="keywords" content="并发编程," />
+  
+
+  
+    <meta name="description" content="分享个人学习工作的技术知识" />
+  
+  
+  <link rel="icon" type="image/x-icon" href="/logo.jpg">
+  <title>category: 并发编程 [ 疾风先生 ]</title>
+  
+    <!-- stylesheets list from config.yml -->
+    
+      <link rel="stylesheet" href="//cdn.bootcss.com/pure/1.0.0/pure-min.css">
+    
+      <link rel="stylesheet" href="/css/xoxo.css">
+    
+  
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+
+<body>
+  <div class="nav-container">
+    <nav class="home-menu pure-menu pure-menu-horizontal">
+  <a class="pure-menu-heading" href="/">
+    <img class="avatar" src="https://xiaokunliu.github.io/images/logo.jpg">
+    <span class="title">疾风先生</span>
+  </a>
+
+  <ul class="pure-menu-list clearfix">
+      
+          
+            <li class="pure-menu-item"><a href="/" class="pure-menu-link">首页</a></li>
+          
+      
+          
+            <li class="pure-menu-item"><a href="/archives" class="pure-menu-link">归档</a></li>
+          
+      
+          
+            <li class="pure-menu-item"><a href="/tags" class="pure-menu-link">标签</a></li>
+          
+      
+          
+            <li class="pure-menu-item"><a href="/categories" class="pure-menu-link">分类</a></li>
+          
+      
+          
+            <li class="pure-menu-item"><a href="/search" class="pure-menu-link">搜索</a></li>
+          
+      
+  </ul>
+   
+</nav>
+  </div>
+
+  <div class="container" id="content-outer">
+    <div class="inner" id="content-inner">
+      <div class="post-container">
+  <article class="post" id="post">
+    <header class="post-header text-center">
+      <h1 class="title">
+        并发原子性技术之CAS机制
+      </h1>
+      <span>
+        
+        <time class="time" datetime="2020-01-04T20:47:28.000Z">
+        2020-01-04
+      </time>
+        
+      </span>
+      <span class="slash">/</span>
+      <span class="post-meta">
+      <span class="post-tags">
+        <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E5%B9%B6%E5%8F%91%E7%BC%96%E7%A8%8B/" rel="tag">并发编程</a></li></ul>
+      </span>
+    </span>
+      <span class="slash">/</span>
+      <span class="read">
+      <span id="busuanzi_value_page_pv"></span> 点击
+    </span>
+    </header>
+
+    <div class="post-content">
+      <span id="more"></span>
+<h6 id="1-CAS机制"><a href="#1-CAS机制" class="headerlink" title="1. CAS机制"></a>1. CAS机制</h6><blockquote>
+<p>CAS定义</p>
+</blockquote>
+<ul>
+<li>从wiki百科中,Compare-and-swap简称为“CAS”,是属于并发多线程中实现同步原子操作的指令,是依赖于硬件层次的原语发起的原子操作</li>
+<li>从程序代码理解上,CAS包含<code>check then act</code>的两个动作,这两个动作在处硬件的处理器上是具备原子性,也就是在操作系统底层上已经实现对CAS算法的原子性保证</li>
+</ul>
+<blockquote>
+<p>CAS 使用条件</p>
+</blockquote>
+<ul>
+<li>需要输入两个数值,一个是期望修改前的值(旧值),一个是需要被设置的新值(新值)</li>
+<li>进行CAS操作需要进行对预期值的check操作</li>
+</ul>
+<blockquote>
+<p>CAS之java简易版本</p>
+</blockquote>
+<ul>
+<li><p>通过CAS设置新值</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 简单的check方式完成对象新值的设置</span></span><br><span class="line"><span class="comment">// cas.java</span></span><br><span class="line"><span class="function"><span class="keyword">boolean</span> <span class="title">cas</span><span class="params">(Object ref, <span class="keyword">int</span> refOldVal, <span class="keyword">int</span> refNewVal)</span></span>&#123;</span><br><span class="line">	<span class="keyword">if</span>(ref.value != refOldVal) <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">	ref.value = refNewVal;</span><br><span class="line">	<span class="keyword">return</span> <span class="keyword">true</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>CAS实现加法设置器</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// cas_adder.java</span></span><br><span class="line"><span class="comment">// import cas.java</span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">cas_adder</span><span class="params">(Object ref, <span class="keyword">int</span> incr)</span></span>&#123;</span><br><span class="line">	<span class="keyword">while</span>(!cas(ref, ref.value, ref.value+incr))&#123;</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="comment">// 表示修改成功</span></span><br><span class="line">	<span class="keyword">return</span> ref.value;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+<h6 id="2-Java之CAS实现原理UnSafe"><a href="#2-Java之CAS实现原理UnSafe" class="headerlink" title="2. Java之CAS实现原理UnSafe"></a>2. Java之CAS实现原理UnSafe</h6><blockquote>
+<p>java原子操作类Atomic*实现</p>
+</blockquote>
+<ul>
+<li>比如AtomicBoolean的实现源代码</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// AtomicBoolean.java 摘取核心代码</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">AtomicBoolean</span> <span class="keyword">implements</span> <span class="title">java</span>.<span class="title">io</span>.<span class="title">Serializable</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">long</span> serialVersionUID = <span class="number">4654671469794556979L</span>;</span><br><span class="line">    <span class="comment">// setup to use Unsafe.compareAndSwapInt for updates</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> Unsafe unsafe = Unsafe.getUnsafe();</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">long</span> valueOffset;</span><br><span class="line">    <span class="comment">// 使用volatile修饰,保证修改的可见性,令当前的线程缓存失效,读取主内存修改后的数据</span></span><br><span class="line">	<span class="keyword">private</span> <span class="keyword">volatile</span> <span class="keyword">int</span> value;		</span><br><span class="line">	</span><br><span class="line">    <span class="keyword">static</span> &#123;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">        <span class="comment">// 获取当前属性value的内存地址偏移量</span></span><br><span class="line">            valueOffset = unsafe.objectFieldOffset</span><br><span class="line">                (AtomicBoolean.class.getDeclaredField(<span class="string">&quot;value&quot;</span>));</span><br><span class="line">        &#125; <span class="keyword">catch</span> (Exception ex) &#123; <span class="keyword">throw</span> <span class="keyword">new</span> Error(ex); &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">     <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * Atomically sets the value to the given updated value</span></span><br><span class="line"><span class="comment">     * if the current value &#123;<span class="doctag">@code</span> ==&#125; the expected value.</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> expect the expected value</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> update the new value</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@return</span> &#123;<span class="doctag">@code</span> true&#125; if successful. False return indicates that</span></span><br><span class="line"><span class="comment">     * the actual value was not equal to the expected value.</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">final</span> <span class="keyword">boolean</span> <span class="title">compareAndSet</span><span class="params">(<span class="keyword">boolean</span> expect, <span class="keyword">boolean</span> update)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">int</span> e = expect ? <span class="number">1</span> : <span class="number">0</span>;</span><br><span class="line">        <span class="keyword">int</span> u = update ? <span class="number">1</span> : <span class="number">0</span>;</span><br><span class="line">        <span class="comment">// 使用unsafe的CAS方法完成修改操作</span></span><br><span class="line">        <span class="keyword">return</span> unsafe.compareAndSwapInt(<span class="keyword">this</span>, valueOffset, e, u);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>基于UnSafe实现自定义的CAS操作(依样画葫芦)</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// AtomicDefineInt.java</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">AtomicDefineInt</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">volatile</span> <span class="keyword">int</span> value;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> Unsafe unsafe;</span><br><span class="line">    <span class="comment">// 定义内存偏移量</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">long</span> iValueOffset;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">static</span> &#123;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">        <span class="comment">// 必须通过反射获取Unsafe,本身是属于不安全的一个操作,直接通过getUnsafe会抛出异常,</span></span><br><span class="line">            Field theUnsafe = Unsafe.class.getDeclaredField(<span class="string">&quot;theUnsafe&quot;</span>);</span><br><span class="line">            theUnsafe.setAccessible(<span class="keyword">true</span>);</span><br><span class="line">            unsafe = (Unsafe) theUnsafe.get(<span class="keyword">null</span>);</span><br><span class="line">        <span class="comment">// 从JNI中获取value属性在堆内存中的地址偏移量</span></span><br><span class="line">            iValueOffset = unsafe.objectFieldOffset(AtomicDefineInt.class.getDeclaredField(<span class="string">&quot;value&quot;</span>));</span><br><span class="line">        &#125;<span class="keyword">catch</span> (NoSuchFieldException e)&#123;</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> RuntimeException(e);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 借助UnSafe调用CAS方法完成操作</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">compareAndSet</span><span class="params">(<span class="keyword">int</span> expect, <span class="keyword">int</span> update)</span></span>&#123;</span><br><span class="line">        <span class="keyword">return</span> unsafe.compareAndSwapInt(<span class="keyword">this</span>, iValueOffset, expect, update);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>Unsafe源码以及实现</p>
+</blockquote>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// java代码</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">final</span> <span class="class"><span class="keyword">class</span> <span class="title">Unsafe</span> </span>&#123;</span><br><span class="line">	<span class="comment">// 字段属性theUnsafe</span></span><br><span class="line">	<span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> Unsafe theUnsafe;</span><br><span class="line">	</span><br><span class="line">	<span class="meta">@CallerSensitive</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> Unsafe <span class="title">getUnsafe</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        Class var0 = Reflection.getCallerClass();</span><br><span class="line">        <span class="comment">// 只允许jvm调用,java程序无法直接调用</span></span><br><span class="line">        <span class="keyword">if</span> (!VM.isSystemDomainLoader(var0.getClassLoader())) &#123;</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> SecurityException(<span class="string">&quot;Unsafe&quot;</span>);</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="keyword">return</span> theUnsafe;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">	</span><br><span class="line">	<span class="comment">// compareAndSwapInt的修改方法为native</span></span><br><span class="line">	<span class="comment">// 表示在线程的虚拟机栈中加载调用方法,由c++底层源码实现</span></span><br><span class="line">	<span class="function"><span class="keyword">public</span> <span class="keyword">final</span> <span class="keyword">native</span> <span class="keyword">boolean</span> <span class="title">compareAndSwapInt</span><span class="params">(Object var1, <span class="keyword">long</span> var2, <span class="keyword">int</span> var4, <span class="keyword">int</span> var5)</span></span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// c++代码</span></span><br><span class="line"><span class="comment">// 核心方法</span></span><br><span class="line"><span class="comment">// 获取内存偏移量</span></span><br><span class="line">UNSAFE_ENTRY(jlong, Unsafe_ObjectFieldOffset0(JNIEnv *env, jobject unsafe, jobject field)) &#123;</span><br><span class="line">  <span class="keyword">return</span> find_field_offset(field, <span class="number">0</span>, THREAD);</span><br><span class="line">&#125; UNSAFE_END</span><br><span class="line"></span><br><span class="line"><span class="comment">// 完成CAS操作</span></span><br><span class="line">UNSAFE_ENTRY(jboolean, Unsafe_CompareAndSetInt(JNIEnv *env, jobject unsafe, jobject obj, jlong offset, jint e, jint x)) &#123;</span><br><span class="line">  <span class="comment">// JNI解析加载java object</span></span><br><span class="line">  oop p = JNIHandles::resolve(obj);</span><br><span class="line">  <span class="keyword">if</span> (p == NULL) &#123;</span><br><span class="line">  	<span class="comment">// 如果p不是java中定义的面向对象引用,直接从内存地址完成修改操作</span></span><br><span class="line">    <span class="keyword">volatile</span> jint* addr = (<span class="keyword">volatile</span> jint*)index_oop_from_field_offset_long(p, offset);</span><br><span class="line">    <span class="keyword">return</span> RawAccess&lt;&gt;::atomic_cmpxchg(addr, e, x) == e;</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">  	<span class="comment">// 如果p是java对象,直接在堆内存中对p的属性数据进行修改操作</span></span><br><span class="line">    assert_field_offset_sane(p, offset);</span><br><span class="line">    <span class="keyword">return</span> HeapAccess&lt;&gt;::atomic_cmpxchg_at(p, (ptrdiff_t)offset, e, x) == e;</span><br><span class="line">  &#125;</span><br><span class="line">&#125; UNSAFE_END</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>源码分析<ul>
+<li>从上述可知,java底层CAS实现机制是通过JNI环境来调用c++的实现</li>
+<li>底层实现一类是根据是否为java对象类型来直接在堆内存中完成CAS操作,而另一种是针对非java对象类型则直接从内存地址中完成对应的CAS操作</li>
+</ul>
+</li>
+<li>UnSafe的实现中可以看出,需要在java中使用UnSafe需要以下条件<ul>
+<li>必须要有一个对象的属性在内存的偏移量valueOffset</li>
+<li>其次需要传递对应的java对象p</li>
+<li>同时还需要有修改前期望的数值以及要设置修改的值</li>
+<li>另外在java代码中使用volatile保证数据是刷新到内存的,因为JNI是调用c++实现是直接操作堆内存的,那么我们需要在并发多线程下保证读是可见的,写是最新的</li>
+</ul>
+</li>
+</ul>
+<h6 id="3-CAS存在的问题"><a href="#3-CAS存在的问题" class="headerlink" title="3. CAS存在的问题"></a>3. CAS存在的问题</h6><blockquote>
+<p>CAS问题</p>
+</blockquote>
+<ul>
+<li>在上述的CAS实现代码中,对于做一些自增或是自减等数学运算操作时,会产生自旋判断,容易造成CPU性能下降</li>
+<li>在CAS操作仅针对单个变量,如果涉及多个变量的原子操作,CAS是无法保证原子性</li>
+<li>最后一个就是ABA问题</li>
+</ul>
+<blockquote>
+<p>ABA问题</p>
+</blockquote>
+<ul>
+<li>java源码示例</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// AtomicDefineObject</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">final</span> <span class="class"><span class="keyword">class</span> <span class="title">AtomicDefineObject</span> <span class="keyword">implements</span> <span class="title">Serializable</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">volatile</span> String value;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> Unsafe unsafe;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">long</span> valueOffset;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">static</span> &#123;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            <span class="comment">// 反射获取</span></span><br><span class="line">            Field theUnsafe = Unsafe.class.getDeclaredField(<span class="string">&quot;theUnsafe&quot;</span>);</span><br><span class="line">            theUnsafe.setAccessible(<span class="keyword">true</span>);</span><br><span class="line">            unsafe = (Unsafe) theUnsafe.get(<span class="keyword">null</span>);</span><br><span class="line"></span><br><span class="line">            valueOffset = unsafe.objectFieldOffset(AtomicDefineObject.class.getDeclaredField(<span class="string">&quot;value&quot;</span>));</span><br><span class="line">        &#125;<span class="keyword">catch</span> (NoSuchFieldException | IllegalAccessException e)&#123;</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> RuntimeException(e);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">boolean</span> <span class="title">compareAndSet</span><span class="params">(String expect, String update)</span></span>&#123;</span><br><span class="line">        <span class="keyword">return</span> unsafe.compareAndSwapObject(<span class="keyword">this</span>, valueOffset, expect, update);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setValue</span><span class="params">(String value)</span></span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.compareAndSet(<span class="keyword">this</span>.value, value);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> String <span class="title">getValue</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> value;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>对应执行的main方法</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br></pre></td><td class="code"><pre><span class="line">main()&#123;</span><br><span class="line">		<span class="keyword">final</span> AtomicDefineObject atomicDefineObject = <span class="keyword">new</span> AtomicDefineObject();</span><br><span class="line">        atomicDefineObject.setValue(<span class="string">&quot;A&quot;</span>);</span><br><span class="line">        System.out.println(Thread.currentThread() + <span class="string">&quot; --- set value to A----&quot;</span>);</span><br><span class="line"></span><br><span class="line">        Thread t1 = <span class="keyword">new</span> Thread(<span class="string">&quot;thread1&quot;</span>)&#123;</span><br><span class="line">            <span class="meta">@Override</span></span><br><span class="line">            <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</span><br><span class="line">                <span class="keyword">try</span>&#123;</span><br><span class="line">                    <span class="comment">// 完成写操作需要1s</span></span><br><span class="line">                    TimeUnit.SECONDS.sleep(<span class="number">1L</span>);</span><br><span class="line">                    atomicDefineObject.setValue(<span class="string">&quot;B&quot;</span>);</span><br><span class="line">                    System.out.println(Thread.currentThread() + <span class="string">&quot; --- set value to B----&quot;</span>);</span><br><span class="line">                &#125;<span class="keyword">catch</span> (Exception e)&#123;&#125;</span><br><span class="line"></span><br><span class="line">            &#125;</span><br><span class="line">        &#125;;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">        Thread t2 = <span class="keyword">new</span> Thread(<span class="string">&quot;thread2&quot;</span>)&#123;</span><br><span class="line">            <span class="meta">@Override</span></span><br><span class="line">            <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</span><br><span class="line">                <span class="keyword">try</span>&#123;</span><br><span class="line">                    <span class="comment">// 完成写操作需要2s</span></span><br><span class="line">                    TimeUnit.SECONDS.sleep(<span class="number">2L</span>);</span><br><span class="line">                    atomicDefineObject.setValue(<span class="string">&quot;A&quot;</span>);</span><br><span class="line">                    System.out.println(Thread.currentThread() + <span class="string">&quot; --- set value to A----&quot;</span>);</span><br><span class="line">                &#125;<span class="keyword">catch</span> (Exception e)&#123;&#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;;</span><br><span class="line"></span><br><span class="line">        Thread t3 = <span class="keyword">new</span> Thread(<span class="string">&quot;thread3&quot;</span>)&#123;</span><br><span class="line">            <span class="meta">@Override</span></span><br><span class="line">            <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</span><br><span class="line">               <span class="keyword">try</span>&#123;</span><br><span class="line">                   <span class="comment">// 由于网路原因，读取操作延迟</span></span><br><span class="line">                   TimeUnit.SECONDS.sleep(<span class="number">3L</span>);</span><br><span class="line">                   String val = atomicDefineObject.getValue();</span><br><span class="line">                   System.out.println(Thread.currentThread() + <span class="string">&quot; --- get value ----&quot;</span> + val);</span><br><span class="line">               &#125;<span class="keyword">catch</span> (Exception e)&#123;&#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;;</span><br><span class="line">        <span class="comment">// start &amp;&amp; join</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>执行结果</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">Thread[main,5,main] --- set value to A----</span><br><span class="line">Thread[thread1,5,main] --- set value to B----</span><br><span class="line">Thread[thread2,5,main] --- set value to A----</span><br><span class="line">Thread[thread3,5,main] --- get value ----A</span><br><span class="line">finish task dome ...</span><br><span class="line"></span><br><span class="line">## 最终读线程读取到的数据是A,但是不知道之前对象已经发生过修改操作,对当前读操作是一个透明</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>ABA解决方案</p>
+</blockquote>
+<ul>
+<li>为ABA问题增加版本号,版本号的值设置为long类型的自增加方式,这样程序就知道共享资源数据的变更情况</li>
+</ul>
+<p><img src="https://img-blog.csdnimg.cn/20200128210626898.jpg?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dpbmRfNjAy,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"></p>
+<ul>
+<li><p>java提供的一个支持类AtomicStampedReference,通过增加时间戳方式来记录修改的时候对应的时间戳,这样的方式便可以知道当前的数据最近修改的时间段</p>
+</li>
+<li><p>ABA技术解决的意义</p>
+<ul>
+<li>通过知道数据对象变化的情况,我们可以利用版本或者时间戳的方式记录修改的变更日志,方便逻辑业务排查</li>
+<li>同时知道变更的时间或者是版本号,可以利用最新的一个数据值来作为一个起点修复过程,比如我们应用在某一个时间点down掉,如果此时更新应用的数据存在ABA问题,那么可以结合实际场景来进行恢复</li>
+</ul>
+</li>
+</ul>
+
+    </div>
+
+    <div>全文完。</div>
+  </article>
+  <div class="toc-container">
+    
+  <div id="toc" class="toc-article">
+    <strong class="toc-title">目录</strong>
+    <ol class="toc"><li class="toc-item toc-level-6"><a class="toc-link" href="#1-CAS%E6%9C%BA%E5%88%B6"><span class="toc-text">1. CAS机制</span></a></li><li class="toc-item toc-level-6"><a class="toc-link" href="#2-Java%E4%B9%8BCAS%E5%AE%9E%E7%8E%B0%E5%8E%9F%E7%90%86UnSafe"><span class="toc-text">2. Java之CAS实现原理UnSafe</span></a></li><li class="toc-item toc-level-6"><a class="toc-link" href="#3-CAS%E5%AD%98%E5%9C%A8%E7%9A%84%E9%97%AE%E9%A2%98"><span class="toc-text">3. CAS存在的问题</span></a></li></ol>
+  </div>
+
+
+  </div>
+</div>
+<div class="copyright">
+    <span>本作品采用</span>
+    <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by/4.0/">知识共享署名 4.0 国际许可协议</a>
+    <span>进行许可。 转载时请注明原文链接。</span>
+</div>
+<div class="share" style="width: 100%;">
+  <img src="/images/wechat-small.jpg" alt="Running Geek" style="margin: auto; display: block;"/>
+
+  <div style="margin: auto; text-align: center; font-size: 0.8em; color: grey;">老铁们关注走一走，不迷路</div>
+  
+</div>
+
+  
+    <div class="post-nav">
+      <div class="post-nav-item post-nav-next">
+        
+          <span>〈 </span>
+          <a href="/2020/01/02/aqs/" rel="next" title="基于AQS原理实现的锁">
+          基于AQS原理实现的锁
+          </a>
+        
+      </div>
+  
+      <div class="post-nav-item post-nav-prev">
+          
+          <a href="/2020/01/12/cpu_cache/" rel="prev" title="CPU高速缓存与内存屏障">
+            CPU高速缓存与内存屏障
+          </a>
+          <span>〉</span>
+        
+      </div>
+    </div>
+  
+
+
+    </div>
+
+    
+
+  </div>
+  <footer class="footer text-center">
+    <div id="bottom-inner">
+        <a class="bottom-item" href="https://xiaokunliu.github.io">首页</a> |
+        <a class="bottom-item" href="https://xiaokunliu.github.io" target="_blank">主站</a> |
+        <a class="bottom-item" href="https://github.com/xiaokunliu" target="_blank">GitHub</a> |
+        <a class="bottom-item" href="https://hexo.io" target="_blank">Powered by hexo</a> |
+        <a class="bottom-item" href="https://github.com/KevinOfNeu/hexo-theme-xoxo" target="_blank">Theme xoxo</a>
+    </div>
+</footer>
+  
+
+<script>
+  (function(window, document, undefined) {
+
+    var timer = null;
+
+    function returnTop() {
+      cancelAnimationFrame(timer);
+      timer = requestAnimationFrame(function fn() {
+        var oTop = document.body.scrollTop || document.documentElement.scrollTop;
+        if (oTop > 0) {
+          document.body.scrollTop = document.documentElement.scrollTop = oTop - 50;
+          timer = requestAnimationFrame(fn);
+        } else {
+          cancelAnimationFrame(timer);
+        }
+      });
+    }
+
+    var hearts = [];
+    window.requestAnimationFrame = (function() {
+      return window.requestAnimationFrame ||
+        window.webkitRequestAnimationFrame ||
+        window.mozRequestAnimationFrame ||
+        window.oRequestAnimationFrame ||
+        window.msRequestAnimationFrame ||
+        function(callback) {
+          setTimeout(callback, 1000 / 60);
+        }
+    })();
+    init();
+
+    function init() {
+      css(".heart{z-index:9999;width: 10px;height: 10px;position: fixed;background: #f00;transform: rotate(45deg);-webkit-transform: rotate(45deg);-moz-transform: rotate(45deg);}.heart:after,.heart:before{content: '';width: inherit;height: inherit;background: inherit;border-radius: 50%;-webkit-border-radius: 50%;-moz-border-radius: 50%;position: absolute;}.heart:after{top: -5px;}.heart:before{left: -5px;}");
+      attachEvent();
+      gameloop();
+      addMenuEvent();
+    }
+
+    function gameloop() {
+      for (var i = 0; i < hearts.length; i++) {
+        if (hearts[i].alpha <= 0) {
+          document.body.removeChild(hearts[i].el);
+          hearts.splice(i, 1);
+          continue;
+        }
+        hearts[i].y--;
+        hearts[i].scale += 0.004;
+        hearts[i].alpha -= 0.013;
+        hearts[i].el.style.cssText = "left:" + hearts[i].x + "px;top:" + hearts[i].y + "px;opacity:" + hearts[i].alpha + ";transform:scale(" + hearts[i].scale + "," + hearts[i].scale + ") rotate(45deg);background:" + hearts[i].color;
+      }
+      requestAnimationFrame(gameloop);
+    }
+
+    /**
+     * 给logo设置点击事件
+     * 
+     * - 回到顶部
+     * - 出现爱心
+     */
+    function attachEvent() {
+      var old = typeof window.onclick === "function" && window.onclick;
+      var logo = document.getElementById("logo");
+      if (logo) {
+        logo.onclick = function(event) {
+          returnTop();
+          old && old();
+          createHeart(event);
+        }
+      }
+      
+    }
+
+    function createHeart(event) {
+      var d = document.createElement("div");
+      d.className = "heart";
+      hearts.push({
+        el: d,
+        x: event.clientX - 5,
+        y: event.clientY - 5,
+        scale: 1,
+        alpha: 1,
+        color: randomColor()
+      });
+      document.body.appendChild(d);
+    }
+
+    function css(css) {
+      var style = document.createElement("style");
+      style.type = "text/css";
+      try {
+        style.appendChild(document.createTextNode(css));
+      } catch (ex) {
+        style.styleSheet.cssText = css;
+      }
+      document.getElementsByTagName('head')[0].appendChild(style);
+    }
+
+    function randomColor() {
+      // return "rgb(" + (~~(Math.random() * 255)) + "," + (~~(Math.random() * 255)) + "," + (~~(Math.random() * 255)) + ")";
+      return "#F44336";
+    }
+
+    function addMenuEvent() {
+      var menu = document.getElementById('menu-main-post');
+      if (menu) {
+        var toc = document.getElementById('toc');
+        if (toc) {
+          menu.onclick = function() {
+            if (toc) {
+              if (toc.style.display == 'block') {
+                toc.style.display = 'none';
+              } else {
+                toc.style.display = 'block';
+              }
+            }
+          };
+        } else {
+          menu.style.display = 'none';
+        }
+      }
+    }
+
+  })(window, document);
+</script>
+
+  
+
+
+
+</body>
+</html>

@@ -1,0 +1,370 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<!--
+config header
+-->
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#202020"/>
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  <script src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" async></script>
+
+  
+      <meta name="google-site-verification" content="{{ theme.google_site_verification }}" />
+  
+
+  
+    <meta name="keywords" content="并发编程," />
+  
+
+  
+    <meta name="description" content="分享个人学习工作的技术知识" />
+  
+  
+  <link rel="icon" type="image/x-icon" href="/logo.jpg">
+  <title>category: 并发编程 [ 疾风先生 ]</title>
+  
+    <!-- stylesheets list from config.yml -->
+    
+      <link rel="stylesheet" href="//cdn.bootcss.com/pure/1.0.0/pure-min.css">
+    
+      <link rel="stylesheet" href="/css/xoxo.css">
+    
+  
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+
+<body>
+  <div class="nav-container">
+    <nav class="home-menu pure-menu pure-menu-horizontal">
+  <a class="pure-menu-heading" href="/">
+    <img class="avatar" src="https://xiaokunliu.github.io/images/logo.jpg">
+    <span class="title">疾风先生</span>
+  </a>
+
+  <ul class="pure-menu-list clearfix">
+      
+          
+            <li class="pure-menu-item"><a href="/" class="pure-menu-link">首页</a></li>
+          
+      
+          
+            <li class="pure-menu-item"><a href="/archives" class="pure-menu-link">归档</a></li>
+          
+      
+          
+            <li class="pure-menu-item"><a href="/tags" class="pure-menu-link">标签</a></li>
+          
+      
+          
+            <li class="pure-menu-item"><a href="/categories" class="pure-menu-link">分类</a></li>
+          
+      
+          
+            <li class="pure-menu-item"><a href="/search" class="pure-menu-link">搜索</a></li>
+          
+      
+  </ul>
+   
+</nav>
+  </div>
+
+  <div class="container" id="content-outer">
+    <div class="inner" id="content-inner">
+      <div class="post-container">
+  <article class="post" id="post">
+    <header class="post-header text-center">
+      <h1 class="title">
+        Java线程synchronized使用
+      </h1>
+      <span>
+        
+        <time class="time" datetime="2020-03-12T20:47:28.000Z">
+        2020-03-12
+      </time>
+        
+      </span>
+      <span class="slash">/</span>
+      <span class="post-meta">
+      <span class="post-tags">
+        <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E5%B9%B6%E5%8F%91%E7%BC%96%E7%A8%8B/" rel="tag">并发编程</a></li></ul>
+      </span>
+    </span>
+      <span class="slash">/</span>
+      <span class="read">
+      <span id="busuanzi_value_page_pv"></span> 点击
+    </span>
+    </header>
+
+    <div class="post-content">
+      <span id="more"></span>
+<h6 id="1-synchronized-同步方法"><a href="#1-synchronized-同步方法" class="headerlink" title="1. synchronized 同步方法"></a>1. synchronized 同步方法</h6><ul>
+<li>作用在实例化方法上,监视器锁对象为当前实例对象this</li>
+<li>作用在静态方法上,监视器锁对象为当前Class对象</li>
+<li>不论线程执行同步代码正常完成抑或是异常退出的时候,将会自动释放监视器锁</li>
+<li>同步实例方法产生的效果:<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">1. 控制当前方法只能有一个线程执行，其他线程只能处于阻塞状态</span><br><span class="line">2. 换言之,每个使用synchronized关键字声明的方法都是处于一个临界区，而Java只允许执行对象的一个临界区</span><br></pre></td></tr></table></figure></li>
+<li>同步静态方法产生的效果<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">1. 静态方法同步仅保证声明为static且使用的监视器锁为当前类对象时只有一个线程执行,其他线程处于阻塞状态</span><br><span class="line">2. 需要注意的一点是,对于共享资源,如果同时存在于同一个类声明的static和非static的方法,将无法保证共享数据的安全性,因为实例方法和静态方法的监视器锁对象不同,无法达到预期效果</span><br></pre></td></tr></table></figure></li>
+<li>实例方法示例(主要演示同步方法)<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Account.java</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Account</span> </span>&#123;</span><br><span class="line">	<span class="keyword">private</span> <span class="keyword">double</span> balance;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">double</span> <span class="title">getBalance</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> balance;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setBalance</span><span class="params">(<span class="keyword">double</span> balance)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.balance = balance;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">synchronized</span> <span class="keyword">void</span> <span class="title">addAmount</span><span class="params">(<span class="keyword">double</span> amount)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">double</span> tmp = balance;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            Thread.sleep(<span class="number">10</span>);</span><br><span class="line">        &#125; <span class="keyword">catch</span> (InterruptedException e) &#123;</span><br><span class="line">            e.printStackTrace();</span><br><span class="line">        &#125;</span><br><span class="line">        tmp+=amount;</span><br><span class="line">        balance=tmp;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">synchronized</span> <span class="keyword">void</span> <span class="title">subtractAmount</span><span class="params">(<span class="keyword">double</span> amount)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">double</span> tmp=balance;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            Thread.sleep(<span class="number">10</span>);</span><br><span class="line">        &#125; <span class="keyword">catch</span> (InterruptedException e) &#123;</span><br><span class="line">            e.printStackTrace();</span><br><span class="line">        &#125;</span><br><span class="line">        tmp-=amount;</span><br><span class="line">        balance=tmp;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// Bank.java</span></span><br><span class="line"><span class="comment">// 实现Runnable接口,run方法负责循环100次调用subtractAmount方法</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// Company.java</span></span><br><span class="line"><span class="comment">// 实现Runnable接口,run方法负责循环100次调用addAmount方法</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// main.java</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">        Account account = <span class="keyword">new</span> Account();</span><br><span class="line">        account.setBalance(<span class="number">1000</span>);</span><br><span class="line"></span><br><span class="line">        Company company = <span class="keyword">new</span> Company(account);</span><br><span class="line">        Thread companyThread = <span class="keyword">new</span> Thread(company);</span><br><span class="line"></span><br><span class="line">        Bank bank = <span class="keyword">new</span> Bank(account);</span><br><span class="line">        Thread bankThread = <span class="keyword">new</span> Thread(bank);</span><br><span class="line"></span><br><span class="line">        System.out.printf(<span class="string">&quot;Account : Initial Balance: %f\n&quot;</span>,account.getBalance());</span><br><span class="line"><span class="comment">//        Start the threads</span></span><br><span class="line">        companyThread.start();</span><br><span class="line">        bankThread.start();</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            <span class="comment">// 开始进行转账操作，使用join，也就是等待join的线程执行完成之后才进行下一步操作</span></span><br><span class="line">            companyThread.join();</span><br><span class="line">            bankThread.join();</span><br><span class="line">            <span class="comment">// 结束转账操作可以进行下一步的操作，</span></span><br><span class="line">            System.out.printf(<span class="string">&quot;Account : Final Balance: %f\n&quot;</span>,account.getBalance());</span><br><span class="line">        &#125; <span class="keyword">catch</span> (InterruptedException e) &#123;</span><br><span class="line">            e.printStackTrace();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure></li>
+<li>执行结果<br><img src="https://img-blog.csdnimg.cn/20200107100012147.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dpbmRfNjAy,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"></li>
+<li>扩展<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 上述的同步代码也可以替换为</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">addAmount</span><span class="params">()</span></span>&#123;</span><br><span class="line">	<span class="comment">// not shared data operation</span></span><br><span class="line">	<span class="keyword">synchronized</span>(<span class="keyword">this</span>)&#123;</span><br><span class="line">		<span class="comment">// balance operation</span></span><br><span class="line">	&#125;</span><br><span class="line">	<span class="comment">// not shared data operation</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+<h6 id="2-synchronized同步代码块"><a href="#2-synchronized同步代码块" class="headerlink" title="2. synchronized同步代码块"></a>2. synchronized同步代码块</h6><ul>
+<li>作用在同步代码块上,做到尽可能在方法中仅针对共享变量进行同步加锁的操作</li>
+<li>同步块的锁监视器对象可以为this/当前Class的对象/类实例属性/类对象属性等等,只需要保证在同步代码块的监视器是唯一的即可</li>
+<li>不论程序正常执行还是异常退出将会自动释放监视器锁</li>
+<li>代码示例(主要演示同步块)<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Cinema.java</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Cinema</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">long</span> vacanciesCinema1;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">long</span> vacanciesCinema2;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 通过锁类实例的变量</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> Object controlCinema1, controlCinema2;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">Cinema</span><span class="params">()</span></span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.controlCinema1 = <span class="keyword">new</span> Object();</span><br><span class="line">        <span class="keyword">this</span>.controlCinema2 = <span class="keyword">new</span> Object();</span><br><span class="line">        <span class="keyword">this</span>.vacanciesCinema1 = <span class="number">20L</span>;</span><br><span class="line">        <span class="keyword">this</span>.vacanciesCinema2 = <span class="number">20L</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">sellTickets1</span><span class="params">(<span class="keyword">int</span> number)</span></span>&#123;</span><br><span class="line">        <span class="keyword">synchronized</span> (controlCinema1)&#123;</span><br><span class="line">            System.out.println(Thread.currentThread().getName() + <span class="string">&quot; get controlCinema1 lock, execute sellTickets1 vacanciesCinema1 number &quot;</span> + number);</span><br><span class="line">            <span class="keyword">if</span> (number &lt; <span class="keyword">this</span>.vacanciesCinema1)&#123;</span><br><span class="line">                <span class="keyword">this</span>.vacanciesCinema1 -= number;</span><br><span class="line">                <span class="keyword">return</span> <span class="keyword">true</span>;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">sellTickets2</span><span class="params">(<span class="keyword">int</span> number)</span></span>&#123;</span><br><span class="line">        <span class="keyword">synchronized</span> (controlCinema2)&#123;</span><br><span class="line">            System.out.println(Thread.currentThread().getName() + <span class="string">&quot; get controlCinema2 lock, execute sellTickets2 vacanciesCinema2 number &quot;</span> + number);</span><br><span class="line">            <span class="keyword">if</span> (number &lt; <span class="keyword">this</span>.vacanciesCinema2)&#123;</span><br><span class="line">                <span class="keyword">this</span>.vacanciesCinema2 -= number;</span><br><span class="line">                <span class="keyword">return</span> <span class="keyword">true</span>;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">	<span class="comment">// 仅对应sellTickets1有同步效果</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">addTickets1</span><span class="params">(<span class="keyword">int</span> number)</span></span>&#123;</span><br><span class="line">        <span class="keyword">synchronized</span> (controlCinema1)&#123;</span><br><span class="line">            System.out.println(Thread.currentThread().getName() + <span class="string">&quot; get controlCinema1 lock, add number is &quot;</span> + number);</span><br><span class="line">            <span class="keyword">this</span>.vacanciesCinema1 += number;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">	<span class="comment">// 仅对应sellTickets2有同步效果</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">addTickets2</span><span class="params">(<span class="keyword">int</span> number)</span></span>&#123;</span><br><span class="line">        <span class="keyword">synchronized</span> (controlCinema2)&#123;</span><br><span class="line">            System.out.println(Thread.currentThread().getName() + <span class="string">&quot; get controlCinema2 lock, add number is &quot;</span> + number);</span><br><span class="line">            <span class="keyword">this</span>.vacanciesCinema2 += number;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// get方法....</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 声明TicketOffice实现Runnable接口,run方法随机调用上述带有synchronized关键字的方法</span></span><br><span class="line"><span class="comment">// 代码省略 ...</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 测试main方法</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">TicketMain</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> Exception</span>&#123;</span><br><span class="line"></span><br><span class="line">        Cinema cinema = <span class="keyword">new</span> Cinema();</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 由于操作的锁分别只针对vacanciesCinema1, vacanciesCinema2</span></span><br><span class="line">        <span class="comment">// 获取controlCinema1 lock 只能操作vacanciesCinema1</span></span><br><span class="line">        <span class="comment">// 获取controlCinema2 lock 只能操作vacanciesCinema2</span></span><br><span class="line">        TicketOffice ticketOffice1 = <span class="keyword">new</span> TicketOffice(cinema);</span><br><span class="line">        Thread thread1 = <span class="keyword">new</span> Thread(ticketOffice1);</span><br><span class="line"></span><br><span class="line">        TicketOffice2 ticketOffice2 = <span class="keyword">new</span> TicketOffice2(cinema);</span><br><span class="line">        Thread thread2 = <span class="keyword">new</span> Thread(ticketOffice2);</span><br><span class="line"></span><br><span class="line">        thread1.start();</span><br><span class="line">        thread2.start();</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 等待线程1和线程2 执行完成，因此需要加入join方法</span></span><br><span class="line">        thread1.join();</span><br><span class="line">        thread2.join();</span><br><span class="line"></span><br><span class="line">        TimeUnit.SECONDS.sleep(<span class="number">2</span>);</span><br><span class="line">        System.out.println(<span class="string">&quot;room1 number is &quot;</span> + cinema.getVacanciesCinema1());</span><br><span class="line">        System.out.println(<span class="string">&quot;room2 number is &quot;</span> + cinema.getVacanciesCinema2());</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+<h6 id="3-线程通信"><a href="#3-线程通信" class="headerlink" title="3. 线程通信"></a>3. 线程通信</h6><blockquote>
+<p>与线程wait()/notify()/notifyAll()的使用</p>
+</blockquote>
+<ul>
+<li>q1: 为什么需要使用监视器锁来完成线程通信?</li>
+<li>q2: 代码中使用while而不使用if的原因是什么?</li>
+<li>q3: wait与notify在代码中分别起到的作用是什么?</li>
+<li>代码示例<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// EventStorage.java</span></span><br><span class="line">ublic <span class="class"><span class="keyword">class</span> <span class="title">EventStorage</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// TODO write your logic code</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">int</span> maxSize;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> LinkedList&lt;Date&gt; storage;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">EventStorage</span><span class="params">()</span></span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.maxSize = <span class="number">10</span>;</span><br><span class="line">        storage = <span class="keyword">new</span> LinkedList&lt;&gt;();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">synchronized</span> <span class="keyword">void</span> <span class="title">set</span><span class="params">()</span></span>&#123;</span><br><span class="line">    	<span class="comment">// 思考:使用while而不使用if的原因是什么?</span></span><br><span class="line">        <span class="keyword">while</span> (storage.size() == maxSize)&#123;</span><br><span class="line">            <span class="keyword">try</span> &#123;</span><br><span class="line">                wait();</span><br><span class="line">            &#125;<span class="keyword">catch</span> (InterruptedException e)&#123;</span><br><span class="line"></span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        storage.offer(<span class="keyword">new</span> Date());</span><br><span class="line">        System.out.printf(<span class="string">&quot;Set: %d \n&quot;</span>, storage.size());</span><br><span class="line">        notifyAll();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">synchronized</span> <span class="keyword">void</span> <span class="title">get</span><span class="params">()</span></span>&#123;</span><br><span class="line">    	<span class="comment">//// 思考:使用while而不使用if的原因是什么?</span></span><br><span class="line">        <span class="keyword">while</span> (storage.size() == <span class="number">0</span>)&#123;</span><br><span class="line">            <span class="keyword">try</span> &#123;</span><br><span class="line">                wait();</span><br><span class="line">            &#125;<span class="keyword">catch</span> (InterruptedException e)&#123;</span><br><span class="line"></span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        System.out.printf(<span class="string">&quot;Get size: %d, get value: %s \n&quot;</span>, storage.size() , storage.poll());</span><br><span class="line">        notifyAll();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// Consumer.java</span></span><br><span class="line"><span class="comment">// 负责循环100次调用EventStorage的get方法</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// Producer.java</span></span><br><span class="line"><span class="comment">// 负责循环100次调用EventStorage的set方法</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// main.java</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">SyncMain</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// TODO write your logic code</span></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">        EventStorage eventStorage = <span class="keyword">new</span> EventStorage();</span><br><span class="line"></span><br><span class="line">        Thread producerThread = <span class="keyword">new</span> Thread(<span class="keyword">new</span> Producer(eventStorage));</span><br><span class="line">        Thread consumerThread = <span class="keyword">new</span> Thread(<span class="keyword">new</span> Consumer(eventStorage));</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">        producerThread.start();</span><br><span class="line">        consumerThread.start();</span><br><span class="line"></span><br><span class="line">        producerThread.join();</span><br><span class="line">        consumerThread.join();</span><br><span class="line">        System.out.println(<span class="string">&quot;done !!! &quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p><strong>正常执行结果</strong></p>
+</blockquote>
+</li>
+</ul>
+<p><img src="https://img-blog.csdnimg.cn/20200107102203945.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dpbmRfNjAy,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"></p>
+<blockquote>
+<p><strong>q1: 需要使用监视器锁完成通信原因</strong></p>
+</blockquote>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 将上述的代码的synchronized去掉</span></span><br><span class="line"><span class="comment">// 执行main方法</span></span><br><span class="line"><span class="comment">// 执行结果如下</span></span><br></pre></td></tr></table></figure>
+<p><img src="https://img-blog.csdnimg.cn/20200108105104581.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dpbmRfNjAy,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"><br><strong>结论: 调用wait方法之前需要通过synchronized来添加监视器锁完成线程通信,否则会抛出异常:Exception in thread “Thread-1” java.lang.IllegalMonitorStateException</strong></p>
+<blockquote>
+<p><strong>q2: 代码中使用while而不使用if的原因是什么?</strong></p>
+</blockquote>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 将while更改为if</span></span><br><span class="line"><span class="comment">// 执行main方法</span></span><br><span class="line"><span class="comment">// 执行结果如下</span></span><br></pre></td></tr></table></figure>
+<p><img src="https://img-blog.csdnimg.cn/20200108111809398.png" alt="在这里插入图片描述"><br><img src="https://img-blog.csdnimg.cn/20200108111843366.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dpbmRfNjAy,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"></p>
+<ul>
+<li>原因分析<ul>
+<li>从代码中我们想要的效果是当队列满了之后才通知消费者进行消费,队列为空的时候才让生产者进行生产数据,但是上述结果并没有等待队列全满就开始进行消费</li>
+<li>从执行结果看,使用if一次性条件判断无法保证队列完全为空或者为满的情况才进行消费,因此需要在调用wait方法的时候需在while循环中不断检查队列的情况</li>
+</ul>
+</li>
+</ul>
+<blockquote>
+<p>q3: 针对上述情况对wait以及notify进行小结</p>
+</blockquote>
+<ul>
+<li>wait方法<ul>
+<li>当前线程是通过共享变量调用wait方法,并且调用该线程的时候将会被挂起阻塞</li>
+<li>其他线程调用该共享变量的notify/notifyAll方法时将有机会重新获取锁</li>
+<li>同时如果其他线程执行过程中调用当前线程的中断方法也会退出有机会重新获取锁</li>
+<li>wait方法调用之前必须先获得监视器进行加锁,否则会抛出异常错误</li>
+</ul>
+</li>
+<li>notify方法<ul>
+<li>notify调用必须是在wait方法之后调用,因为只有当线程获取到监视器锁之后才可以调用notify进行唤醒</li>
+<li>调用notify唤醒的线程需要和其他线程进行竞争获取监视器锁,之后才能返回调用的wait方法并继续往下执行</li>
+</ul>
+</li>
+</ul>
+
+    </div>
+
+    <div>全文完。</div>
+  </article>
+  <div class="toc-container">
+    
+  <div id="toc" class="toc-article">
+    <strong class="toc-title">目录</strong>
+    <ol class="toc"><li class="toc-item toc-level-6"><a class="toc-link" href="#1-synchronized-%E5%90%8C%E6%AD%A5%E6%96%B9%E6%B3%95"><span class="toc-text">1. synchronized 同步方法</span></a></li><li class="toc-item toc-level-6"><a class="toc-link" href="#2-synchronized%E5%90%8C%E6%AD%A5%E4%BB%A3%E7%A0%81%E5%9D%97"><span class="toc-text">2. synchronized同步代码块</span></a></li><li class="toc-item toc-level-6"><a class="toc-link" href="#3-%E7%BA%BF%E7%A8%8B%E9%80%9A%E4%BF%A1"><span class="toc-text">3. 线程通信</span></a></li></ol>
+  </div>
+
+
+  </div>
+</div>
+<div class="copyright">
+    <span>本作品采用</span>
+    <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by/4.0/">知识共享署名 4.0 国际许可协议</a>
+    <span>进行许可。 转载时请注明原文链接。</span>
+</div>
+<div class="share" style="width: 100%;">
+  <img src="/images/wechat-small.jpg" alt="Running Geek" style="margin: auto; display: block;"/>
+
+  <div style="margin: auto; text-align: center; font-size: 0.8em; color: grey;">老铁们关注走一走，不迷路</div>
+  
+</div>
+
+  
+    <div class="post-nav">
+      <div class="post-nav-item post-nav-next">
+        
+          <span>〈 </span>
+          <a href="/2020/03/08/select2poll/" rel="next" title="深入分析Select/Epoll原理">
+          深入分析Select/Epoll原理
+          </a>
+        
+      </div>
+  
+      <div class="post-nav-item post-nav-prev">
+          
+          <a href="/2020/03/13/epoll/" rel="prev" title="epoll技术扩展">
+            epoll技术扩展
+          </a>
+          <span>〉</span>
+        
+      </div>
+    </div>
+  
+
+
+    </div>
+
+    
+
+  </div>
+  <footer class="footer text-center">
+    <div id="bottom-inner">
+        <a class="bottom-item" href="https://xiaokunliu.github.io">首页</a> |
+        <a class="bottom-item" href="https://xiaokunliu.github.io" target="_blank">主站</a> |
+        <a class="bottom-item" href="https://github.com/xiaokunliu" target="_blank">GitHub</a> |
+        <a class="bottom-item" href="https://hexo.io" target="_blank">Powered by hexo</a> |
+        <a class="bottom-item" href="https://github.com/KevinOfNeu/hexo-theme-xoxo" target="_blank">Theme xoxo</a>
+    </div>
+</footer>
+  
+
+<script>
+  (function(window, document, undefined) {
+
+    var timer = null;
+
+    function returnTop() {
+      cancelAnimationFrame(timer);
+      timer = requestAnimationFrame(function fn() {
+        var oTop = document.body.scrollTop || document.documentElement.scrollTop;
+        if (oTop > 0) {
+          document.body.scrollTop = document.documentElement.scrollTop = oTop - 50;
+          timer = requestAnimationFrame(fn);
+        } else {
+          cancelAnimationFrame(timer);
+        }
+      });
+    }
+
+    var hearts = [];
+    window.requestAnimationFrame = (function() {
+      return window.requestAnimationFrame ||
+        window.webkitRequestAnimationFrame ||
+        window.mozRequestAnimationFrame ||
+        window.oRequestAnimationFrame ||
+        window.msRequestAnimationFrame ||
+        function(callback) {
+          setTimeout(callback, 1000 / 60);
+        }
+    })();
+    init();
+
+    function init() {
+      css(".heart{z-index:9999;width: 10px;height: 10px;position: fixed;background: #f00;transform: rotate(45deg);-webkit-transform: rotate(45deg);-moz-transform: rotate(45deg);}.heart:after,.heart:before{content: '';width: inherit;height: inherit;background: inherit;border-radius: 50%;-webkit-border-radius: 50%;-moz-border-radius: 50%;position: absolute;}.heart:after{top: -5px;}.heart:before{left: -5px;}");
+      attachEvent();
+      gameloop();
+      addMenuEvent();
+    }
+
+    function gameloop() {
+      for (var i = 0; i < hearts.length; i++) {
+        if (hearts[i].alpha <= 0) {
+          document.body.removeChild(hearts[i].el);
+          hearts.splice(i, 1);
+          continue;
+        }
+        hearts[i].y--;
+        hearts[i].scale += 0.004;
+        hearts[i].alpha -= 0.013;
+        hearts[i].el.style.cssText = "left:" + hearts[i].x + "px;top:" + hearts[i].y + "px;opacity:" + hearts[i].alpha + ";transform:scale(" + hearts[i].scale + "," + hearts[i].scale + ") rotate(45deg);background:" + hearts[i].color;
+      }
+      requestAnimationFrame(gameloop);
+    }
+
+    /**
+     * 给logo设置点击事件
+     * 
+     * - 回到顶部
+     * - 出现爱心
+     */
+    function attachEvent() {
+      var old = typeof window.onclick === "function" && window.onclick;
+      var logo = document.getElementById("logo");
+      if (logo) {
+        logo.onclick = function(event) {
+          returnTop();
+          old && old();
+          createHeart(event);
+        }
+      }
+      
+    }
+
+    function createHeart(event) {
+      var d = document.createElement("div");
+      d.className = "heart";
+      hearts.push({
+        el: d,
+        x: event.clientX - 5,
+        y: event.clientY - 5,
+        scale: 1,
+        alpha: 1,
+        color: randomColor()
+      });
+      document.body.appendChild(d);
+    }
+
+    function css(css) {
+      var style = document.createElement("style");
+      style.type = "text/css";
+      try {
+        style.appendChild(document.createTextNode(css));
+      } catch (ex) {
+        style.styleSheet.cssText = css;
+      }
+      document.getElementsByTagName('head')[0].appendChild(style);
+    }
+
+    function randomColor() {
+      // return "rgb(" + (~~(Math.random() * 255)) + "," + (~~(Math.random() * 255)) + "," + (~~(Math.random() * 255)) + ")";
+      return "#F44336";
+    }
+
+    function addMenuEvent() {
+      var menu = document.getElementById('menu-main-post');
+      if (menu) {
+        var toc = document.getElementById('toc');
+        if (toc) {
+          menu.onclick = function() {
+            if (toc) {
+              if (toc.style.display == 'block') {
+                toc.style.display = 'none';
+              } else {
+                toc.style.display = 'block';
+              }
+            }
+          };
+        } else {
+          menu.style.display = 'none';
+        }
+      }
+    }
+
+  })(window, document);
+</script>
+
+  
+
+
+
+</body>
+</html>

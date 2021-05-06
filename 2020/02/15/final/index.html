@@ -1,0 +1,433 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<!--
+config header
+-->
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#202020"/>
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  <script src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" async></script>
+
+  
+      <meta name="google-site-verification" content="{{ theme.google_site_verification }}" />
+  
+
+  
+    <meta name="keywords" content="并发编程," />
+  
+
+  
+    <meta name="description" content="分享个人学习工作的技术知识" />
+  
+  
+  <link rel="icon" type="image/x-icon" href="/logo.jpg">
+  <title>category: 并发编程 [ 疾风先生 ]</title>
+  
+    <!-- stylesheets list from config.yml -->
+    
+      <link rel="stylesheet" href="//cdn.bootcss.com/pure/1.0.0/pure-min.css">
+    
+      <link rel="stylesheet" href="/css/xoxo.css">
+    
+  
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+
+<body>
+  <div class="nav-container">
+    <nav class="home-menu pure-menu pure-menu-horizontal">
+  <a class="pure-menu-heading" href="/">
+    <img class="avatar" src="https://xiaokunliu.github.io/images/logo.jpg">
+    <span class="title">疾风先生</span>
+  </a>
+
+  <ul class="pure-menu-list clearfix">
+      
+          
+            <li class="pure-menu-item"><a href="/" class="pure-menu-link">首页</a></li>
+          
+      
+          
+            <li class="pure-menu-item"><a href="/archives" class="pure-menu-link">归档</a></li>
+          
+      
+          
+            <li class="pure-menu-item"><a href="/tags" class="pure-menu-link">标签</a></li>
+          
+      
+          
+            <li class="pure-menu-item"><a href="/categories" class="pure-menu-link">分类</a></li>
+          
+      
+          
+            <li class="pure-menu-item"><a href="/search" class="pure-menu-link">搜索</a></li>
+          
+      
+  </ul>
+   
+</nav>
+  </div>
+
+  <div class="container" id="content-outer">
+    <div class="inner" id="content-inner">
+      <div class="post-container">
+  <article class="post" id="post">
+    <header class="post-header text-center">
+      <h1 class="title">
+        final线程安全与工作原理
+      </h1>
+      <span>
+        
+        <time class="time" datetime="2020-02-15T20:47:28.000Z">
+        2020-02-15
+      </time>
+        
+      </span>
+      <span class="slash">/</span>
+      <span class="post-meta">
+      <span class="post-tags">
+        <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E5%B9%B6%E5%8F%91%E7%BC%96%E7%A8%8B/" rel="tag">并发编程</a></li></ul>
+      </span>
+    </span>
+      <span class="slash">/</span>
+      <span class="read">
+      <span id="busuanzi_value_page_pv"></span> 点击
+    </span>
+    </header>
+
+    <div class="post-content">
+      <span id="more"></span>
+<h6 id="1-final语义与使用"><a href="#1-final语义与使用" class="headerlink" title="1.final语义与使用"></a>1.final语义与使用</h6><blockquote>
+<p>final的语义</p>
+</blockquote>
+<ul>
+<li><p>编译器做的处理</p>
+<ul>
+<li>编译器可以跨同步屏障移动对final修饰的字段值进行读取和调用任意或未知的方法</li>
+<li>对于final与non-final修饰的字段,允许编译器保存一份final的数据缓存放在寄存器中,对比必须要加载non-final数据的情况下,它不需要从主内存中加载就可以获取​</li>
+</ul>
+</li>
+<li><p>并发线程下是安全的</p>
+<ul>
+<li>对于final修饰的字段在所有线程中是属于不可变(基本类型值不可变,引用类型是引用地址不可变),也就是对于程序员而言,在线程中重新对final修饰的字段赋值将会编译不通过</li>
+<li>只有在对象完全初始化之后，线程才能看到对该对象的引用，这样就可以保证看到该对象的final字段的正确初始化值<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">基于Happen-Before原则,程序任何对象的初始化happen-before于程序中任何其他的动作操作行为</span><br><span class="line">因此能够保证不会被重排序,也就是说final修饰的字段在线程读取已经先在构造器中执行写操作</span><br><span class="line">因而所有线程看到final修饰的变量均为最终最新的版本</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+</li>
+<li><p>final的使用模型</p>
+<ul>
+<li>在对象的构造函数中为对象设置final字段;在对象的构造函数完成之前，不允许在其他线程可以看到的地方对正在构造的对象的引用执行写操作</li>
+<li>这样可以保证在线程看到该对象的时候,将始终看到该对象final字段的最终正确构造版本</li>
+</ul>
+</li>
+</ul>
+<blockquote>
+<p>final的线程安全性</p>
+</blockquote>
+<ul>
+<li>源代码</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// FinalClass.java</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">FinalClass</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">final</span> <span class="keyword">int</span> i;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">int</span> j;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">final</span> DefineFinalObject defineFinalObject;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">static</span> FinalClass finalClass;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">FinalClass</span><span class="params">()</span></span>&#123;</span><br><span class="line"><span class="comment">//        int x = i;</span></span><br><span class="line"><span class="comment">//        DefineFinalObject var = defineFinalObject;</span></span><br><span class="line">        i = <span class="number">4</span>;</span><br><span class="line">        defineFinalObject = <span class="keyword">new</span> DefineFinalObject();</span><br><span class="line">        <span class="keyword">try</span>&#123;</span><br><span class="line">            <span class="comment">// code ... may throw exception</span></span><br><span class="line"><span class="comment">//            i = 4;</span></span><br><span class="line"><span class="comment">//            defineFinalObject = new DefineFinalObject();</span></span><br><span class="line">            j = <span class="number">9</span>;</span><br><span class="line">            <span class="comment">// code ...</span></span><br><span class="line">        &#125;<span class="keyword">catch</span> (Exception e)&#123;&#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">static</span> <span class="keyword">void</span> <span class="title">writer</span><span class="params">()</span></span>&#123;</span><br><span class="line">        finalClass = <span class="keyword">new</span> FinalClass();</span><br><span class="line">        System.out.println(<span class="string">&quot;have init FinalClass&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">static</span> <span class="keyword">void</span> <span class="title">reader</span><span class="params">()</span></span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (finalClass != <span class="keyword">null</span>)&#123;</span><br><span class="line">            <span class="keyword">int</span> x = finalClass.i;</span><br><span class="line">            <span class="keyword">int</span> y = finalClass.j;</span><br><span class="line">            System.out.printf(<span class="string">&quot;get x = %d, and y = %d&quot;</span>, x, y);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">        FinalClass finalClass = <span class="keyword">new</span> FinalClass();</span><br><span class="line">        System.out.println(finalClass.defineFinalObject);</span><br><span class="line">        finalClass.defineFinalObject.setAge(<span class="number">10</span>);</span><br><span class="line">        System.out.println(finalClass.defineFinalObject);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>代码分析<ul>
+<li>在构造器中,对于final修饰的基本类型/引用类型变量编译器不允许在try中对<code>i=4</code>进行写操作,会出现编译报错,对于没有使用final修饰的变量j进行写操作的<code>j=9</code>则没有出现编译报错</li>
+<li>其次,在对<code>i=4</code>执行的写操作之前,编译器不允许对final修饰的基本/引用变量进行读操作,否则编译报错</li>
+<li>基于上述编译器的规则,最终保证final的基本类型/引用变量是在其他线程是最终最新的版本,也就是<code>i=4</code>以及<code>defineFinalObject = new DefineFinalObject()</code>创建对象并引用对应的对象地址</li>
+<li>在main的线程方法中,可以对不可变的defineFinalObject的属性信息进行修改,说明引用类型不可变是指对应的对象内存地址,即使无法再通过<code>defineFinalObject = new DefineFinalObject()</code>的方式重新指向一个新的引用地址</li>
+<li>最后一点就是,final必须是在构造器中完成初始化,同时根据Happen-Before原则,线程访问final的数据一定是在完成初始化后的最终数据且无法再进行修改(引用类型是可以修改其属性信息),从而保证了线程对final修饰的变量是属于线程安全的共享数据</li>
+</ul>
+</li>
+</ul>
+<blockquote>
+<p>final与static使用分析</p>
+</blockquote>
+<ul>
+<li><p>源代码</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// FinalSharedClass.java</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">FinalSharedClass</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">final</span> <span class="keyword">static</span> <span class="keyword">int</span> num;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">int</span> x;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">final</span> <span class="keyword">static</span> DefineFinalObject defineFinalObject;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">static</span> &#123;</span><br><span class="line">        <span class="comment">//    静态代码块，保证在加载类信息的时候也完成上述静态数据变量的初始化赋值的操作</span></span><br><span class="line">        num = <span class="number">10</span>;</span><br><span class="line">        defineFinalObject = <span class="keyword">new</span> DefineFinalObject();</span><br><span class="line">        System.out.printf(<span class="string">&quot;have finished static code for num=%d and obj=%s...\n&quot;</span>, num, defineFinalObject);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">	&#123;</span><br><span class="line">		<span class="comment">// 默认代码块,等同于对象构造器,编译器报错,要么是声明被分配过要么是上述定义的static报没有被分配</span></span><br><span class="line"><span class="comment">//        num = 10;</span></span><br><span class="line"><span class="comment">//        defineFinalObject = new DefineFinalObject();</span></span><br><span class="line">	&#125;</span><br><span class="line">	</span><br><span class="line">    <span class="function"><span class="keyword">static</span> <span class="keyword">void</span> <span class="title">writer</span><span class="params">()</span></span>&#123;</span><br><span class="line">        <span class="comment">// final 修饰的无法修改，将会编译报错提示已经分配值操作</span></span><br><span class="line"><span class="comment">//        num = 20;</span></span><br><span class="line"><span class="comment">//        defineFinalObject = new DefineFinalObject();</span></span><br><span class="line">        x = <span class="number">10</span>;</span><br><span class="line">        defineFinalObject.setAge(<span class="number">10</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">static</span> <span class="keyword">void</span> <span class="title">reader</span><span class="params">()</span></span>&#123;</span><br><span class="line">        <span class="comment">// must be same with the end of static code</span></span><br><span class="line">        System.out.printf(<span class="string">&quot;read final static num: %d \n&quot;</span>, num);</span><br><span class="line">        System.out.printf(<span class="string">&quot;read final static defineFinalObject: %s \n&quot;</span>, defineFinalObject);</span><br><span class="line"></span><br><span class="line">        <span class="comment">// may be 0 or 10</span></span><br><span class="line">        System.out.printf(<span class="string">&quot;read static x: %d \n&quot;</span>, x);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>分析</p>
+<ul>
+<li>静态代码中的final初始化过程必须是在静态代码块中,也就是加载类信息的时候同时完成对final的数据赋予值的操作</li>
+<li>在方法writer()中可以看到无法对num以及defineFinalObject再次进行写操作,从而保证线程对于final修饰的数据只能读取,因此并不存在线程安全问题</li>
+</ul>
+</li>
+<li><p>小结</p>
+<ul>
+<li>final且非静态的对象变量,final将在对象构造器中完成初始化赋值操作,且不能在构造器之外执行写操作,只能被读取,因而不存在线程安全性问题</li>
+<li>final且为静态的类对象变量时,final将会在类的静态代码块中完成初始化(优先于对象构造器执行),且不能在静态代码之外完成初始化操作,由于JVM加载类的信息的时候是优先于创建线程的,因此当线程访问的时候final的static数据已经完成初始化赋值操作,因此也不存在线程安全问题</li>
+</ul>
+</li>
+</ul>
+<h6 id="2-final的内存语义与实现"><a href="#2-final的内存语义与实现" class="headerlink" title="2. final的内存语义与实现"></a>2. final的内存语义与实现</h6><blockquote>
+<p>final的遵循的规则</p>
+</blockquote>
+<ul>
+<li>对于final领域修饰的非static变量,对象的final领域变量的写操作优先于该对象构造器完成初始化之后的引用赋值操作,即<code>i=4</code>优先于<code>finalClass = new FinalClass();</code>,也就是两个操作不能重排序,final修饰的为引用类型也是一样遵循这个规则</li>
+<li>对于final领域修饰的非static变量,对象的final领域变量在构造器初始化的读操作优先于所有线程对该对象的final数据的读操作,也就是构造器执行默认值<code>i 为默认值 0</code>的操作优先于其他线程对<code>i 为 4</code>的读操作,也就是两者不能重排序,同理final修饰的引用变量也是遵循这个规则</li>
+<li>另外,对于final修饰且为static的变量,在java程序中静态代码只执行一次,且静态代码完成final领域的数据变量初始化操作优先于所有线程对该变量的读操作,相当于“写一次读多次”,并且写一次是在JVM第一次创建该对象实例的时候加载的,且优先于所有线程的其他行为动作,对此是保证写在前读在后的一个逻辑顺序</li>
+</ul>
+<blockquote>
+<p>final的内存语义是如何实现的</p>
+</blockquote>
+<ul>
+<li><p>aarch架构内存屏障指令</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// A more convenient access to dmb for our purposes</span></span><br><span class="line">  <span class="class"><span class="keyword">enum</span> <span class="title">Membar_mask_bits</span> &#123;</span></span><br><span class="line">    StoreStore = ISHST,</span><br><span class="line">    LoadStore  = ISHLD,</span><br><span class="line">    LoadLoad   = ISHLD,</span><br><span class="line">    StoreLoad  = ISH,</span><br><span class="line">    AnyAny     = ISH</span><br><span class="line"> &#125;;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>final语义也是基于内存屏障实现(aarch架构)</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// templateTable_aarch64.cpp</span></span><br><span class="line"><span class="comment">// Issue a StoreStore barrier after all stores but before return</span></span><br><span class="line"><span class="comment">// from any constructor for any class with a final field.  We don&#x27;t</span></span><br><span class="line"><span class="comment">// know if this is a finalizer, so we always do so.</span></span><br><span class="line"><span class="keyword">if</span> (_desc-&gt;<span class="built_in">bytecode</span>() == Bytecodes::_return)</span><br><span class="line">  <span class="function">__ <span class="title">membar</span><span class="params">(MacroAssembler::StoreStore)</span></span>;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>分析</p>
+<ul>
+<li>根据上述可知,jvm在实现中由于不清楚对象什么时候会调用finalizer方法进行回收,因此会在任何对象的构造器返回前插入内存屏障对final修饰的变量执行写操作</li>
+<li>其次,可以看到final插入的内存屏障为StoreStore类型,也就是在构造器返回之前插入StoreStore的内存屏障,也就是说final对变量的写操作的可利用结果在内存屏障之前的代码是不可用的,也就是对<code>final x = 9</code>的写操作之前是看不到<code>x=9</code>的结果</li>
+</ul>
+</li>
+<li><p>volatile与final写操作的内存屏障实现区分</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// templateTable_aarch64.cpp</span></span><br><span class="line"><span class="comment">// According to the new Java Memory Model (JMM):</span></span><br><span class="line"><span class="comment">// (1) All volatiles are serialized wrt to each other.  ALSO reads &amp;</span></span><br><span class="line"><span class="comment">//     writes act as aquire &amp; release, so:</span></span><br><span class="line"><span class="comment">// (2) A read cannot let unrelated NON-volatile memory refs that</span></span><br><span class="line"><span class="comment">//     happen after the read float up to before the read.  It&#x27;s OK for</span></span><br><span class="line"><span class="comment">//     non-volatile memory refs that happen before the volatile read to</span></span><br><span class="line"><span class="comment">//     float down below it.</span></span><br><span class="line"><span class="comment">// (3) Similar a volatile write cannot let unrelated NON-volatile</span></span><br><span class="line"><span class="comment">//     memory refs that happen BEFORE the write float down to after the</span></span><br><span class="line"><span class="comment">//     write.  It&#x27;s OK for non-volatile memory refs that happen after the</span></span><br><span class="line"><span class="comment">//     volatile write to float up before it.</span></span><br><span class="line"><span class="comment">// We only put in barriers around volatile refs (they are expensive),</span></span><br><span class="line"><span class="comment">// not _between_ memory refs (that would require us to track the</span></span><br><span class="line"><span class="comment">// flavor of the previous memory refs).  Requirements (2) and (3)</span></span><br><span class="line"><span class="comment">// require some barriers before volatile stores and after volatile</span></span><br><span class="line"><span class="comment">// loads.  These nearly cover requirement (1) but miss the</span></span><br><span class="line"><span class="comment">// volatile-store-volatile-load case.  This final case is placed after</span></span><br><span class="line"><span class="comment">// volatile-stores although it could just as well go before</span></span><br><span class="line"><span class="comment">// volatile-loads.</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// templateTable_arm.cpp</span></span><br><span class="line"><span class="comment">// StoreLoad barrier after volatile field write</span></span><br><span class="line">  <span class="built_in">volatile_barrier</span>(MacroAssembler::StoreLoad, Rtemp);</span><br><span class="line">  <span class="function">__ <span class="title">b</span><span class="params">(skipMembar)</span></span>;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// StoreStore barrier after final field write</span></span><br><span class="line">  <span class="function">__ <span class="title">bind</span><span class="params">(notVolatile2)</span></span>;</span><br><span class="line">  <span class="built_in">volatile_barrier</span>(MacroAssembler::StoreStore, Rtemp);</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>分析</p>
+<ul>
+<li>从上面可以看到volatile的写操作内存屏障是使用StoreLoad方式,final使用的内存屏障是StoreStore方式</li>
+<li>在aarch64处理器架构中,final也可以使用与volatile相同的内存屏障</li>
+</ul>
+</li>
+<li><p>volatile与final内存屏障伪代码</p>
+</li>
+</ul>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 针对写操作</span></span><br><span class="line"><span class="comment">// Store为写屏障,作用就是防止重排序,同时让数据刷新到主内存</span></span><br><span class="line"><span class="comment">// Load为读屏障,作用就是使得当前工作线程的缓存失效,直接读取主内存数据,保证数据一致性</span></span><br><span class="line"><span class="comment">// for a volatile write</span></span><br><span class="line"><span class="comment">//	</span></span><br><span class="line"><span class="comment">//   dmb ish		// store内存屏障		-- 防止重排序</span></span><br><span class="line"><span class="comment">//   str&lt;x&gt;		    // 写volatile数据</span></span><br><span class="line"><span class="comment">//   dmb ish		// load内存屏障		-- 保证数据一致性(目的就是要看见最新的数据)</span></span><br><span class="line"><span class="comment">//   other codes...</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// for a final write </span></span><br><span class="line"><span class="comment">//</span></span><br><span class="line"><span class="comment">//   dmb ishst		// store内存屏障		-- 防止重排序</span></span><br><span class="line"><span class="comment">//   final x = 9;	    // 写final数据</span></span><br><span class="line"><span class="comment">//   dmb ishst		// store内存屏障		-- 防止重排序</span></span><br><span class="line"><span class="comment">// other codes ...</span></span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>结果<ul>
+<li>可以看到上述描述中使用内存屏障的技术是非常昂贵的,为了适应对应的使用场景,在java中对于volatile与final不能同时存在,同时volatile的使用场景是读写多,而final是一次性写多次读的场景,对此使用的内存屏障技术也会有所不同</li>
+<li>final建议使用为StoreStore而不使用与volatile相同的StoreLoad内存屏障是根据使用场景来的,final实现写一次,那么在创建线程的时候工作内存会copy一份相同的数据作为缓存,不需要读取主内存的数据,同时final的写是在构造器中完成,也就是在构造器中添加内存屏障,也保证了在对象构造器之外不能再对final的数据进行修改的操作</li>
+<li>同理,对于static的final数据,是在static代码块实现StoreStore内存屏障,作用和对象构造器类似</li>
+</ul>
+</li>
+</ul>
+<h6 id="3-final规范小结"><a href="#3-final规范小结" class="headerlink" title="3. final规范小结"></a>3. final规范小结</h6><blockquote>
+<p>Java语言规范</p>
+</blockquote>
+<ul>
+<li>final在构造器中执行赋予值的写操作,因此当线程访问的时候会看到当前final修饰的变量为最新版本的数据</li>
+<li>如果在构造器函数中执行final变量的读操作在写操作之后,那么会看到final分配给变量的最新数据,不存在缓存读取</li>
+<li>读取共享变量里的final数据,则必须先要访问这个共享变量的引用对象然后再读取final数据</li>
+<li>通常static final表示为常量,然而System.in/System.err/System.out也是属于static final,是属于遗留的原因,可通过 System.setIn, System.setOut, and System.setErr来完成赋值操作,java规范中称之为“写保护”</li>
+<li>对应部分源码说明如下</li>
+</ul>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//ciField.cpp</span></span><br><span class="line"><span class="comment">// 源码中注释说明</span></span><br><span class="line"><span class="comment">// Is this field a constant?</span></span><br><span class="line"><span class="comment">//</span></span><br><span class="line"><span class="comment">// Clarification: A field is considered constant if:</span></span><br><span class="line"><span class="comment">//   1. The field is both static and final</span></span><br><span class="line"><span class="comment">//   2. The field is not one of the special static/final</span></span><br><span class="line"><span class="comment">//      non-constant fields.  These are java.lang.System.in</span></span><br><span class="line"><span class="comment">//      and java.lang.System.out.  Abomination.</span></span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>JMM规范</p>
+</blockquote>
+<p>使用final修饰的数据在字节码中显示带有<code>ACC_FINAL</code>的访问标识符,对应访问标示符号的值为<code>0x1000</code></p>
+<ul>
+<li>使用<code>final class XX</code>表明该Class不能被继承,说明该Class没有子类</li>
+<li>类的属性字段被声明为final,表明该字段在对象构造器之外不能被分配值操作</li>
+<li>JVM规范中,volatile的访问标识与final的访问标识不能同时出现,也就是说在程序代码中不能同时使用final和volatile修饰同一个变量</li>
+<li>方法声明为final,表示该方法不能被覆盖重写</li>
+<li>内部类使用final修饰的时候,表示在源代码中标记或隐式结束,也就是final修饰的内部类在生成字节码的时候内部类的标识没有被分配，默认值为0，一般情况下在jvm实现中没有检查内部类属性与类文件的一致性</li>
+</ul>
+
+    </div>
+
+    <div>全文完。</div>
+  </article>
+  <div class="toc-container">
+    
+  <div id="toc" class="toc-article">
+    <strong class="toc-title">目录</strong>
+    <ol class="toc"><li class="toc-item toc-level-6"><a class="toc-link" href="#1-final%E8%AF%AD%E4%B9%89%E4%B8%8E%E4%BD%BF%E7%94%A8"><span class="toc-text">1.final语义与使用</span></a></li><li class="toc-item toc-level-6"><a class="toc-link" href="#2-final%E7%9A%84%E5%86%85%E5%AD%98%E8%AF%AD%E4%B9%89%E4%B8%8E%E5%AE%9E%E7%8E%B0"><span class="toc-text">2. final的内存语义与实现</span></a></li><li class="toc-item toc-level-6"><a class="toc-link" href="#3-final%E8%A7%84%E8%8C%83%E5%B0%8F%E7%BB%93"><span class="toc-text">3. final规范小结</span></a></li></ol>
+  </div>
+
+
+  </div>
+</div>
+<div class="copyright">
+    <span>本作品采用</span>
+    <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by/4.0/">知识共享署名 4.0 国际许可协议</a>
+    <span>进行许可。 转载时请注明原文链接。</span>
+</div>
+<div class="share" style="width: 100%;">
+  <img src="/images/wechat-small.jpg" alt="Running Geek" style="margin: auto; display: block;"/>
+
+  <div style="margin: auto; text-align: center; font-size: 0.8em; color: grey;">老铁们关注走一走，不迷路</div>
+  
+</div>
+
+  
+    <div class="post-nav">
+      <div class="post-nav-item post-nav-next">
+        
+          <span>〈 </span>
+          <a href="/2020/02/14/false_shared/" rel="next" title="并发编程之伪共享">
+          并发编程之伪共享
+          </a>
+        
+      </div>
+  
+      <div class="post-nav-item post-nav-prev">
+          
+          <a href="/2020/02/16/jmm/" rel="prev" title="Java内存模型之简要知识与规范梳理">
+            Java内存模型之简要知识与规范梳理
+          </a>
+          <span>〉</span>
+        
+      </div>
+    </div>
+  
+
+
+    </div>
+
+    
+
+  </div>
+  <footer class="footer text-center">
+    <div id="bottom-inner">
+        <a class="bottom-item" href="https://xiaokunliu.github.io">首页</a> |
+        <a class="bottom-item" href="https://xiaokunliu.github.io" target="_blank">主站</a> |
+        <a class="bottom-item" href="https://github.com/xiaokunliu" target="_blank">GitHub</a> |
+        <a class="bottom-item" href="https://hexo.io" target="_blank">Powered by hexo</a> |
+        <a class="bottom-item" href="https://github.com/KevinOfNeu/hexo-theme-xoxo" target="_blank">Theme xoxo</a>
+    </div>
+</footer>
+  
+
+<script>
+  (function(window, document, undefined) {
+
+    var timer = null;
+
+    function returnTop() {
+      cancelAnimationFrame(timer);
+      timer = requestAnimationFrame(function fn() {
+        var oTop = document.body.scrollTop || document.documentElement.scrollTop;
+        if (oTop > 0) {
+          document.body.scrollTop = document.documentElement.scrollTop = oTop - 50;
+          timer = requestAnimationFrame(fn);
+        } else {
+          cancelAnimationFrame(timer);
+        }
+      });
+    }
+
+    var hearts = [];
+    window.requestAnimationFrame = (function() {
+      return window.requestAnimationFrame ||
+        window.webkitRequestAnimationFrame ||
+        window.mozRequestAnimationFrame ||
+        window.oRequestAnimationFrame ||
+        window.msRequestAnimationFrame ||
+        function(callback) {
+          setTimeout(callback, 1000 / 60);
+        }
+    })();
+    init();
+
+    function init() {
+      css(".heart{z-index:9999;width: 10px;height: 10px;position: fixed;background: #f00;transform: rotate(45deg);-webkit-transform: rotate(45deg);-moz-transform: rotate(45deg);}.heart:after,.heart:before{content: '';width: inherit;height: inherit;background: inherit;border-radius: 50%;-webkit-border-radius: 50%;-moz-border-radius: 50%;position: absolute;}.heart:after{top: -5px;}.heart:before{left: -5px;}");
+      attachEvent();
+      gameloop();
+      addMenuEvent();
+    }
+
+    function gameloop() {
+      for (var i = 0; i < hearts.length; i++) {
+        if (hearts[i].alpha <= 0) {
+          document.body.removeChild(hearts[i].el);
+          hearts.splice(i, 1);
+          continue;
+        }
+        hearts[i].y--;
+        hearts[i].scale += 0.004;
+        hearts[i].alpha -= 0.013;
+        hearts[i].el.style.cssText = "left:" + hearts[i].x + "px;top:" + hearts[i].y + "px;opacity:" + hearts[i].alpha + ";transform:scale(" + hearts[i].scale + "," + hearts[i].scale + ") rotate(45deg);background:" + hearts[i].color;
+      }
+      requestAnimationFrame(gameloop);
+    }
+
+    /**
+     * 给logo设置点击事件
+     * 
+     * - 回到顶部
+     * - 出现爱心
+     */
+    function attachEvent() {
+      var old = typeof window.onclick === "function" && window.onclick;
+      var logo = document.getElementById("logo");
+      if (logo) {
+        logo.onclick = function(event) {
+          returnTop();
+          old && old();
+          createHeart(event);
+        }
+      }
+      
+    }
+
+    function createHeart(event) {
+      var d = document.createElement("div");
+      d.className = "heart";
+      hearts.push({
+        el: d,
+        x: event.clientX - 5,
+        y: event.clientY - 5,
+        scale: 1,
+        alpha: 1,
+        color: randomColor()
+      });
+      document.body.appendChild(d);
+    }
+
+    function css(css) {
+      var style = document.createElement("style");
+      style.type = "text/css";
+      try {
+        style.appendChild(document.createTextNode(css));
+      } catch (ex) {
+        style.styleSheet.cssText = css;
+      }
+      document.getElementsByTagName('head')[0].appendChild(style);
+    }
+
+    function randomColor() {
+      // return "rgb(" + (~~(Math.random() * 255)) + "," + (~~(Math.random() * 255)) + "," + (~~(Math.random() * 255)) + ")";
+      return "#F44336";
+    }
+
+    function addMenuEvent() {
+      var menu = document.getElementById('menu-main-post');
+      if (menu) {
+        var toc = document.getElementById('toc');
+        if (toc) {
+          menu.onclick = function() {
+            if (toc) {
+              if (toc.style.display == 'block') {
+                toc.style.display = 'none';
+              } else {
+                toc.style.display = 'block';
+              }
+            }
+          };
+        } else {
+          menu.style.display = 'none';
+        }
+      }
+    }
+
+  })(window, document);
+</script>
+
+  
+
+
+
+</body>
+</html>

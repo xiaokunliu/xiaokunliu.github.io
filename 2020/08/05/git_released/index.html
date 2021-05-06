@@ -1,0 +1,359 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<!--
+config header
+-->
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#202020"/>
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  <script src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" async></script>
+
+  
+      <meta name="google-site-verification" content="{{ theme.google_site_verification }}" />
+  
+
+  
+    <meta name="keywords" content="tools," />
+  
+
+  
+    <meta name="description" content="分享个人学习工作的技术知识" />
+  
+  
+  <link rel="icon" type="image/x-icon" href="/logo.jpg">
+  <title>category: tools [ 疾风先生 ]</title>
+  
+    <!-- stylesheets list from config.yml -->
+    
+      <link rel="stylesheet" href="//cdn.bootcss.com/pure/1.0.0/pure-min.css">
+    
+      <link rel="stylesheet" href="/css/xoxo.css">
+    
+  
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+
+<body>
+  <div class="nav-container">
+    <nav class="home-menu pure-menu pure-menu-horizontal">
+  <a class="pure-menu-heading" href="/">
+    <img class="avatar" src="https://xiaokunliu.github.io/images/logo.jpg">
+    <span class="title">疾风先生</span>
+  </a>
+
+  <ul class="pure-menu-list clearfix">
+      
+          
+            <li class="pure-menu-item"><a href="/" class="pure-menu-link">首页</a></li>
+          
+      
+          
+            <li class="pure-menu-item"><a href="/archives" class="pure-menu-link">归档</a></li>
+          
+      
+          
+            <li class="pure-menu-item"><a href="/tags" class="pure-menu-link">标签</a></li>
+          
+      
+          
+            <li class="pure-menu-item"><a href="/categories" class="pure-menu-link">分类</a></li>
+          
+      
+          
+            <li class="pure-menu-item"><a href="/search" class="pure-menu-link">搜索</a></li>
+          
+      
+  </ul>
+   
+</nav>
+  </div>
+
+  <div class="container" id="content-outer">
+    <div class="inner" id="content-inner">
+      <div class="post-container">
+  <article class="post" id="post">
+    <header class="post-header text-center">
+      <h1 class="title">
+        git需求管理规范
+      </h1>
+      <span>
+        
+        <time class="time" datetime="2020-08-05T22:07:07.000Z">
+        2020-08-05
+      </time>
+        
+      </span>
+      <span class="slash">/</span>
+      <span class="post-meta">
+      <span class="post-tags">
+        <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/tools/" rel="tag">tools</a></li></ul>
+      </span>
+    </span>
+      <span class="slash">/</span>
+      <span class="read">
+      <span id="busuanzi_value_page_pv"></span> 点击
+    </span>
+    </header>
+
+    <div class="post-content">
+      <span id="more"></span>
+
+<h4 id="需求管理与git流程控制"><a href="#需求管理与git流程控制" class="headerlink" title="需求管理与git流程控制"></a>需求管理与git流程控制</h4><h5 id="迭代周期与git版本管理"><a href="#迭代周期与git版本管理" class="headerlink" title="迭代周期与git版本管理"></a>迭代周期与git版本管理</h5><p><img src="https://raw.githubusercontent.com/xiaokunliu/xiaokunliu.github.io/feature/writing/websites/zimages/tools/git/git_timeline.jpg"></p>
+<h5 id="开发流程"><a href="#开发流程" class="headerlink" title="开发流程"></a>开发流程</h5><blockquote>
+<p>需求开发流程</p>
+</blockquote>
+<p><img src="https://raw.githubusercontent.com/xiaokunliu/xiaokunliu.github.io/feature/writing/websites/zimages/tools/git/git_flow.jpg"></p>
+<blockquote>
+<p>线上紧急修复bug流程</p>
+</blockquote>
+<p><img src="https://raw.githubusercontent.com/xiaokunliu/xiaokunliu.github.io/feature/writing/websites/zimages/tools/git/git_flow_hotfix.jpg"></p>
+<h5 id="版本号管理"><a href="#版本号管理" class="headerlink" title="版本号管理"></a>版本号管理</h5><p>打包发版是基于release分支,因此进行版本管理是在release分支进行的,对此关于项目版本号的简要说明如下:</p>
+<p>当代码在feature开发测试完成并merge回develop后，在发版本前一天打一个基于develop的 release分支。在该分支上进行测试和修复bug，不开发新功能。</p>
+<p>新发布版本号规则为：</p>
+<ul>
+<li>如果是重大功能变更，则递增第1位，第2、3位归0。（如整体换UI、改用新技术）</li>
+<li>如果是添加大功能（工作量按周计算），则递增第2位，第1位不变，第3位归0。（如新增贵族功能）</li>
+<li>如果是添加小功能（工作量不满一周），则递增第3位，第1、2位不变。（如添加某某接口）</li>
+</ul>
+<p>当线上遇到必须要紧急修复的BUG，不能推到下个版本修复时，可以在master基础 上创建hotfix分支来修复BUG。BUG修复后，将修改内容合并回master和develop分支。</p>
+<p>新发布版本号规则为：</p>
+<ul>
+<li>如果上一个版本没有第4位，则设置第4位为1</li>
+<li>如果上一个版本含有第4位，则递增第4位</li>
+</ul>
+<h4 id="gitflow简介"><a href="#gitflow简介" class="headerlink" title="gitflow简介"></a>gitflow简介</h4><h5 id="gitflow进行需求开发"><a href="#gitflow进行需求开发" class="headerlink" title="gitflow进行需求开发"></a>gitflow进行需求开发</h5><p>上述的流程规范可以使用gitflow工具来提升基于git开发流程,具体实践如下:</p>
+<ul>
+<li>首先是项目的前期准备工作</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">## 这里我直接在gitee上创建一个新项目</span></span><br><span class="line">git <span class="built_in">clone</span> https://gitee.com/xiaokunliu/tpp.git &amp;&amp; <span class="built_in">cd</span> tpp</span><br><span class="line"></span><br><span class="line"><span class="comment">## 基于master新建一个develop分支</span></span><br><span class="line">git pull origin master &amp;&amp; git branch develop &amp;&amp; git brnach -a</span><br><span class="line"></span><br><span class="line"><span class="comment">## 切换到develop分支</span></span><br><span class="line">git checkout develop</span><br><span class="line"></span><br><span class="line"><span class="comment">## 推送develop到远程服务器</span></span><br><span class="line">git push origin develop</span><br><span class="line"></span><br><span class="line"><span class="comment">## 查看分支</span></span><br><span class="line">git branch -a | grep develop</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>其次,是需要开发一个新的需求功能,基于develop分支新建一个feature分支</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">## 将远程仓库拉取下来</span></span><br><span class="line"><span class="comment">## 如果当前分支未提交或者是存在冲突先进行提交或者是冲突的问题解决</span></span><br><span class="line">git pull origin master &amp;&amp; git pull origin develop</span><br><span class="line"></span><br><span class="line"><span class="comment">## 第一次使用gitflow</span></span><br><span class="line">git flow init -d</span><br><span class="line"></span><br><span class="line"><span class="comment">## 更新develop分支</span></span><br><span class="line">git checkout develop &amp;&amp; git pull</span><br><span class="line"></span><br><span class="line"><span class="comment">## 基于最新的develop分支新建一个feature分支,比如开发支付模块</span></span><br><span class="line">git flow feature start feature-payment</span><br><span class="line"></span><br><span class="line"><span class="comment">## 如果是多人合作的时候,需要将本地的feature分支推送到远程服务器进行功能测试</span></span><br><span class="line"><span class="comment">## 发布feature分支并推送到远程服务器</span></span><br><span class="line">git flow feature publish feature-payment</span><br><span class="line"></span><br><span class="line"><span class="comment">## 通知处理相同需求的同事将feature分支检出</span></span><br><span class="line">git flow feature track feature-payment</span><br><span class="line"></span><br><span class="line"><span class="comment">## 如果中间feature分支存在bug,那么需要将feature拉取下来进行bug修复</span></span><br><span class="line">git pull origin master &amp;&amp; git pull origin develop &amp;&amp; git pull origin feature-payment &amp;&amp; git checkout feature-payment</span><br><span class="line"></span><br><span class="line"><span class="comment">## 进行bug修复并提交</span></span><br><span class="line">git add ..</span><br><span class="line">git commit -m <span class="string">&quot;&quot;</span></span><br><span class="line">git push origin feature-payment</span><br><span class="line"></span><br><span class="line"><span class="comment">## 开发并且QA测试完成之后需要将feature分支合并到develop分支进行回归测试</span></span><br><span class="line">git flow feature finish feature-payment</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>然后,feature分支已经完成开发,需要进行发版</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">## 首先登录测试服务器,将代码拉取下来</span></span><br><span class="line">git pull origin master &amp;&amp; git pull origin develop &amp;&amp; git checkout develop</span><br><span class="line"></span><br><span class="line"><span class="comment">## 其次基于develop分支进行打包发版,需要打一个release分支</span></span><br><span class="line"><span class="comment">## 比如现在的版本号为1.1.0,在项目中增加一个配置文件CHANGLOG.txt用于记录版本号以及对应的版本号修改的时间</span></span><br><span class="line">version=<span class="string">&#x27;1.1.0&#x27;</span></span><br><span class="line">version_date=<span class="string">&quot;2020-08-01&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="comment">## 此时的版本为1.2.0,假设现在是周期版本的需求迭代</span></span><br><span class="line">git flow release start 1.2.0</span><br><span class="line"></span><br><span class="line"><span class="comment">## 然后更新上述配置文件的版本号以及时间</span></span><br><span class="line">version=<span class="string">&#x27;1.2.0&#x27;</span></span><br><span class="line">version_date=<span class="string">&quot;2020-08-06&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="comment">## 然后提交CHANGLOG.txt</span></span><br><span class="line">git add CHANGLOG.txt</span><br><span class="line">git commit -m <span class="string">&quot;change version and version date&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="comment">## 将release版本进行发布到测试环境进行回归测试</span></span><br><span class="line">git flow release publish 1.2.0</span><br><span class="line"></span><br><span class="line"><span class="comment">## 如果回归测试有问题,需要通知对应需求的功能的同事进行修复</span></span><br><span class="line"><span class="comment">## 将项目检出</span></span><br><span class="line">git flow release track 1.2.0</span><br><span class="line"></span><br><span class="line"><span class="comment">## 进行bug修复然后提交,release分支只用于bug修复,不做新的需求功能开发,如果有新的需求功能</span></span><br><span class="line"><span class="comment">## 不紧急的话走周期版本,紧急需求功能将feature分支合并到release分支,注意此时所处的时间点是回归测试阶段</span></span><br><span class="line"></span><br><span class="line"><span class="comment">## 完成bug修复之后,准备打包到稳定的master版本</span></span><br><span class="line">git checkout master &amp;&amp; git pull &amp;&amp; git checkout develop &amp;&amp; git checkout release/1.2.0 &amp;&amp; git pull</span><br><span class="line"></span><br><span class="line"><span class="comment">## 打包并合并到当前测试服务器的develop以及master</span></span><br><span class="line">git flow release finish 1.2.0</span><br><span class="line"></span><br><span class="line"><span class="comment">## 如果有冲突再解决冲突</span></span><br><span class="line"></span><br><span class="line"><span class="comment">## 最后将develop以及master推送到远程</span></span><br><span class="line">git push origin master &amp;&amp; git push origin develop &amp;&amp; git push --tags</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>最后,将master版本推送到预发布线上preview环境,线上preveiw环境ok之后再走生产环境,实现逐个单节点发布.</li>
+</ul>
+<h5 id="gitflow进行紧急修复bug"><a href="#gitflow进行紧急修复bug" class="headerlink" title="gitflow进行紧急修复bug"></a>gitflow进行紧急修复bug</h5><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">## 紧急bug修复需要基于master分支</span></span><br><span class="line">git checkout master &amp;&amp; git pull</span><br><span class="line"></span><br><span class="line"><span class="comment">## 开启一个hotfix的分支</span></span><br><span class="line">git flow hotfix start fix-payment-notoreders</span><br><span class="line"></span><br><span class="line"><span class="comment">## 本地进行bug修复之后,需要进行bug测试回归,需要发布hotfix分支到测试环境上</span></span><br><span class="line">git flow hotfix publish fix-payment-notoreders</span><br><span class="line"><span class="comment">## 登录测试服</span></span><br><span class="line">git checkout master &amp;&amp; git pull &amp;&amp; git checkout develop &amp;&amp; git pull &amp;&amp; git checkout fix-payment-notoreders</span><br><span class="line"><span class="comment">## 进行测试如果没有问题,那么就将hotfix的分支进行打包</span></span><br><span class="line">git flow hotfix finish fix-payment-notoreders</span><br><span class="line"></span><br><span class="line"><span class="comment">## 更新到master以及develop分支上</span></span><br><span class="line">git push origin master &amp;&amp; git push origin develop &amp;&amp; git push --tags</span><br><span class="line"></span><br><span class="line"><span class="comment">## 最后将代码发布到线上即可</span></span><br></pre></td></tr></table></figure>
+
+<h5 id="上线之后删除功能分支以及release分支"><a href="#上线之后删除功能分支以及release分支" class="headerlink" title="上线之后删除功能分支以及release分支"></a>上线之后删除功能分支以及release分支</h5><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">## 删除本地分支</span></span><br><span class="line">git branch -D feature/feature-payment</span><br><span class="line"></span><br><span class="line"><span class="comment">## 删除远程分支</span></span><br><span class="line">git push origin :feature/feature-payment</span><br></pre></td></tr></table></figure>
+
+<h4 id="git与gitflow学习资料参考"><a href="#git与gitflow学习资料参考" class="headerlink" title="git与gitflow学习资料参考"></a>git与gitflow学习资料参考</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">## github上学习资源: </span><br><span class="line">https://github.com/geeeeeeeeek/git-recipes/wiki</span><br><span class="line"></span><br><span class="line">## gitflow参考资料:</span><br><span class="line">https://datasift.github.io/gitflow/IntroducingGitFlow.html</span><br><span class="line">https://www.atlassian.com/git/tutorials/comparing-workflows/gitflow-workflow</span><br></pre></td></tr></table></figure>
+
+
+
+
+
+
+
+
+
+
+    </div>
+
+    <div>全文完。</div>
+  </article>
+  <div class="toc-container">
+    
+  <div id="toc" class="toc-article">
+    <strong class="toc-title">目录</strong>
+    <ol class="toc"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E9%9C%80%E6%B1%82%E7%AE%A1%E7%90%86%E4%B8%8Egit%E6%B5%81%E7%A8%8B%E6%8E%A7%E5%88%B6"><span class="toc-text">需求管理与git流程控制</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#%E8%BF%AD%E4%BB%A3%E5%91%A8%E6%9C%9F%E4%B8%8Egit%E7%89%88%E6%9C%AC%E7%AE%A1%E7%90%86"><span class="toc-text">迭代周期与git版本管理</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%E5%BC%80%E5%8F%91%E6%B5%81%E7%A8%8B"><span class="toc-text">开发流程</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%E7%89%88%E6%9C%AC%E5%8F%B7%E7%AE%A1%E7%90%86"><span class="toc-text">版本号管理</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#gitflow%E7%AE%80%E4%BB%8B"><span class="toc-text">gitflow简介</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#gitflow%E8%BF%9B%E8%A1%8C%E9%9C%80%E6%B1%82%E5%BC%80%E5%8F%91"><span class="toc-text">gitflow进行需求开发</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#gitflow%E8%BF%9B%E8%A1%8C%E7%B4%A7%E6%80%A5%E4%BF%AE%E5%A4%8Dbug"><span class="toc-text">gitflow进行紧急修复bug</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%E4%B8%8A%E7%BA%BF%E4%B9%8B%E5%90%8E%E5%88%A0%E9%99%A4%E5%8A%9F%E8%83%BD%E5%88%86%E6%94%AF%E4%BB%A5%E5%8F%8Arelease%E5%88%86%E6%94%AF"><span class="toc-text">上线之后删除功能分支以及release分支</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#git%E4%B8%8Egitflow%E5%AD%A6%E4%B9%A0%E8%B5%84%E6%96%99%E5%8F%82%E8%80%83"><span class="toc-text">git与gitflow学习资料参考</span></a></li></ol>
+  </div>
+
+
+  </div>
+</div>
+<div class="copyright">
+    <span>本作品采用</span>
+    <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by/4.0/">知识共享署名 4.0 国际许可协议</a>
+    <span>进行许可。 转载时请注明原文链接。</span>
+</div>
+<div class="share" style="width: 100%;">
+  <img src="/images/wechat-small.jpg" alt="Running Geek" style="margin: auto; display: block;"/>
+
+  <div style="margin: auto; text-align: center; font-size: 0.8em; color: grey;">老铁们关注走一走，不迷路</div>
+  
+</div>
+
+  
+    <div class="post-nav">
+      <div class="post-nav-item post-nav-next">
+        
+          <span>〈 </span>
+          <a href="/2020/07/24/raft/" rel="next" title="Raft算法简述">
+          Raft算法简述
+          </a>
+        
+      </div>
+  
+      <div class="post-nav-item post-nav-prev">
+          
+          <a href="/2020/08/24/raft02/" rel="prev" title="raft算法增强与总结">
+            raft算法增强与总结
+          </a>
+          <span>〉</span>
+        
+      </div>
+    </div>
+  
+
+
+    </div>
+
+    
+
+  </div>
+  <footer class="footer text-center">
+    <div id="bottom-inner">
+        <a class="bottom-item" href="https://xiaokunliu.github.io">首页</a> |
+        <a class="bottom-item" href="https://xiaokunliu.github.io" target="_blank">主站</a> |
+        <a class="bottom-item" href="https://github.com/xiaokunliu" target="_blank">GitHub</a> |
+        <a class="bottom-item" href="https://hexo.io" target="_blank">Powered by hexo</a> |
+        <a class="bottom-item" href="https://github.com/KevinOfNeu/hexo-theme-xoxo" target="_blank">Theme xoxo</a>
+    </div>
+</footer>
+  
+
+<script>
+  (function(window, document, undefined) {
+
+    var timer = null;
+
+    function returnTop() {
+      cancelAnimationFrame(timer);
+      timer = requestAnimationFrame(function fn() {
+        var oTop = document.body.scrollTop || document.documentElement.scrollTop;
+        if (oTop > 0) {
+          document.body.scrollTop = document.documentElement.scrollTop = oTop - 50;
+          timer = requestAnimationFrame(fn);
+        } else {
+          cancelAnimationFrame(timer);
+        }
+      });
+    }
+
+    var hearts = [];
+    window.requestAnimationFrame = (function() {
+      return window.requestAnimationFrame ||
+        window.webkitRequestAnimationFrame ||
+        window.mozRequestAnimationFrame ||
+        window.oRequestAnimationFrame ||
+        window.msRequestAnimationFrame ||
+        function(callback) {
+          setTimeout(callback, 1000 / 60);
+        }
+    })();
+    init();
+
+    function init() {
+      css(".heart{z-index:9999;width: 10px;height: 10px;position: fixed;background: #f00;transform: rotate(45deg);-webkit-transform: rotate(45deg);-moz-transform: rotate(45deg);}.heart:after,.heart:before{content: '';width: inherit;height: inherit;background: inherit;border-radius: 50%;-webkit-border-radius: 50%;-moz-border-radius: 50%;position: absolute;}.heart:after{top: -5px;}.heart:before{left: -5px;}");
+      attachEvent();
+      gameloop();
+      addMenuEvent();
+    }
+
+    function gameloop() {
+      for (var i = 0; i < hearts.length; i++) {
+        if (hearts[i].alpha <= 0) {
+          document.body.removeChild(hearts[i].el);
+          hearts.splice(i, 1);
+          continue;
+        }
+        hearts[i].y--;
+        hearts[i].scale += 0.004;
+        hearts[i].alpha -= 0.013;
+        hearts[i].el.style.cssText = "left:" + hearts[i].x + "px;top:" + hearts[i].y + "px;opacity:" + hearts[i].alpha + ";transform:scale(" + hearts[i].scale + "," + hearts[i].scale + ") rotate(45deg);background:" + hearts[i].color;
+      }
+      requestAnimationFrame(gameloop);
+    }
+
+    /**
+     * 给logo设置点击事件
+     * 
+     * - 回到顶部
+     * - 出现爱心
+     */
+    function attachEvent() {
+      var old = typeof window.onclick === "function" && window.onclick;
+      var logo = document.getElementById("logo");
+      if (logo) {
+        logo.onclick = function(event) {
+          returnTop();
+          old && old();
+          createHeart(event);
+        }
+      }
+      
+    }
+
+    function createHeart(event) {
+      var d = document.createElement("div");
+      d.className = "heart";
+      hearts.push({
+        el: d,
+        x: event.clientX - 5,
+        y: event.clientY - 5,
+        scale: 1,
+        alpha: 1,
+        color: randomColor()
+      });
+      document.body.appendChild(d);
+    }
+
+    function css(css) {
+      var style = document.createElement("style");
+      style.type = "text/css";
+      try {
+        style.appendChild(document.createTextNode(css));
+      } catch (ex) {
+        style.styleSheet.cssText = css;
+      }
+      document.getElementsByTagName('head')[0].appendChild(style);
+    }
+
+    function randomColor() {
+      // return "rgb(" + (~~(Math.random() * 255)) + "," + (~~(Math.random() * 255)) + "," + (~~(Math.random() * 255)) + ")";
+      return "#F44336";
+    }
+
+    function addMenuEvent() {
+      var menu = document.getElementById('menu-main-post');
+      if (menu) {
+        var toc = document.getElementById('toc');
+        if (toc) {
+          menu.onclick = function() {
+            if (toc) {
+              if (toc.style.display == 'block') {
+                toc.style.display = 'none';
+              } else {
+                toc.style.display = 'block';
+              }
+            }
+          };
+        } else {
+          menu.style.display = 'none';
+        }
+      }
+    }
+
+  })(window, document);
+</script>
+
+  
+
+
+
+</body>
+</html>

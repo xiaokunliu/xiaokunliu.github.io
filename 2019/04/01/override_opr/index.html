@@ -1,0 +1,428 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<!--
+config header
+-->
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#202020"/>
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  <script src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" async></script>
+
+  
+      <meta name="google-site-verification" content="{{ theme.google_site_verification }}" />
+  
+
+  
+    <meta name="keywords" content="Python," />
+  
+
+  
+    <meta name="description" content="分享个人学习工作的技术知识" />
+  
+  
+  <link rel="icon" type="image/x-icon" href="/logo.jpg">
+  <title>category: Python [ 疾风先生 ]</title>
+  
+    <!-- stylesheets list from config.yml -->
+    
+      <link rel="stylesheet" href="//cdn.bootcss.com/pure/1.0.0/pure-min.css">
+    
+      <link rel="stylesheet" href="/css/xoxo.css">
+    
+  
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+
+<body>
+  <div class="nav-container">
+    <nav class="home-menu pure-menu pure-menu-horizontal">
+  <a class="pure-menu-heading" href="/">
+    <img class="avatar" src="https://xiaokunliu.github.io/images/logo.jpg">
+    <span class="title">疾风先生</span>
+  </a>
+
+  <ul class="pure-menu-list clearfix">
+      
+          
+            <li class="pure-menu-item"><a href="/" class="pure-menu-link">首页</a></li>
+          
+      
+          
+            <li class="pure-menu-item"><a href="/archives" class="pure-menu-link">归档</a></li>
+          
+      
+          
+            <li class="pure-menu-item"><a href="/tags" class="pure-menu-link">标签</a></li>
+          
+      
+          
+            <li class="pure-menu-item"><a href="/categories" class="pure-menu-link">分类</a></li>
+          
+      
+          
+            <li class="pure-menu-item"><a href="/search" class="pure-menu-link">搜索</a></li>
+          
+      
+  </ul>
+   
+</nav>
+  </div>
+
+  <div class="container" id="content-outer">
+    <div class="inner" id="content-inner">
+      <div class="post-container">
+  <article class="post" id="post">
+    <header class="post-header text-center">
+      <h1 class="title">
+        python类重载运算符
+      </h1>
+      <span>
+        
+        <time class="time" datetime="2019-04-01T23:21:11.000Z">
+        2019-04-01
+      </time>
+        
+      </span>
+      <span class="slash">/</span>
+      <span class="post-meta">
+      <span class="post-tags">
+        <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/" rel="tag">Python</a></li></ul>
+      </span>
+    </span>
+      <span class="slash">/</span>
+      <span class="read">
+      <span id="busuanzi_value_page_pv"></span> 点击
+    </span>
+    </header>
+
+    <div class="post-content">
+      <span id="more"></span>
+
+
+<h4 id="python类重载运算符"><a href="#python类重载运算符" class="headerlink" title="python类重载运算符"></a>python类重载运算符</h4><p>1.成员操作符:<code>__contains__</code></p>
+<blockquote>
+<p>判断member是否存在<strong>可迭代的对象</strong>中</p>
+</blockquote>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># membership.py</span></span><br><span class="line"><span class="comment"># 定义的对象必须是可迭代的</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Iters</span>:</span></span><br><span class="line"><span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">   将所有可迭代的方法列出来 </span></span><br><span class="line"><span class="string">&quot;&quot;&quot;</span></span><br><span class="line">	<span class="function"><span class="keyword">def</span> <span class="title">__init__</span>(<span class="params">self, value</span>):</span></span><br><span class="line">		self.data = value</span><br><span class="line"></span><br><span class="line">	<span class="function"><span class="keyword">def</span> <span class="title">__getitem__</span>(<span class="params">self, i</span>):</span>    <span class="comment"># 迭代、索引、分片操作的时候会被调用</span></span><br><span class="line">		<span class="built_in">print</span>(<span class="string">&#x27;get[%s]:&#x27;</span> % i, end=<span class="string">&#x27;&#x27;</span>)</span><br><span class="line">		<span class="keyword">return</span> self.data[i]</span><br><span class="line"></span><br><span class="line">	<span class="function"><span class="keyword">def</span> <span class="title">__iter__</span>(<span class="params">self</span>):</span>          <span class="comment"># 进行迭代的时候会被调用</span></span><br><span class="line">		<span class="built_in">print</span>(<span class="string">&#x27;iter=&gt; &#x27;</span>, end=<span class="string">&#x27;&#x27;</span>)</span><br><span class="line">		self.ix = <span class="number">0</span></span><br><span class="line">		<span class="keyword">return</span> self</span><br><span class="line"></span><br><span class="line">	<span class="function"><span class="keyword">def</span> <span class="title">__next__</span>(<span class="params">self</span>):</span></span><br><span class="line">		<span class="built_in">print</span>(<span class="string">&#x27;next:&#x27;</span>, end=<span class="string">&#x27;&#x27;</span>)</span><br><span class="line">		<span class="keyword">if</span> self.ix == <span class="built_in">len</span>(self.data):<span class="keyword">raise</span> StopIteration</span><br><span class="line">		item = self.data[self.ix]</span><br><span class="line">		self.ix += <span class="number">1</span></span><br><span class="line">		<span class="keyword">return</span> item</span><br><span class="line"></span><br><span class="line">	<span class="function"><span class="keyword">def</span> <span class="title">__contains__</span>(<span class="params">self, x</span>):</span>      <span class="comment"># 成员变量的判断，使用in</span></span><br><span class="line">		<span class="built_in">print</span>(<span class="string">&#x27;contains: &#x27;</span>, end=<span class="string">&#x27;&#x27;</span>)</span><br><span class="line">		<span class="keyword">return</span> x <span class="keyword">in</span> self.data</span><br><span class="line"></span><br><span class="line">	<span class="built_in">next</span> = __next__</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">test_iter</span>():</span></span><br><span class="line">    X = Iters([<span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span>,<span class="number">4</span>])</span><br><span class="line">    <span class="built_in">print</span>(<span class="number">3</span> <span class="keyword">in</span> X)   <span class="comment"># contains: True</span></span><br><span class="line">    <span class="keyword">for</span> i <span class="keyword">in</span> X:</span><br><span class="line">		<span class="built_in">print</span>(i, end=<span class="string">&#x27; | &#x27;</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">&#x27;__main__&#x27;</span>:</span><br><span class="line">    test_iter()</span><br><span class="line"></span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>python membership.py</span><br></pre></td></tr></table></figure>
+<p><img src="https://imgconvert.csdnimg.cn/aHR0cDovL2ltZy5ibG9nLmNzZG4ubmV0LzIwMTcxMTIyMjAxNjAyMDg4?x-oss-process=image/format,png" alt="这里写图片描述"></p>
+<p>2.属性管理</p>
+<blockquote>
+<p>属性访问<code>__getattr__</code></p>
+</blockquote>
+<ul>
+<li>obj.attr_name的形式访问对象属性</li>
+<li>自定义类管理属性信息,对于访问不存在的属性可以返回错误信息提示</li>
+</ul>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># attr.py</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">AttrObject</span>:</span></span><br><span class="line">	<span class="function"><span class="keyword">def</span> <span class="title">__getattr__</span>(<span class="params">self, attr_name</span>):</span></span><br><span class="line">		<span class="built_in">print</span>(<span class="string">&quot;Attr Object get attr method ....&quot;</span>)</span><br><span class="line">		<span class="keyword">if</span> attr_name == <span class="string">&#x27;age&#x27;</span>:</span><br><span class="line">			<span class="keyword">return</span> <span class="number">40</span></span><br><span class="line">		<span class="keyword">else</span>:</span><br><span class="line">			<span class="keyword">raise</span> AttributeError(<span class="string">&quot;could not access the attr[%s]&quot;</span> % attr_name)</span><br><span class="line"></span><br><span class="line"><span class="comment"># for test</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">test_empty</span>():</span></span><br><span class="line">	e = AttrObject()</span><br><span class="line">	<span class="built_in">print</span>(e.age)        <span class="comment"># 调用__getattr__方法,访问age属性,匹配并返回40</span></span><br><span class="line">	<span class="built_in">print</span>(e.hobby)      <span class="comment"># AttributeError: could not access the attr[hobby]</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">&#x27;__main__&#x27;</span>:</span><br><span class="line">    test_empty()</span><br><span class="line"></span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>python attr.py      <span class="comment"># 2.x &amp; 3.x表示结果一样,以下都会以此标记</span></span><br></pre></td></tr></table></figure>
+<p><img src="https://imgconvert.csdnimg.cn/aHR0cDovL2ltZy5ibG9nLmNzZG4ubmV0LzIwMTcxMTIyMjAxNjE5NTM5?x-oss-process=image/format,png" alt="这里写图片描述"></p>
+<blockquote>
+<p>属性设置<code>__setattr__</code></p>
+</blockquote>
+<ul>
+<li>定义类对象管理属性并将属性名以及值存储在一个实例对象中</li>
+<li>self.attrname 以及 instance.attrname 将会调用类的内置方法<code>__setattr__</code>方法</li>
+</ul>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># attr.py</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">AcessControl</span>:</span></span><br><span class="line">	<span class="function"><span class="keyword">def</span> <span class="title">__init__</span>(<span class="params">self</span>):</span></span><br><span class="line">		self.hobby = <span class="string">&quot;basketball&quot;</span>               <span class="comment"># 会调用下面的__setattr__方法</span></span><br><span class="line"></span><br><span class="line">	<span class="function"><span class="keyword">def</span> <span class="title">__setattr__</span>(<span class="params">self, key, value</span>):</span></span><br><span class="line">		<span class="comment"># self.name = &quot;xxxx&quot;                    # 不能在__setattr__上使用self.attr,会导致递归应用循环</span></span><br><span class="line">		<span class="built_in">print</span>(<span class="string">&quot;access control set attr ...&quot;</span>)</span><br><span class="line">		<span class="keyword">if</span> key == <span class="string">&#x27;age&#x27;</span>:</span><br><span class="line">			self.__dict__[key] = value + <span class="number">10</span>     <span class="comment"># 通过内建字典来保存属性数据</span></span><br><span class="line">		<span class="keyword">else</span>:</span><br><span class="line">			self.__dict__[key] = value</span><br><span class="line"></span><br><span class="line">	<span class="function"><span class="keyword">def</span> <span class="title">__delattr__</span>(<span class="params">self, item</span>):</span></span><br><span class="line">		<span class="built_in">print</span>(<span class="string">&quot;del item[%s]&quot;</span> % item)</span><br><span class="line"></span><br><span class="line">	<span class="function"><span class="keyword">def</span> <span class="title">__getattr__</span>(<span class="params">self, item</span>):</span></span><br><span class="line">		<span class="built_in">print</span>(<span class="string">&quot;get item[%s]&quot;</span> % item)</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">test_access_control</span>():</span></span><br><span class="line">	ac = AcessControl()</span><br><span class="line">	ac.age = <span class="number">10</span>         <span class="comment"># 调用__setattr__</span></span><br><span class="line">	<span class="built_in">print</span>(ac.age)       <span class="comment"># 直接输入值，没有调用__getattr__</span></span><br><span class="line">	<span class="built_in">print</span>(ac.hobby)     <span class="comment"># 当属性有值时，也就是非None是不会调用__getattr__方法的，如果没有值，即None就会调用__getattr__方法</span></span><br><span class="line">	<span class="keyword">del</span> ac.age          <span class="comment"># 调用__delattr__</span></span><br><span class="line">	<span class="built_in">print</span>(ac.name)      <span class="comment"># 调用__getattr__,调用未定义的属性时候就会回调这个函数并且返回None</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">&#x27;__main__&#x27;</span>:</span><br><span class="line">    test_access_control()</span><br><span class="line"></span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>python attr.py      <span class="comment"># 2.x &amp; 3.x</span></span><br></pre></td></tr></table></figure>
+<p><img src="https://imgconvert.csdnimg.cn/aHR0cDovL2ltZy5ibG9nLmNzZG4ubmV0LzIwMTcxMTIyMjAxNjM2Mzc0?x-oss-process=image/format,png" alt="这里写图片描述"></p>
+<blockquote>
+<p>属性设置与访问<code>__getattribute__</code></p>
+</blockquote>
+<ul>
+<li>这个方法将会拦截所有获取的属性的操作，包括未定义的属性</li>
+<li>属性内置函数允许我们将方法与特定类属性的获取和集合操作相关联</li>
+<li>属性描述符为特定的类的属性提供了一组<code>__get__</code>和<code>__set__</code>方法访问协议</li>
+<li>实例属性在类中声明但是在每一个类的对象实例中隐式存储</li>
+</ul>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">AttrManager</span>:</span></span><br><span class="line">	<span class="function"><span class="keyword">def</span> <span class="title">__getattribute__</span>(<span class="params">self, item</span>):</span></span><br><span class="line">		<span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">		:param item:</span></span><br><span class="line"><span class="string">		:return:</span></span><br><span class="line"><span class="string">		避免产生递归循环引用,不要使用self.attr_name对属性进行访问或者设置,属性访问会经过这个方法</span></span><br><span class="line"><span class="string">		这里没有保存数据，因此返回的时候是None</span></span><br><span class="line"><span class="string">		&quot;&quot;&quot;</span></span><br><span class="line">		<span class="built_in">print</span>(<span class="string">&quot;call  __getattribute__ for item[%s] &quot;</span> % item)</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">test_attr_manager</span>():</span></span><br><span class="line">	manager = AttrManager()</span><br><span class="line">	manager.name = <span class="string">&quot;attr manager name&quot;</span></span><br><span class="line">	<span class="built_in">print</span>(manager.name)</span><br><span class="line">	<span class="built_in">print</span>(manager.age)</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">&#x27;__main__&#x27;</span>:</span><br><span class="line">    test_attr_manager()</span><br><span class="line"></span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>python attr.py  <span class="comment"># 2.x与3.x的不同输出</span></span><br></pre></td></tr></table></figure>
+<p><img src="https://imgconvert.csdnimg.cn/aHR0cDovL2ltZy5ibG9nLmNzZG4ubmV0LzIwMTcxMTIyMjAxNjU4MTg0?x-oss-process=image/format,png" alt="这里写图片描述"><br><img src="https://imgconvert.csdnimg.cn/aHR0cDovL2ltZy5ibG9nLmNzZG4ubmV0LzIwMTcxMTIyMjAxNzE0NDY1?x-oss-process=image/format,png" alt="这里写图片描述"></p>
+<blockquote>
+<p>小结</p>
+</blockquote>
+<ul>
+<li><code>__setattr__</code>和<code>__getattr__</code>能够在python不同的版本下对未定义的属性进行访问和赋值</li>
+<li><code>__getattribute__</code>只能在3.x下对未定义的属性名进行访问</li>
+<li>为了更好的兼容2.x和3.x，应当重载两个方法,即<code>__getattr__</code>以及<code>__getattribute__</code></li>
+<li>python3.x中的执行的优先级，<code>__getattribute__</code> &gt; <code>__getattr__</code></li>
+<li>python2.x中的执行的优先级，<code>__getattr__</code> &gt; <code>__getattribute__</code></li>
+<li>如果类中没有定义<code>__getattribute__</code>或者<code>__getattr__</code>,则在访问未定义的属性时候会报没有属性的错误</li>
+</ul>
+<p>3.字符串打印:<code>__str__</code>,<code>__repr__</code></p>
+<ul>
+<li><code>__str__</code>主要应用于print函数以及字符串函数str的转换操作,</li>
+<li><code>__repr__</code>应用于所有输出操作,如果有print以及str操作并定义<code>__str__</code>,则会以<code>__str__</code>为准</li>
+<li><code>__repr__</code>与<code>__str__</code>均未定义的时候，默认打印的是输出对象地址信息</li>
+</ul>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># str.py</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">DisplayClass</span>:</span></span><br><span class="line">	<span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">	__repr__ is used everywhere, except by print and str when a __str__ is defined.</span></span><br><span class="line"><span class="string">	__str__ to support print and str exclusively</span></span><br><span class="line"><span class="string">	&quot;&quot;&quot;</span></span><br><span class="line">	<span class="function"><span class="keyword">def</span> <span class="title">__repr__</span>(<span class="params">self</span>):</span></span><br><span class="line">		<span class="keyword">return</span> <span class="string">&quot;display __repr__ class&quot;</span></span><br><span class="line"></span><br><span class="line">	<span class="function"><span class="keyword">def</span> <span class="title">__str__</span>(<span class="params">self</span>):</span></span><br><span class="line">		<span class="keyword">return</span> <span class="string">&quot;display __str__ class&quot;</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment"># 使用命令行的形式打印输出  2.x &amp; 3.x 输出效果一致,以2.x作为截图</span></span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>d = DisplayClass()</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>d                   <span class="built_in">repr</span></span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span><span class="built_in">print</span>(d)            <span class="built_in">str</span></span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span><span class="built_in">print</span>(<span class="built_in">repr</span>(d))      <span class="built_in">repr</span></span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span><span class="built_in">print</span>(<span class="built_in">str</span>(d))       <span class="built_in">str</span></span><br></pre></td></tr></table></figure>
+<p><img src="https://imgconvert.csdnimg.cn/aHR0cDovL2ltZy5ibG9nLmNzZG4ubmV0LzIwMTcxMTIyMjAxNzMxMjk1?x-oss-process=image/format,png" alt="这里写图片描述"><br>4.运算操作符:<code>__add__</code>,<code>__radd__</code>,<code>__iadd__</code></p>
+<blockquote>
+<p>变量+常量,如X + 1024,调用<code>__add__</code>方法</p>
+</blockquote>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># addition.py</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Counter</span>:</span></span><br><span class="line">	<span class="function"><span class="keyword">def</span> <span class="title">__init__</span>(<span class="params">self, value = <span class="number">0</span></span>):</span></span><br><span class="line">		self.data = value</span><br><span class="line"></span><br><span class="line">	<span class="function"><span class="keyword">def</span> <span class="title">__add__</span>(<span class="params">self, other</span>):</span></span><br><span class="line">		<span class="built_in">print</span>(<span class="string">&quot;counter data[%s] add [%d]...&quot;</span> % (self.data,other))</span><br><span class="line">		<span class="keyword">return</span> self.data + other</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">test_add</span>():</span></span><br><span class="line">	r = Counter()</span><br><span class="line">	q = r + <span class="number">1024</span>       <span class="comment"># call add, instance +</span></span><br><span class="line">	<span class="built_in">print</span>(<span class="string">&quot;q is %d&quot;</span> % q)</span><br><span class="line"></span><br><span class="line">test_add()</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>python addition.py</span><br></pre></td></tr></table></figure>
+<p><img src="https://imgconvert.csdnimg.cn/aHR0cDovL2ltZy5ibG9nLmNzZG4ubmV0LzIwMTcxMTIyMjAxNzQ2MDU0?x-oss-process=image/format,png" alt="这里写图片描述"></p>
+<blockquote>
+<p>常量+变量,如1024 + X,调用<code>__radd__</code>方法</p>
+</blockquote>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># addition.py</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Counter</span>:</span></span><br><span class="line">    ...     <span class="comment"># 省略上述代码</span></span><br><span class="line">    ...</span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__radd__</span>(<span class="params">self, other</span>):</span></span><br><span class="line">		<span class="built_in">print</span>(<span class="string">&quot;counter data[%s] radd [%d]...&quot;</span> % (self.data,other))</span><br><span class="line">		<span class="keyword">return</span> self.data + other</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">test_radd</span>():</span></span><br><span class="line"> 	p = <span class="number">7</span> + r       <span class="comment"># call radd, + instance</span></span><br><span class="line">	<span class="built_in">print</span>(<span class="string">&quot;the p is %d&quot;</span> % p)</span><br><span class="line">	</span><br><span class="line">test_radd()</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>python addition.py</span><br></pre></td></tr></table></figure>
+<p><img src="https://imgconvert.csdnimg.cn/aHR0cDovL2ltZy5ibG9nLmNzZG4ubmV0LzIwMTcxMTIyMjAxODExNTYw?x-oss-process=image/format,png" alt="这里写图片描述"></p>
+<blockquote>
+<p>变量+变量,如X + Y</p>
+</blockquote>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># addition.py</span></span><br><span class="line"><span class="comment"># 执行X+Y的时候,会先执行__add__方法,再执行__radd__方法,此时代码需要稍微调整下</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Counter</span>:</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__radd__</span>(<span class="params">self, other</span>):</span></span><br><span class="line">		<span class="keyword">if</span> <span class="built_in">isinstance</span>(other,Counter):</span><br><span class="line">			<span class="built_in">print</span>(<span class="string">&quot;counter data[%s] radd [%d]...&quot;</span> % (self.data,other.data))</span><br><span class="line">		<span class="keyword">elif</span> <span class="built_in">isinstance</span>(other,<span class="built_in">int</span>):</span><br><span class="line">			<span class="built_in">print</span>(<span class="string">&quot;counter data[%s] radd [%d]...&quot;</span> % (self.data, other))</span><br><span class="line">		<span class="keyword">return</span> self.data + other</span><br><span class="line"></span><br><span class="line">	<span class="function"><span class="keyword">def</span> <span class="title">__add__</span>(<span class="params">self, other</span>):</span></span><br><span class="line">		<span class="keyword">if</span> <span class="built_in">isinstance</span>(other,Counter):</span><br><span class="line">			<span class="built_in">print</span>(<span class="string">&quot;counter data[%s] add [%d]...&quot;</span> % (self.data,other.data))</span><br><span class="line">		<span class="keyword">elif</span> <span class="built_in">isinstance</span>(other,<span class="built_in">int</span>):</span><br><span class="line">			<span class="built_in">print</span>(<span class="string">&quot;counter data[%s] add [%d]...&quot;</span> % (self.data, other))</span><br><span class="line">		<span class="keyword">return</span> self.data + other</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">test_addition</span>():</span></span><br><span class="line">    X = Counter(<span class="number">2</span>)</span><br><span class="line">	Y = Counter(<span class="number">4</span>)</span><br><span class="line">	<span class="built_in">sum</span> = X + Y     <span class="comment"># X + Y ==&gt; 2 + Y ==&gt; 4 + 2</span></span><br><span class="line">	<span class="built_in">print</span>(<span class="built_in">sum</span>)</span><br><span class="line"></span><br><span class="line">test_addition()</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>python addition.py</span><br></pre></td></tr></table></figure>
+<p><img src="https://imgconvert.csdnimg.cn/aHR0cDovL2ltZy5ibG9nLmNzZG4ubmV0LzIwMTcxMTIyMjAxODI1MzM3?x-oss-process=image/format,png" alt="这里写图片描述"></p>
+<p>5.回调:<code>__call__</code></p>
+<blockquote>
+<p>函数回调设计</p>
+</blockquote>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># others.py</span></span><br><span class="line"><span class="comment"># 使用函数进行回调</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">callback_fn</span>(<span class="params">color</span>):</span></span><br><span class="line">	<span class="function"><span class="keyword">def</span> <span class="title">oncall</span>():</span></span><br><span class="line">		<span class="built_in">print</span>(<span class="string">&quot;select the color[%s]&quot;</span> % color)</span><br><span class="line">	<span class="keyword">return</span> oncall</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">test_callback_fn</span>():</span></span><br><span class="line">	fn = callback_fn(<span class="string">&quot;green&quot;</span>)</span><br><span class="line">	fn()</span><br><span class="line"></span><br><span class="line">test_callback_fn()</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>python others.py</span><br></pre></td></tr></table></figure>
+<p><img src="https://imgconvert.csdnimg.cn/aHR0cDovL2ltZy5ibG9nLmNzZG4ubmV0LzIwMTcxMTIyMjAxODM4ODU0?x-oss-process=image/format,png" alt="这里写图片描述"></p>
+<blockquote>
+<p>匿名函数回调</p>
+</blockquote>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># others.py</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">test_lamaba_callback</span>():</span></span><br><span class="line">	cs4 = (<span class="keyword">lambda</span> color=<span class="string">&#x27;red&#x27;</span>: <span class="built_in">print</span>(<span class="string">&#x27;turn &#x27;</span> + color))</span><br><span class="line">	cs4()</span><br><span class="line"></span><br><span class="line">test_lamaba_callback()</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>python others.py</span><br></pre></td></tr></table></figure>
+<p><img src="https://imgconvert.csdnimg.cn/aHR0cDovL2ltZy5ibG9nLmNzZG4ubmV0LzIwMTcxMTIyMjAxODUyNDE3?x-oss-process=image/format,png" alt="这里写图片描述"></p>
+<blockquote>
+<p>类回调设计</p>
+</blockquote>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># others.py</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">CallBack</span>:</span></span><br><span class="line">	<span class="function"><span class="keyword">def</span> <span class="title">__init__</span>(<span class="params">self,color</span>):</span></span><br><span class="line">		self.color = color</span><br><span class="line"></span><br><span class="line">	<span class="function"><span class="keyword">def</span> <span class="title">__call__</span>(<span class="params">self</span>):</span></span><br><span class="line">		<span class="built_in">print</span>(<span class="string">&quot;call callback color[%s]&quot;</span> % self.color)</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">EventCall</span>:</span></span><br><span class="line">	<span class="function"><span class="keyword">def</span> <span class="title">__init__</span>(<span class="params">self,callback = <span class="literal">None</span></span>):</span></span><br><span class="line">		self.c = callback</span><br><span class="line"></span><br><span class="line">	<span class="function"><span class="keyword">def</span> <span class="title">press</span>(<span class="params">self</span>):</span></span><br><span class="line">		self.c()</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">test_call_back</span>():</span></span><br><span class="line">	c1 = CallBack(<span class="string">&quot;red&quot;</span>)</span><br><span class="line">	c2 = CallBack(<span class="string">&quot;green&quot;</span>)</span><br><span class="line">	e1 = EventCall(callback = c1)</span><br><span class="line">	e2 = EventCall(callback = c2)</span><br><span class="line"></span><br><span class="line">	e1.press()      <span class="comment"># when press then trigger callback</span></span><br><span class="line">	e2.press()</span><br><span class="line"></span><br><span class="line">test_call_back()</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>python others.py</span><br></pre></td></tr></table></figure>
+<p><img src="https://imgconvert.csdnimg.cn/aHR0cDovL2ltZy5ibG9nLmNzZG4ubmV0LzIwMTcxMTIyMjAxOTA3MDUx?x-oss-process=image/format,png" alt="这里写图片描述"></p>
+<p>6.比较运算符</p>
+<ul>
+<li>py3.x不存在<code>__cmp__</code>以及cmp方法,也就是py3.x不能再使用<code>__cmp__</code>以及cmp方法,py2.x仍然保留</li>
+<li>为兼容性,统一在py2.x与py3.x使用<code>__lt__</code>和<code>__gt__</code>方法</li>
+</ul>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># others.py</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Comp</span>:</span></span><br><span class="line">	<span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">	方式一</span></span><br><span class="line"><span class="string">	&quot;&quot;&quot;</span></span><br><span class="line">	data = <span class="string">&#x27;spam&#x27;</span></span><br><span class="line"></span><br><span class="line">	<span class="function"><span class="keyword">def</span> <span class="title">__gt__</span>(<span class="params">self, other</span>):</span> <span class="keyword">return</span> self.data &gt; other</span><br><span class="line"></span><br><span class="line">	<span class="function"><span class="keyword">def</span> <span class="title">__lt__</span>(<span class="params">self, other</span>):</span> <span class="keyword">return</span> self.data &lt; other</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">test_comp</span>():</span></span><br><span class="line">	c = C()</span><br><span class="line">	<span class="built_in">print</span>(c &gt; <span class="string">&#x27;ham&#x27;</span>)</span><br><span class="line">	<span class="built_in">print</span>(c &lt; <span class="string">&#x27;ham&#x27;</span>)</span><br><span class="line"></span><br><span class="line">test_comp()</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>python others.py </span><br></pre></td></tr></table></figure>
+<p><img src="https://imgconvert.csdnimg.cn/aHR0cDovL2ltZy5ibG9nLmNzZG4ubmV0LzIwMTcxMTIyMjAxOTIxNTI4?x-oss-process=image/format,png" alt="这里写图片描述"></p>
+<blockquote>
+<p>py2.x可用而py3.x不可用情况</p>
+</blockquote>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># others.py</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">S</span>:</span></span><br><span class="line">	data = <span class="string">&quot;spam&quot;</span></span><br><span class="line">	<span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">	python3.x将不可用</span></span><br><span class="line"><span class="string">	&quot;&quot;&quot;</span></span><br><span class="line">	<span class="function"><span class="keyword">def</span> <span class="title">__cmp__</span>(<span class="params">self, other</span>):</span></span><br><span class="line">		<span class="keyword">return</span> cmp(self.data,other)</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">D</span>:</span></span><br><span class="line">	<span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">	方式三,改变cmp的方法,3.x仍然报错</span></span><br><span class="line"><span class="string">	&quot;&quot;&quot;</span></span><br><span class="line">	data = <span class="string">&quot;d&quot;</span></span><br><span class="line"></span><br><span class="line">	<span class="function"><span class="keyword">def</span> <span class="title">__cmp__</span>(<span class="params">self, other</span>):</span></span><br><span class="line">		<span class="keyword">return</span> (self.data &gt; other) - (self.data &lt; other)</span><br><span class="line">		</span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">test_S</span>():</span></span><br><span class="line">	s = S()</span><br><span class="line">	<span class="built_in">print</span>(s &gt; <span class="string">&#x27;ham&#x27;</span>)</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">test_d</span>():</span></span><br><span class="line">	d = D()</span><br><span class="line">	<span class="built_in">print</span>(d &gt; <span class="string">&#x27;ham&#x27;</span>)</span><br><span class="line">	<span class="built_in">print</span>(d &lt; <span class="string">&#x27;ham&#x27;</span>)</span><br><span class="line"></span><br><span class="line">test_S()</span><br><span class="line">test_d()</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>python others.py</span><br></pre></td></tr></table></figure>
+<p><img src="https://imgconvert.csdnimg.cn/aHR0cDovL2ltZy5ibG9nLmNzZG4ubmV0LzIwMTcxMTIyMjAxOTM1MDYw?x-oss-process=image/format,png" alt="这里写图片描述"><br>7.布尔测试:<code>__bool__</code>,<code>__len__</code>,<code>__nozero__</code></p>
+<ul>
+<li>py3.x:如果没有<code>__bool__</code>就会执行<code>__len__</code>,也就是两个都存在的时候，<code>__bool__</code>的优先级比<code>__len__</code>高</li>
+<li>py2.x如果没有<code>__bool__</code>就会执行<code>__len__</code>,也就是两个都存在的时候，<code>__len__</code>的优先级比<code>__bool__</code>高</li>
+</ul>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># others.py</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Truth</span>:</span></span><br><span class="line">	<span class="function"><span class="keyword">def</span> <span class="title">__bool__</span>(<span class="params">self</span>):</span></span><br><span class="line">		<span class="built_in">print</span>(<span class="string">&quot;call bool method ...&quot;</span>)</span><br><span class="line">		<span class="keyword">return</span> <span class="literal">True</span></span><br><span class="line">    </span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__len__</span>(<span class="params">self</span>):</span></span><br><span class="line">		<span class="built_in">print</span>(<span class="string">&quot;call len method ....&quot;</span>)</span><br><span class="line">		<span class="keyword">return</span> <span class="number">0</span></span><br><span class="line">		</span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">test_truth</span>():</span></span><br><span class="line">	X = Truth()</span><br><span class="line">	<span class="keyword">if</span> X:   </span><br><span class="line">		<span class="built_in">print</span>(<span class="string">&quot;i&#x27;m truth ....&quot;</span>)</span><br><span class="line"></span><br><span class="line">test_truth()</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>python others.py</span><br></pre></td></tr></table></figure>
+<p><img src="https://imgconvert.csdnimg.cn/aHR0cDovL2ltZy5ibG9nLmNzZG4ubmV0LzIwMTcxMTIyMjAxOTUwMzcz?x-oss-process=image/format,png" alt="这里写图片描述"><br><img src="https://imgconvert.csdnimg.cn/aHR0cDovL2ltZy5ibG9nLmNzZG4ubmV0LzIwMTcxMTIyMjAyMDAyNjUx?x-oss-process=image/format,png" alt="这里写图片描述"></p>
+<blockquote>
+<p><code>__nonzero__</code>:仅在python2.x使用，用于返回一个布尔值,并且优先级大于上面的<code>__len__</code>方法</p>
+</blockquote>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># others.py</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Truth</span>:</span></span><br><span class="line">    <span class="comment"># 定义了__bool__方法以及__len__方法</span></span><br><span class="line">    ....</span><br><span class="line">    </span><br><span class="line">	<span class="function"><span class="keyword">def</span> <span class="title">__nonzero__</span>(<span class="params">self</span>):</span></span><br><span class="line">		<span class="built_in">print</span> <span class="string">&quot;call zero for python2.x&quot;</span></span><br><span class="line">		<span class="keyword">return</span> <span class="literal">False</span></span><br><span class="line">		</span><br><span class="line"><span class="meta">... </span><span class="comment"># 同样的测试代码</span></span><br><span class="line"></span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>python others.py</span><br></pre></td></tr></table></figure>
+<p><img src="https://imgconvert.csdnimg.cn/aHR0cDovL2ltZy5ibG9nLmNzZG4ubmV0LzIwMTcxMTIyMjAyMDE2MzIy?x-oss-process=image/format,png" alt="这里写图片描述"></p>
+<p>8.析构函数:<code>__del__</code></p>
+<blockquote>
+<p>__del__使用笔记</p>
+</blockquote>
+<ul>
+<li>Need:即是否必需,python会自动回收内存空间，析构器并非是空间管理的一项必需工具</li>
+<li>Predictability:即是否可预测,python退出解释器的时候，并不能保证会调用仍然存在的对象的析构函数来进行回收操作</li>
+<li>Exceptions:由于存在异常情况并且不知道异常发生的时刻，析构器很难确定什么时候调用来进行回收操作</li>
+<li>Cycles:对象的循环引用可以防止垃圾回收器发生一些如我们所期望的错误</li>
+</ul>
+<blockquote>
+<p>代码测试</p>
+</blockquote>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># others.py</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Life</span>:</span></span><br><span class="line">	<span class="function"><span class="keyword">def</span> <span class="title">__init__</span>(<span class="params">self, name=<span class="string">&#x27;unknown&#x27;</span></span>):</span></span><br><span class="line">		<span class="built_in">print</span>(<span class="string">&#x27;Hello &#x27;</span> + name)</span><br><span class="line">		self.name = name</span><br><span class="line"></span><br><span class="line">	<span class="function"><span class="keyword">def</span> <span class="title">live</span>(<span class="params">self</span>):</span></span><br><span class="line">		<span class="built_in">print</span>(self.name)</span><br><span class="line"></span><br><span class="line">	<span class="function"><span class="keyword">def</span> <span class="title">__del__</span>(<span class="params">self</span>):</span></span><br><span class="line">		<span class="built_in">print</span>(<span class="string">&#x27;Goodbye &#x27;</span> + self.name)</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">test_del</span>():</span></span><br><span class="line">	l = Life(<span class="string">&quot;keithl&quot;</span>)</span><br><span class="line">	l.live()</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">&#x27;__main__&#x27;</span>:</span><br><span class="line">    test_del()</span><br><span class="line"></span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>python others.py        <span class="comment"># 2.x &amp; 3.x</span></span><br></pre></td></tr></table></figure>
+<p><img src="https://imgconvert.csdnimg.cn/aHR0cDovL2ltZy5ibG9nLmNzZG4ubmV0LzIwMTcxMTIyMjAyMjEwMjM1?x-oss-process=image/format,png" alt="这里写图片描述"></p>
+
+    </div>
+
+    <div>全文完。</div>
+  </article>
+  <div class="toc-container">
+    
+  <div id="toc" class="toc-article">
+    <strong class="toc-title">目录</strong>
+    <ol class="toc"><li class="toc-item toc-level-4"><a class="toc-link" href="#python%E7%B1%BB%E9%87%8D%E8%BD%BD%E8%BF%90%E7%AE%97%E7%AC%A6"><span class="toc-text">python类重载运算符</span></a></li></ol>
+  </div>
+
+
+  </div>
+</div>
+<div class="copyright">
+    <span>本作品采用</span>
+    <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by/4.0/">知识共享署名 4.0 国际许可协议</a>
+    <span>进行许可。 转载时请注明原文链接。</span>
+</div>
+<div class="share" style="width: 100%;">
+  <img src="/images/wechat-small.jpg" alt="Running Geek" style="margin: auto; display: block;"/>
+
+  <div style="margin: auto; text-align: center; font-size: 0.8em; color: grey;">老铁们关注走一走，不迷路</div>
+  
+</div>
+
+  
+    <div class="post-nav">
+      <div class="post-nav-item post-nav-next">
+        
+          <span>〈 </span>
+          <a href="/2018/12/31/exception/" rel="next" title="python异常定义与原理">
+          python异常定义与原理
+          </a>
+        
+      </div>
+  
+      <div class="post-nav-item post-nav-prev">
+          
+          <a href="/2019/04/02/svn/" rel="prev" title="SVN命令小结">
+            SVN命令小结
+          </a>
+          <span>〉</span>
+        
+      </div>
+    </div>
+  
+
+
+    </div>
+
+    
+
+  </div>
+  <footer class="footer text-center">
+    <div id="bottom-inner">
+        <a class="bottom-item" href="https://xiaokunliu.github.io">首页</a> |
+        <a class="bottom-item" href="https://xiaokunliu.github.io" target="_blank">主站</a> |
+        <a class="bottom-item" href="https://github.com/xiaokunliu" target="_blank">GitHub</a> |
+        <a class="bottom-item" href="https://hexo.io" target="_blank">Powered by hexo</a> |
+        <a class="bottom-item" href="https://github.com/KevinOfNeu/hexo-theme-xoxo" target="_blank">Theme xoxo</a>
+    </div>
+</footer>
+  
+
+<script>
+  (function(window, document, undefined) {
+
+    var timer = null;
+
+    function returnTop() {
+      cancelAnimationFrame(timer);
+      timer = requestAnimationFrame(function fn() {
+        var oTop = document.body.scrollTop || document.documentElement.scrollTop;
+        if (oTop > 0) {
+          document.body.scrollTop = document.documentElement.scrollTop = oTop - 50;
+          timer = requestAnimationFrame(fn);
+        } else {
+          cancelAnimationFrame(timer);
+        }
+      });
+    }
+
+    var hearts = [];
+    window.requestAnimationFrame = (function() {
+      return window.requestAnimationFrame ||
+        window.webkitRequestAnimationFrame ||
+        window.mozRequestAnimationFrame ||
+        window.oRequestAnimationFrame ||
+        window.msRequestAnimationFrame ||
+        function(callback) {
+          setTimeout(callback, 1000 / 60);
+        }
+    })();
+    init();
+
+    function init() {
+      css(".heart{z-index:9999;width: 10px;height: 10px;position: fixed;background: #f00;transform: rotate(45deg);-webkit-transform: rotate(45deg);-moz-transform: rotate(45deg);}.heart:after,.heart:before{content: '';width: inherit;height: inherit;background: inherit;border-radius: 50%;-webkit-border-radius: 50%;-moz-border-radius: 50%;position: absolute;}.heart:after{top: -5px;}.heart:before{left: -5px;}");
+      attachEvent();
+      gameloop();
+      addMenuEvent();
+    }
+
+    function gameloop() {
+      for (var i = 0; i < hearts.length; i++) {
+        if (hearts[i].alpha <= 0) {
+          document.body.removeChild(hearts[i].el);
+          hearts.splice(i, 1);
+          continue;
+        }
+        hearts[i].y--;
+        hearts[i].scale += 0.004;
+        hearts[i].alpha -= 0.013;
+        hearts[i].el.style.cssText = "left:" + hearts[i].x + "px;top:" + hearts[i].y + "px;opacity:" + hearts[i].alpha + ";transform:scale(" + hearts[i].scale + "," + hearts[i].scale + ") rotate(45deg);background:" + hearts[i].color;
+      }
+      requestAnimationFrame(gameloop);
+    }
+
+    /**
+     * 给logo设置点击事件
+     * 
+     * - 回到顶部
+     * - 出现爱心
+     */
+    function attachEvent() {
+      var old = typeof window.onclick === "function" && window.onclick;
+      var logo = document.getElementById("logo");
+      if (logo) {
+        logo.onclick = function(event) {
+          returnTop();
+          old && old();
+          createHeart(event);
+        }
+      }
+      
+    }
+
+    function createHeart(event) {
+      var d = document.createElement("div");
+      d.className = "heart";
+      hearts.push({
+        el: d,
+        x: event.clientX - 5,
+        y: event.clientY - 5,
+        scale: 1,
+        alpha: 1,
+        color: randomColor()
+      });
+      document.body.appendChild(d);
+    }
+
+    function css(css) {
+      var style = document.createElement("style");
+      style.type = "text/css";
+      try {
+        style.appendChild(document.createTextNode(css));
+      } catch (ex) {
+        style.styleSheet.cssText = css;
+      }
+      document.getElementsByTagName('head')[0].appendChild(style);
+    }
+
+    function randomColor() {
+      // return "rgb(" + (~~(Math.random() * 255)) + "," + (~~(Math.random() * 255)) + "," + (~~(Math.random() * 255)) + ")";
+      return "#F44336";
+    }
+
+    function addMenuEvent() {
+      var menu = document.getElementById('menu-main-post');
+      if (menu) {
+        var toc = document.getElementById('toc');
+        if (toc) {
+          menu.onclick = function() {
+            if (toc) {
+              if (toc.style.display == 'block') {
+                toc.style.display = 'none';
+              } else {
+                toc.style.display = 'block';
+              }
+            }
+          };
+        } else {
+          menu.style.display = 'none';
+        }
+      }
+    }
+
+  })(window, document);
+</script>
+
+  
+
+
+
+</body>
+</html>

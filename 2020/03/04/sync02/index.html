@@ -1,0 +1,335 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<!--
+config header
+-->
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#202020"/>
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  <script src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" async></script>
+
+  
+      <meta name="google-site-verification" content="{{ theme.google_site_verification }}" />
+  
+
+  
+    <meta name="keywords" content="并发编程," />
+  
+
+  
+    <meta name="description" content="分享个人学习工作的技术知识" />
+  
+  
+  <link rel="icon" type="image/x-icon" href="/logo.jpg">
+  <title>category: 并发编程 [ 疾风先生 ]</title>
+  
+    <!-- stylesheets list from config.yml -->
+    
+      <link rel="stylesheet" href="//cdn.bootcss.com/pure/1.0.0/pure-min.css">
+    
+      <link rel="stylesheet" href="/css/xoxo.css">
+    
+  
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+
+<body>
+  <div class="nav-container">
+    <nav class="home-menu pure-menu pure-menu-horizontal">
+  <a class="pure-menu-heading" href="/">
+    <img class="avatar" src="https://xiaokunliu.github.io/images/logo.jpg">
+    <span class="title">疾风先生</span>
+  </a>
+
+  <ul class="pure-menu-list clearfix">
+      
+          
+            <li class="pure-menu-item"><a href="/" class="pure-menu-link">首页</a></li>
+          
+      
+          
+            <li class="pure-menu-item"><a href="/archives" class="pure-menu-link">归档</a></li>
+          
+      
+          
+            <li class="pure-menu-item"><a href="/tags" class="pure-menu-link">标签</a></li>
+          
+      
+          
+            <li class="pure-menu-item"><a href="/categories" class="pure-menu-link">分类</a></li>
+          
+      
+          
+            <li class="pure-menu-item"><a href="/search" class="pure-menu-link">搜索</a></li>
+          
+      
+  </ul>
+   
+</nav>
+  </div>
+
+  <div class="container" id="content-outer">
+    <div class="inner" id="content-inner">
+      <div class="post-container">
+  <article class="post" id="post">
+    <header class="post-header text-center">
+      <h1 class="title">
+        synchronized基于内存语义的工作原理(二)
+      </h1>
+      <span>
+        
+        <time class="time" datetime="2020-03-04T20:47:28.000Z">
+        2020-03-04
+      </time>
+        
+      </span>
+      <span class="slash">/</span>
+      <span class="post-meta">
+      <span class="post-tags">
+        <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E5%B9%B6%E5%8F%91%E7%BC%96%E7%A8%8B/" rel="tag">并发编程</a></li></ul>
+      </span>
+    </span>
+      <span class="slash">/</span>
+      <span class="read">
+      <span id="busuanzi_value_page_pv"></span> 点击
+    </span>
+    </header>
+
+    <div class="post-content">
+      <span id="more"></span>
+<p>基于<a target="_blank" rel="noopener" href="https://blog.csdn.net/wind_602/article/details/103873050"><strong>工作原理一</strong></a>可知同步关键字底层是基于JVM操作监视器的同步指令原语monitorenter和monitorexit来实现,这次将会通过抽象的内存语义来说明侧面说明加锁和解锁的方式</p>
+<h6 id="1-工作内存与主内存"><a href="#1-工作内存与主内存" class="headerlink" title="1. 工作内存与主内存"></a>1. 工作内存与主内存</h6><blockquote>
+<p>定义</p>
+</blockquote>
+<ul>
+<li>主内存: 一般就是计算机操作系统上的物理内存,简言之,即使一般我们所说的计算机的内存含义</li>
+<li>工作内存: 基于JMM(Java内存模型)规范规定,线程使用的变量将会把主内存的数据变量复制到自己线程栈的工作空间</li>
+</ul>
+<blockquote>
+<p>线程工作内存与主内存的读写示意图</p>
+</blockquote>
+<p><strong>前面已经有介绍到<a target="_blank" rel="noopener" href="https://blog.csdn.net/wind_602/article/details/103914263">CPU高速缓存的知识点</a>,以下是CPU简单的架构图以及工作内存与主内存的读写流程</strong><br><img src="https://img-blog.csdnimg.cn/20200111152758566.jpg?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dpbmRfNjAy,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"><br>从上述我们可以看到,CPU中包含L1-L3的Cache,线程每次读写都需要先经过CPU高速缓存,这样便会产生数据缓存的不一致,前面已经有讲到CPU厂商针对这类问题做了改进,运用缓存一致性来达到最终数据的一致性,那么此时如果有一个需求是强一致性,即使是很短的时间内,我也需要保证写数据之后立马看到写数据成功后的效果,这时候怎么办呢?在JMM规范中为了解决这类内存共享的数据在不同线程不可见的问题,就制定一种规范来强制java程序中的线程直接跳过CPU高速缓存数据去读取主内存的数据,这就是解决内存数据的不可见的一种手段.</p>
+<h6 id="2-synchronized的代码演示"><a href="#2-synchronized的代码演示" class="headerlink" title="2. synchronized的代码演示"></a>2. synchronized的代码演示</h6><ul>
+<li>场景： 现在有一个共享变量sharedVar，thread-1执行写操作需要耗时500ms，而有一个线程thread-2由于网络原因延迟读操作耗时600ms，另一个线程thread-3正常读操作</li>
+<li>期望的场景是希望写数据之后其他线程也知道数据已经发生改变了,需要读取最新的数据<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Sync2memory.java</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Sync2memory</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> Integer sharedVar = <span class="number">10</span>;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> Exception </span>&#123;</span><br><span class="line">        testForReadWrite();</span><br><span class="line"><span class="comment">//        testForReadWriteWithSync();</span></span><br><span class="line"> 		TimeUnit.SECONDS.sleep(<span class="number">2L</span>);</span><br><span class="line">        System.out.printf(<span class="string">&quot;finish the thread task,the final sharedVar %s ....\n&quot;</span>, sharedVar);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">testForReadWriteWithSync</span><span class="params">()</span> <span class="keyword">throws</span> Exception </span>&#123;</span><br><span class="line">        Thread thread1 = <span class="keyword">new</span> Thread(<span class="keyword">new</span> Runnable() &#123;</span><br><span class="line">            <span class="meta">@Override</span></span><br><span class="line">            <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</span><br><span class="line">                <span class="keyword">try</span> &#123;</span><br><span class="line">                	<span class="comment">// modify the sharedVar</span></span><br><span class="line">                    TimeUnit.MICROSECONDS.sleep(<span class="number">500L</span>);</span><br><span class="line">                    <span class="keyword">synchronized</span> (sharedVar)&#123;</span><br><span class="line">                        System.out.printf(<span class="string">&quot;%s modify the shared var ...\n&quot;</span>, <span class="string">&quot;thread-1&quot;</span>);</span><br><span class="line">                        sharedVar = <span class="number">20</span>;</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;<span class="keyword">catch</span> (Exception e)&#123;</span><br><span class="line">                    System.out.println(e);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;);</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">        Thread thread2 = <span class="keyword">new</span> Thread(<span class="keyword">new</span> Runnable() &#123;</span><br><span class="line">            <span class="meta">@Override</span></span><br><span class="line">            <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</span><br><span class="line">                <span class="keyword">try</span> &#123;</span><br><span class="line">                   <span class="comment">// network delay</span></span><br><span class="line">                   TimeUnit.MICROSECONDS.sleep(<span class="number">600L</span>);</span><br><span class="line">                   <span class="keyword">synchronized</span> (sharedVar)&#123;</span><br><span class="line">                       System.out.printf(<span class="string">&quot;%s read the shared var %s \n&quot;</span>, <span class="string">&quot;thread-2&quot;</span>, sharedVar);</span><br><span class="line">                   &#125;</span><br><span class="line">                &#125;<span class="keyword">catch</span> (Exception e)&#123;</span><br><span class="line">                    System.out.println(e);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;);</span><br><span class="line"></span><br><span class="line">        Thread thread3 = <span class="keyword">new</span> Thread(<span class="keyword">new</span> Runnable() &#123;</span><br><span class="line">            <span class="meta">@Override</span></span><br><span class="line">            <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</span><br><span class="line">                <span class="keyword">try</span> &#123;</span><br><span class="line">                    <span class="keyword">synchronized</span> (sharedVar)&#123;</span><br><span class="line">                        System.out.printf(<span class="string">&quot;%s read the shared var %s \n&quot;</span>,  <span class="string">&quot;thread-3&quot;</span>, sharedVar);</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;<span class="keyword">catch</span> (Exception e)&#123;</span><br><span class="line">                    System.out.println(e);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;);</span><br><span class="line"></span><br><span class="line">        thread2.start();</span><br><span class="line">        thread3.start();</span><br><span class="line">        thread1.start();</span><br><span class="line"></span><br><span class="line">        thread1.join();</span><br><span class="line">        thread2.join();</span><br><span class="line">        thread3.join();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">testForReadWrite</span><span class="params">()</span> <span class="keyword">throws</span> Exception </span>&#123;</span><br><span class="line">        Thread thread1 = <span class="keyword">new</span> Thread(<span class="keyword">new</span> Runnable() &#123;</span><br><span class="line">            <span class="meta">@Override</span></span><br><span class="line">            <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</span><br><span class="line">                <span class="keyword">try</span> &#123;</span><br><span class="line">                	<span class="comment">// modify the sharedVar</span></span><br><span class="line">                    TimeUnit.MICROSECONDS.sleep(<span class="number">500L</span>);</span><br><span class="line">                    System.out.printf(<span class="string">&quot;%s modify the shared var ...\n&quot;</span>, <span class="string">&quot;thread-1&quot;</span>);</span><br><span class="line">                    sharedVar = <span class="number">20</span>;</span><br><span class="line">                &#125;<span class="keyword">catch</span> (Exception e)&#123;</span><br><span class="line">                    System.out.println(e);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;);</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">        Thread thread2 = <span class="keyword">new</span> Thread(<span class="keyword">new</span> Runnable() &#123;</span><br><span class="line">            <span class="meta">@Override</span></span><br><span class="line">            <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</span><br><span class="line">                <span class="keyword">try</span> &#123;</span><br><span class="line">                	<span class="comment">// network delay</span></span><br><span class="line">                    TimeUnit.MICROSECONDS.sleep(<span class="number">600L</span>);</span><br><span class="line">                    System.out.printf(<span class="string">&quot;%s read the shared var %s \n&quot;</span>, <span class="string">&quot;thread-2&quot;</span>, sharedVar);</span><br><span class="line">                &#125;<span class="keyword">catch</span> (Exception e)&#123;</span><br><span class="line">                    System.out.println(e);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;);</span><br><span class="line"></span><br><span class="line">        Thread thread3 = <span class="keyword">new</span> Thread(<span class="keyword">new</span> Runnable() &#123;</span><br><span class="line">            <span class="meta">@Override</span></span><br><span class="line">            <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</span><br><span class="line">                <span class="keyword">try</span> &#123;</span><br><span class="line">                    System.out.printf(<span class="string">&quot;%s read the shared var %s \n&quot;</span>, <span class="string">&quot;thread-3&quot;</span> , sharedVar);</span><br><span class="line">                &#125;<span class="keyword">catch</span> (Exception e)&#123;</span><br><span class="line">                    System.out.println(e);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;);</span><br><span class="line"></span><br><span class="line">       <span class="comment">//thread1-3 start and join ....</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+<li>没有加synchronized方式的执行产生的一种结果(多次运行)<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">## 	执行结果如下</span><br><span class="line">thread-3 read the shared var 10 </span><br><span class="line">thread-1 modify the shared var to 20  ...</span><br><span class="line">thread-2 read the shared var 10 </span><br><span class="line">finish the thread task,the final sharedVar 20 ....</span><br><span class="line"></span><br><span class="line">Process finished with exit code 0</span><br><span class="line"></span><br><span class="line">## 分析</span><br><span class="line">线程3正常执行,并且还没有在发生写操作之前就已经读取数据,属于正常输出</span><br><span class="line">线程1执行写操作耗时500ms并将数据进行修改同步到主内存中</span><br><span class="line">线程2由于网络延迟600ms,但是此时写操作已经完成,这时候读取出来的数据是属于脏数据,并不正确,因此线程2读取是其还没有被刷新的工作内存数据</span><br><span class="line">最后看到执行的结果输出是写操作之后的数据,说明了CPU最终会保证缓存数据的一致性</span><br><span class="line">最后的最后,这里仅仅是阐述上述问题,上述运行结果也可能发生thread-2会读取到正常的数据,只是在上述编码情况我们是无法保证线程2一定可以读取到正确的数据</span><br></pre></td></tr></table></figure></li>
+<li>添加synchronized方式的执行结果(多次执行)<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">## 多次执行结果如下:</span><br><span class="line">thread-3 read the shared var 10 </span><br><span class="line">thread-1 modify the shared var ...</span><br><span class="line">thread-2 read the shared var 20 </span><br><span class="line">finish the thread task,the final sharedVar 20 ....</span><br><span class="line"></span><br><span class="line">Process finished with exit code 0</span><br><span class="line"></span><br><span class="line">## 分析</span><br><span class="line">线程1执行写操作之后,我们可以看到线程2获取到的数据是线程1执行写操作之后的数据,现在程序可以保证线程2读取的数据是正常的</span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+<h6 id="3-synchronized内存语义的理解"><a href="#3-synchronized内存语义的理解" class="headerlink" title="3. synchronized内存语义的理解"></a>3. synchronized内存语义的理解</h6><blockquote>
+<p>内存语义小结</p>
+</blockquote>
+<ul>
+<li>基于上述代码的执行结果可以看出,我们使用synchronized内使用的变量从线程的工作内存中清除或者称为失效,此时该变量就不会从工作内存中进行读取数据,而是直接从主内存中读取数据,从而保证缓存数据的强一致性</li>
+<li>由此可知道,synchronized从内存语义上可以解决共享变量的内存可见性问题</li>
+<li>从另一个角度而言,使用synchronized相当于jvm获取monitorenter的指令,此时会将该共享变量的缓存失效直接从主内存中加载数据到锁块的内存中,同时在进行monitorexit操作的指令时会将锁块的共享变量数据刷新到主内存中<blockquote>
+<p>synchronized不足</p>
+</blockquote>
+</li>
+<li>使用monitor的方式是属于metux lock的方式(重量级锁),会降低程序的性能(响应时间可能会变慢,相当于利用性能来换取数据的强一致性问题)</li>
+<li>另外一个就是线程是由CPU进行调度,来回切换线程会带来额外的调度开销</li>
+</ul>
+
+    </div>
+
+    <div>全文完。</div>
+  </article>
+  <div class="toc-container">
+    
+  <div id="toc" class="toc-article">
+    <strong class="toc-title">目录</strong>
+    <ol class="toc"><li class="toc-item toc-level-6"><a class="toc-link" href="#1-%E5%B7%A5%E4%BD%9C%E5%86%85%E5%AD%98%E4%B8%8E%E4%B8%BB%E5%86%85%E5%AD%98"><span class="toc-text">1. 工作内存与主内存</span></a></li><li class="toc-item toc-level-6"><a class="toc-link" href="#2-synchronized%E7%9A%84%E4%BB%A3%E7%A0%81%E6%BC%94%E7%A4%BA"><span class="toc-text">2. synchronized的代码演示</span></a></li><li class="toc-item toc-level-6"><a class="toc-link" href="#3-synchronized%E5%86%85%E5%AD%98%E8%AF%AD%E4%B9%89%E7%9A%84%E7%90%86%E8%A7%A3"><span class="toc-text">3. synchronized内存语义的理解</span></a></li></ol>
+  </div>
+
+
+  </div>
+</div>
+<div class="copyright">
+    <span>本作品采用</span>
+    <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by/4.0/">知识共享署名 4.0 国际许可协议</a>
+    <span>进行许可。 转载时请注明原文链接。</span>
+</div>
+<div class="share" style="width: 100%;">
+  <img src="/images/wechat-small.jpg" alt="Running Geek" style="margin: auto; display: block;"/>
+
+  <div style="margin: auto; text-align: center; font-size: 0.8em; color: grey;">老铁们关注走一走，不迷路</div>
+  
+</div>
+
+  
+    <div class="post-nav">
+      <div class="post-nav-item post-nav-next">
+        
+          <span>〈 </span>
+          <a href="/2020/03/02/sync01/" rel="next" title="synchronized基于JVM规范的工作原理(一)">
+          synchronized基于JVM规范的工作原理(一)
+          </a>
+        
+      </div>
+  
+      <div class="post-nav-item post-nav-prev">
+          
+          <a href="/2020/03/06/sync03/" rel="prev" title="synchronized的工作原理(三)">
+            synchronized的工作原理(三)
+          </a>
+          <span>〉</span>
+        
+      </div>
+    </div>
+  
+
+
+    </div>
+
+    
+
+  </div>
+  <footer class="footer text-center">
+    <div id="bottom-inner">
+        <a class="bottom-item" href="https://xiaokunliu.github.io">首页</a> |
+        <a class="bottom-item" href="https://xiaokunliu.github.io" target="_blank">主站</a> |
+        <a class="bottom-item" href="https://github.com/xiaokunliu" target="_blank">GitHub</a> |
+        <a class="bottom-item" href="https://hexo.io" target="_blank">Powered by hexo</a> |
+        <a class="bottom-item" href="https://github.com/KevinOfNeu/hexo-theme-xoxo" target="_blank">Theme xoxo</a>
+    </div>
+</footer>
+  
+
+<script>
+  (function(window, document, undefined) {
+
+    var timer = null;
+
+    function returnTop() {
+      cancelAnimationFrame(timer);
+      timer = requestAnimationFrame(function fn() {
+        var oTop = document.body.scrollTop || document.documentElement.scrollTop;
+        if (oTop > 0) {
+          document.body.scrollTop = document.documentElement.scrollTop = oTop - 50;
+          timer = requestAnimationFrame(fn);
+        } else {
+          cancelAnimationFrame(timer);
+        }
+      });
+    }
+
+    var hearts = [];
+    window.requestAnimationFrame = (function() {
+      return window.requestAnimationFrame ||
+        window.webkitRequestAnimationFrame ||
+        window.mozRequestAnimationFrame ||
+        window.oRequestAnimationFrame ||
+        window.msRequestAnimationFrame ||
+        function(callback) {
+          setTimeout(callback, 1000 / 60);
+        }
+    })();
+    init();
+
+    function init() {
+      css(".heart{z-index:9999;width: 10px;height: 10px;position: fixed;background: #f00;transform: rotate(45deg);-webkit-transform: rotate(45deg);-moz-transform: rotate(45deg);}.heart:after,.heart:before{content: '';width: inherit;height: inherit;background: inherit;border-radius: 50%;-webkit-border-radius: 50%;-moz-border-radius: 50%;position: absolute;}.heart:after{top: -5px;}.heart:before{left: -5px;}");
+      attachEvent();
+      gameloop();
+      addMenuEvent();
+    }
+
+    function gameloop() {
+      for (var i = 0; i < hearts.length; i++) {
+        if (hearts[i].alpha <= 0) {
+          document.body.removeChild(hearts[i].el);
+          hearts.splice(i, 1);
+          continue;
+        }
+        hearts[i].y--;
+        hearts[i].scale += 0.004;
+        hearts[i].alpha -= 0.013;
+        hearts[i].el.style.cssText = "left:" + hearts[i].x + "px;top:" + hearts[i].y + "px;opacity:" + hearts[i].alpha + ";transform:scale(" + hearts[i].scale + "," + hearts[i].scale + ") rotate(45deg);background:" + hearts[i].color;
+      }
+      requestAnimationFrame(gameloop);
+    }
+
+    /**
+     * 给logo设置点击事件
+     * 
+     * - 回到顶部
+     * - 出现爱心
+     */
+    function attachEvent() {
+      var old = typeof window.onclick === "function" && window.onclick;
+      var logo = document.getElementById("logo");
+      if (logo) {
+        logo.onclick = function(event) {
+          returnTop();
+          old && old();
+          createHeart(event);
+        }
+      }
+      
+    }
+
+    function createHeart(event) {
+      var d = document.createElement("div");
+      d.className = "heart";
+      hearts.push({
+        el: d,
+        x: event.clientX - 5,
+        y: event.clientY - 5,
+        scale: 1,
+        alpha: 1,
+        color: randomColor()
+      });
+      document.body.appendChild(d);
+    }
+
+    function css(css) {
+      var style = document.createElement("style");
+      style.type = "text/css";
+      try {
+        style.appendChild(document.createTextNode(css));
+      } catch (ex) {
+        style.styleSheet.cssText = css;
+      }
+      document.getElementsByTagName('head')[0].appendChild(style);
+    }
+
+    function randomColor() {
+      // return "rgb(" + (~~(Math.random() * 255)) + "," + (~~(Math.random() * 255)) + "," + (~~(Math.random() * 255)) + ")";
+      return "#F44336";
+    }
+
+    function addMenuEvent() {
+      var menu = document.getElementById('menu-main-post');
+      if (menu) {
+        var toc = document.getElementById('toc');
+        if (toc) {
+          menu.onclick = function() {
+            if (toc) {
+              if (toc.style.display == 'block') {
+                toc.style.display = 'none';
+              } else {
+                toc.style.display = 'block';
+              }
+            }
+          };
+        } else {
+          menu.style.display = 'none';
+        }
+      }
+    }
+
+  })(window, document);
+</script>
+
+  
+
+
+
+</body>
+</html>

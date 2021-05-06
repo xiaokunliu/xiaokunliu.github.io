@@ -1,0 +1,383 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<!--
+config header
+-->
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#202020"/>
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  <script src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" async></script>
+
+  
+      <meta name="google-site-verification" content="{{ theme.google_site_verification }}" />
+  
+
+  
+    <meta name="keywords" content="并发编程," />
+  
+
+  
+    <meta name="description" content="分享个人学习工作的技术知识" />
+  
+  
+  <link rel="icon" type="image/x-icon" href="/logo.jpg">
+  <title>category: 并发编程 [ 疾风先生 ]</title>
+  
+    <!-- stylesheets list from config.yml -->
+    
+      <link rel="stylesheet" href="//cdn.bootcss.com/pure/1.0.0/pure-min.css">
+    
+      <link rel="stylesheet" href="/css/xoxo.css">
+    
+  
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+
+<body>
+  <div class="nav-container">
+    <nav class="home-menu pure-menu pure-menu-horizontal">
+  <a class="pure-menu-heading" href="/">
+    <img class="avatar" src="https://xiaokunliu.github.io/images/logo.jpg">
+    <span class="title">疾风先生</span>
+  </a>
+
+  <ul class="pure-menu-list clearfix">
+      
+          
+            <li class="pure-menu-item"><a href="/" class="pure-menu-link">首页</a></li>
+          
+      
+          
+            <li class="pure-menu-item"><a href="/archives" class="pure-menu-link">归档</a></li>
+          
+      
+          
+            <li class="pure-menu-item"><a href="/tags" class="pure-menu-link">标签</a></li>
+          
+      
+          
+            <li class="pure-menu-item"><a href="/categories" class="pure-menu-link">分类</a></li>
+          
+      
+          
+            <li class="pure-menu-item"><a href="/search" class="pure-menu-link">搜索</a></li>
+          
+      
+  </ul>
+   
+</nav>
+  </div>
+
+  <div class="container" id="content-outer">
+    <div class="inner" id="content-inner">
+      <div class="post-container">
+  <article class="post" id="post">
+    <header class="post-header text-center">
+      <h1 class="title">
+        关键字volatile的使用与原子性问题
+      </h1>
+      <span>
+        
+        <time class="time" datetime="2020-03-24T20:47:28.000Z">
+        2020-03-24
+      </time>
+        
+      </span>
+      <span class="slash">/</span>
+      <span class="post-meta">
+      <span class="post-tags">
+        <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E5%B9%B6%E5%8F%91%E7%BC%96%E7%A8%8B/" rel="tag">并发编程</a></li></ul>
+      </span>
+    </span>
+      <span class="slash">/</span>
+      <span class="read">
+      <span id="busuanzi_value_page_pv"></span> 点击
+    </span>
+    </header>
+
+    <div class="post-content">
+      <span id="more"></span>
+<h6 id="1-volatile的使用"><a href="#1-volatile的使用" class="headerlink" title="1. volatile的使用"></a>1. volatile的使用</h6><blockquote>
+<p>java源代码</p>
+</blockquote>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">VolatileUsedClass</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">int</span> sharedVar = <span class="number">10</span>;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> Exception </span>&#123;</span><br><span class="line"></span><br><span class="line">        Thread thread1 = <span class="keyword">new</span> Thread(<span class="keyword">new</span> Runnable() &#123;</span><br><span class="line">            <span class="meta">@Override</span></span><br><span class="line">            <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</span><br><span class="line">                <span class="keyword">try</span> &#123;</span><br><span class="line">                    <span class="comment">// modify the sharedVar,write first</span></span><br><span class="line">                    TimeUnit.MICROSECONDS.sleep(<span class="number">500L</span>);</span><br><span class="line">                    sharedVar = <span class="number">20</span>;</span><br><span class="line">                    System.out.printf(<span class="string">&quot;%s modify the shared var to %s  ...\n&quot;</span>, <span class="string">&quot;thread-1&quot;</span>, sharedVar);</span><br><span class="line">                &#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">                    System.out.println(e);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;);</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">        Thread thread2 = <span class="keyword">new</span> Thread(<span class="keyword">new</span> Runnable() &#123;</span><br><span class="line">            <span class="meta">@Override</span></span><br><span class="line">            <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</span><br><span class="line">                <span class="keyword">try</span> &#123;</span><br><span class="line">                    <span class="comment">// read the value,read for the last</span></span><br><span class="line">                    TimeUnit.MICROSECONDS.sleep(<span class="number">505L</span>);</span><br><span class="line">                    System.out.printf(<span class="string">&quot;%s read the shared var %s \n&quot;</span>, <span class="string">&quot;thread-2&quot;</span>, sharedVar);</span><br><span class="line">                &#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">                    System.out.println(e);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;);</span><br><span class="line"></span><br><span class="line">        thread2.start();</span><br><span class="line">        thread1.start();</span><br><span class="line"></span><br><span class="line">        thread1.join();</span><br><span class="line">        thread2.join();</span><br><span class="line"></span><br><span class="line">        System.out.println(<span class="string">&quot;finish the thread task...&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>客户端模式-client</p>
+</blockquote>
+<ul>
+<li>不加volatile的执行结果(多次执行)<br><img src="https://img-blog.csdnimg.cn/2020012210205840.jpg?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dpbmRfNjAy,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"><br><img src="https://img-blog.csdnimg.cn/20200122102554675.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dpbmRfNjAy,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"></li>
+<li>加volatile的执行结果(多次)<br><img src="https://img-blog.csdnimg.cn/20200122102337750.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dpbmRfNjAy,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"><img src="https://img-blog.csdnimg.cn/20200122102504544.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dpbmRfNjAy,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"></li>
+<li>结果分析<ul>
+<li>在源代码中是添加时间休眠主要是保证先写后读的逻辑</li>
+<li>从运行结果可以看出,虽然时间片很短,读线程的数据仍然是本地缓存的数据,并没有从主内存中读取值</li>
+<li>添加volatile关键字之后,可以看到读线程的数据正是写线程之后的数据,也就是写读数据是一致的</li>
+</ul>
+</li>
+</ul>
+<blockquote>
+<p>服务端模式,-server</p>
+</blockquote>
+<ul>
+<li>不带volatile执行结果(多次)<br><img src="https://img-blog.csdnimg.cn/20200122103655136.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dpbmRfNjAy,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"><br><img src="https://img-blog.csdnimg.cn/2020012210402446.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dpbmRfNjAy,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"></li>
+<li>带volatile执行结果(多次)<br><img src="https://img-blog.csdnimg.cn/20200122104120365.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dpbmRfNjAy,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"></li>
+<li>结果分析<ul>
+<li>不带volatile修饰与客户端执行效果一致</li>
+<li>但是使用server模式带有volatile的方式却出现了数据不一致的情况,为什么?</li>
+<li>原因在于-server模式会在编译成字节码的时候进行代码重排序导致的,主要用于优化程序提升执行效率</li>
+</ul>
+</li>
+</ul>
+<blockquote>
+<p>小结</p>
+</blockquote>
+<ul>
+<li>clinet模式是jdk执行的默认配置,可用于测试环境或者本地开发</li>
+<li>server模式一般用于生产环境,目的是开启server模式的时候编译器会针对OS系统情况做一些优化操作</li>
+<li>参考: <a target="_blank" rel="noopener" href="https://javapapers.com/core-java/jvm-server-vs-client-mode/">JVM server vs Client Mode</a></li>
+</ul>
+<h6 id="2-原子性问题"><a href="#2-原子性问题" class="headerlink" title="2. 原子性问题"></a>2. 原子性问题</h6><p><strong>说明: 以下运行环境是使用-client模式进行,排除重排序的干扰</strong></p>
+<blockquote>
+<p>Java中的原子性</p>
+</blockquote>
+<ul>
+<li>参考文档: <a target="_blank" rel="noopener" href="https://docs.oracle.com/javase/tutorial/essential/concurrency/atomic.html">https://docs.oracle.com/javase/tutorial/essential/concurrency/atomic.html</a></li>
+<li>文档对于原子性的说明如下:<ul>
+<li>除了long和double类型之外,引用变量与大多数的原始数据类型都具备读写操作的原子性</li>
+<li>所有使用volatile修饰的变量都具备读写操作的原子性</li>
+</ul>
+</li>
+<li>分析<ul>
+<li>针对64bit的数据类型,主要与处理器(32bit/64bit)有关,在32bit处理器上,JVM会将64bit的long/double划分为两个32bit的写操作,并不具备原子性(数据的读写主要是通过处理器总线与主内存进行传递)</li>
+<li>基于Happen-Before原则,对于volatile的变量读取总是可以“看到”任何一个线程对该volatile变量的最后写入,因此在临界区代码的执行是具备原子性,即使是long或是double类型</li>
+</ul>
+</li>
+</ul>
+<blockquote>
+<p>volatile修饰单个变量的自增或自减是不具备原子性</p>
+</blockquote>
+<ul>
+<li>代码<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 部分代码,在上述的写线程进行修改</span></span><br><span class="line">Thread t1 = <span class="keyword">new</span> Thread()&#123;</span><br><span class="line">            <span class="meta">@Override</span></span><br><span class="line">            <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</span><br><span class="line">                <span class="keyword">try</span> &#123;</span><br><span class="line">                    <span class="comment">// modify the sharedVar</span></span><br><span class="line">                    TimeUnit.MICROSECONDS.sleep(<span class="number">500L</span>);</span><br><span class="line">                    sharedVar ++;</span><br><span class="line">                    System.out.printf(<span class="string">&quot;%s modify the shared var with atomic %s  ...\n&quot;</span>, <span class="string">&quot;thread-1&quot;</span>, sharedVar);</span><br><span class="line">                &#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">                    System.out.println(e);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;;</span><br></pre></td></tr></table></figure></li>
+<li>运行结果<br><img src="https://img-blog.csdnimg.cn/20200122115720973.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dpbmRfNjAy,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"></li>
+<li>字节码显示<ul>
+<li><p>sharedVar = 20L显示的字节码如下:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">L3</span><br><span class="line">   LINENUMBER 102 L3</span><br><span class="line">   BIPUSH 20		// 压入线程的操作数栈</span><br><span class="line">   INVOKESTATIC com/xiaokunliu/blogs/thread/volatile2code/VolatileUsedClass.access$002 (I)I    //实例化并加载sharedVar并压入操作数栈,说明完成赋值操作</span><br><span class="line">   POP   // 弹出数据</span><br><span class="line">   L4</span><br></pre></td></tr></table></figure></li>
+<li><p>sharedVar ++ 显示的字节码如下:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">L3</span><br><span class="line">   LINENUMBER 27 L3</span><br><span class="line">   INVOKESTATIC com/xiaokunliu/blogs/thread/volatile2code/VolatileUsedClass.access$000 ()I  // 实例化并加载sharedVar并压入操作数栈</span><br><span class="line">   ICONST_1    // 将常量 1 压入线程操作数栈总</span><br><span class="line">   IADD            // 执行sharedVar+1</span><br><span class="line">   INVOKESTATIC com/xiaokunliu/blogs/thread/volatile2code/VolatileUsedClass.access$002 (I)I  // 重新实力化加载sharedVar,说明完成赋值操作</span><br><span class="line">   POP</span><br><span class="line">  L4</span><br></pre></td></tr></table></figure></li>
+</ul>
+</li>
+<li>运行分析: <ul>
+<li>通过字节码可知,sharedVar ++;相比单纯赋值操作增加了一个添加的动作</li>
+<li>也就整体代码块存在在并发多线程下交替执行的两个操作,不具备原子性,volatile在这里是保证代码刷新到主内存,对于sharedVar = const 是具备原子性的</li>
+</ul>
+</li>
+</ul>
+<blockquote>
+<p>使用volatile小结</p>
+</blockquote>
+<ul>
+<li>对变量进行写操作的时候可以通过volatile来实现对其他线程的可见,同样在单步指令操作中是具备原子性,针对long或者double也起到具备原子性的作用</li>
+<li>对于需要用volatile修饰的变量来完成一系列的非单步操作运算是无法保证原子性,必须借助lock的方式来实现代码块的原子性</li>
+</ul>
+
+    </div>
+
+    <div>全文完。</div>
+  </article>
+  <div class="toc-container">
+    
+  <div id="toc" class="toc-article">
+    <strong class="toc-title">目录</strong>
+    <ol class="toc"><li class="toc-item toc-level-6"><a class="toc-link" href="#1-volatile%E7%9A%84%E4%BD%BF%E7%94%A8"><span class="toc-text">1. volatile的使用</span></a></li><li class="toc-item toc-level-6"><a class="toc-link" href="#2-%E5%8E%9F%E5%AD%90%E6%80%A7%E9%97%AE%E9%A2%98"><span class="toc-text">2. 原子性问题</span></a></li></ol>
+  </div>
+
+
+  </div>
+</div>
+<div class="copyright">
+    <span>本作品采用</span>
+    <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by/4.0/">知识共享署名 4.0 国际许可协议</a>
+    <span>进行许可。 转载时请注明原文链接。</span>
+</div>
+<div class="share" style="width: 100%;">
+  <img src="/images/wechat-small.jpg" alt="Running Geek" style="margin: auto; display: block;"/>
+
+  <div style="margin: auto; text-align: center; font-size: 0.8em; color: grey;">老铁们关注走一走，不迷路</div>
+  
+</div>
+
+  
+    <div class="post-nav">
+      <div class="post-nav-item post-nav-next">
+        
+          <span>〈 </span>
+          <a href="/2020/03/20/volatile/" rel="next" title="volatile工作原理">
+          volatile工作原理
+          </a>
+        
+      </div>
+  
+      <div class="post-nav-item post-nav-prev">
+          
+          <a href="/2020/04/02/macbook/" rel="prev" title="linux(macbook)实际工作笔录">
+            linux(macbook)实际工作笔录
+          </a>
+          <span>〉</span>
+        
+      </div>
+    </div>
+  
+
+
+    </div>
+
+    
+
+  </div>
+  <footer class="footer text-center">
+    <div id="bottom-inner">
+        <a class="bottom-item" href="https://xiaokunliu.github.io">首页</a> |
+        <a class="bottom-item" href="https://xiaokunliu.github.io" target="_blank">主站</a> |
+        <a class="bottom-item" href="https://github.com/xiaokunliu" target="_blank">GitHub</a> |
+        <a class="bottom-item" href="https://hexo.io" target="_blank">Powered by hexo</a> |
+        <a class="bottom-item" href="https://github.com/KevinOfNeu/hexo-theme-xoxo" target="_blank">Theme xoxo</a>
+    </div>
+</footer>
+  
+
+<script>
+  (function(window, document, undefined) {
+
+    var timer = null;
+
+    function returnTop() {
+      cancelAnimationFrame(timer);
+      timer = requestAnimationFrame(function fn() {
+        var oTop = document.body.scrollTop || document.documentElement.scrollTop;
+        if (oTop > 0) {
+          document.body.scrollTop = document.documentElement.scrollTop = oTop - 50;
+          timer = requestAnimationFrame(fn);
+        } else {
+          cancelAnimationFrame(timer);
+        }
+      });
+    }
+
+    var hearts = [];
+    window.requestAnimationFrame = (function() {
+      return window.requestAnimationFrame ||
+        window.webkitRequestAnimationFrame ||
+        window.mozRequestAnimationFrame ||
+        window.oRequestAnimationFrame ||
+        window.msRequestAnimationFrame ||
+        function(callback) {
+          setTimeout(callback, 1000 / 60);
+        }
+    })();
+    init();
+
+    function init() {
+      css(".heart{z-index:9999;width: 10px;height: 10px;position: fixed;background: #f00;transform: rotate(45deg);-webkit-transform: rotate(45deg);-moz-transform: rotate(45deg);}.heart:after,.heart:before{content: '';width: inherit;height: inherit;background: inherit;border-radius: 50%;-webkit-border-radius: 50%;-moz-border-radius: 50%;position: absolute;}.heart:after{top: -5px;}.heart:before{left: -5px;}");
+      attachEvent();
+      gameloop();
+      addMenuEvent();
+    }
+
+    function gameloop() {
+      for (var i = 0; i < hearts.length; i++) {
+        if (hearts[i].alpha <= 0) {
+          document.body.removeChild(hearts[i].el);
+          hearts.splice(i, 1);
+          continue;
+        }
+        hearts[i].y--;
+        hearts[i].scale += 0.004;
+        hearts[i].alpha -= 0.013;
+        hearts[i].el.style.cssText = "left:" + hearts[i].x + "px;top:" + hearts[i].y + "px;opacity:" + hearts[i].alpha + ";transform:scale(" + hearts[i].scale + "," + hearts[i].scale + ") rotate(45deg);background:" + hearts[i].color;
+      }
+      requestAnimationFrame(gameloop);
+    }
+
+    /**
+     * 给logo设置点击事件
+     * 
+     * - 回到顶部
+     * - 出现爱心
+     */
+    function attachEvent() {
+      var old = typeof window.onclick === "function" && window.onclick;
+      var logo = document.getElementById("logo");
+      if (logo) {
+        logo.onclick = function(event) {
+          returnTop();
+          old && old();
+          createHeart(event);
+        }
+      }
+      
+    }
+
+    function createHeart(event) {
+      var d = document.createElement("div");
+      d.className = "heart";
+      hearts.push({
+        el: d,
+        x: event.clientX - 5,
+        y: event.clientY - 5,
+        scale: 1,
+        alpha: 1,
+        color: randomColor()
+      });
+      document.body.appendChild(d);
+    }
+
+    function css(css) {
+      var style = document.createElement("style");
+      style.type = "text/css";
+      try {
+        style.appendChild(document.createTextNode(css));
+      } catch (ex) {
+        style.styleSheet.cssText = css;
+      }
+      document.getElementsByTagName('head')[0].appendChild(style);
+    }
+
+    function randomColor() {
+      // return "rgb(" + (~~(Math.random() * 255)) + "," + (~~(Math.random() * 255)) + "," + (~~(Math.random() * 255)) + ")";
+      return "#F44336";
+    }
+
+    function addMenuEvent() {
+      var menu = document.getElementById('menu-main-post');
+      if (menu) {
+        var toc = document.getElementById('toc');
+        if (toc) {
+          menu.onclick = function() {
+            if (toc) {
+              if (toc.style.display == 'block') {
+                toc.style.display = 'none';
+              } else {
+                toc.style.display = 'block';
+              }
+            }
+          };
+        } else {
+          menu.style.display = 'none';
+        }
+      }
+    }
+
+  })(window, document);
+</script>
+
+  
+
+
+
+</body>
+</html>

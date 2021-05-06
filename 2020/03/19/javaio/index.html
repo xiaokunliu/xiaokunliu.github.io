@@ -1,0 +1,444 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<!--
+config header
+-->
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#202020"/>
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  <script src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" async></script>
+
+  
+      <meta name="google-site-verification" content="{{ theme.google_site_verification }}" />
+  
+
+  
+    <meta name="keywords" content="网络IO编程," />
+  
+
+  
+    <meta name="description" content="分享个人学习工作的技术知识" />
+  
+  
+  <link rel="icon" type="image/x-icon" href="/logo.jpg">
+  <title>category: 网络IO编程 [ 疾风先生 ]</title>
+  
+    <!-- stylesheets list from config.yml -->
+    
+      <link rel="stylesheet" href="//cdn.bootcss.com/pure/1.0.0/pure-min.css">
+    
+      <link rel="stylesheet" href="/css/xoxo.css">
+    
+  
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+
+<body>
+  <div class="nav-container">
+    <nav class="home-menu pure-menu pure-menu-horizontal">
+  <a class="pure-menu-heading" href="/">
+    <img class="avatar" src="https://xiaokunliu.github.io/images/logo.jpg">
+    <span class="title">疾风先生</span>
+  </a>
+
+  <ul class="pure-menu-list clearfix">
+      
+          
+            <li class="pure-menu-item"><a href="/" class="pure-menu-link">首页</a></li>
+          
+      
+          
+            <li class="pure-menu-item"><a href="/archives" class="pure-menu-link">归档</a></li>
+          
+      
+          
+            <li class="pure-menu-item"><a href="/tags" class="pure-menu-link">标签</a></li>
+          
+      
+          
+            <li class="pure-menu-item"><a href="/categories" class="pure-menu-link">分类</a></li>
+          
+      
+          
+            <li class="pure-menu-item"><a href="/search" class="pure-menu-link">搜索</a></li>
+          
+      
+  </ul>
+   
+</nav>
+  </div>
+
+  <div class="container" id="content-outer">
+    <div class="inner" id="content-inner">
+      <div class="post-container">
+  <article class="post" id="post">
+    <header class="post-header text-center">
+      <h1 class="title">
+        Java之IO演进简述
+      </h1>
+      <span>
+        
+        <time class="time" datetime="2020-03-19T16:36:29.000Z">
+        2020-03-19
+      </time>
+        
+      </span>
+      <span class="slash">/</span>
+      <span class="post-meta">
+      <span class="post-tags">
+        <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E7%BD%91%E7%BB%9CIO%E7%BC%96%E7%A8%8B/" rel="tag">网络IO编程</a></li></ul>
+      </span>
+    </span>
+      <span class="slash">/</span>
+      <span class="read">
+      <span id="busuanzi_value_page_pv"></span> 点击
+    </span>
+    </header>
+
+    <div class="post-content">
+      <span id="more"></span>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">## 参考链接</span><br><span class="line">http://gee.cs.oswego.edu/dl/cpjslides/nio.pdf</span><br><span class="line">https://www.slideshare.net/e456/tyma-paulmultithreaded1</span><br></pre></td></tr></table></figure>
+
+<p>在先前的文章<a target="_blank" rel="noopener" href="https://blog.csdn.net/wind_602/article/details/104456904">《Unix之IO模型》</a>已经讲述到5种IO模型以及对应的同步异步和阻塞非阻塞相关核心概念,接下来看下Java的IO模型在服务端的网络编程中是如何演进,注意这里用启动Java程序表示一个JVM进程,而JVM进程中以多线程方式进行协作,这里讲述以线程为主展开</p>
+<h5 id="Java中的BIO演进"><a href="#Java中的BIO演进" class="headerlink" title="Java中的BIO演进"></a>Java中的BIO演进</h5><blockquote>
+<p>BIO 概述</p>
+</blockquote>
+<ul>
+<li>在上篇文章中讲述到阻塞式IO是应用进程等待内核系统接收到数据报并将数据报复制到内核再返回的处理过程</li>
+<li>在Java中的阻塞式IO模型(Blocking IO)网络编程中,服务端<code>accept</code> &amp; <code>read</code> 都需要等待客户端建立连接和发起请求才能够进行让服务端程序进行响应,也就是上述的方法在服务端的编程中会让服务端的主线程产生阻塞,当其他客户端与Java服务端尝试建立连接和发请求的时候会被阻塞,等待前面一个客户端处理完之后才会处理下一个客户端的连接和请求,以上是Java的BIO体现</li>
+</ul>
+<blockquote>
+<p>服务端单线程BIO模型</p>
+</blockquote>
+<ul>
+<li>单线程图解</li>
+</ul>
+<p><img src="https://img-blog.csdnimg.cn/20200224112801220.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dpbmRfNjAy,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"></p>
+<ul>
+<li>代码演示</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// server.java</span></span><br><span class="line"><span class="comment">// 仅写部分服务端核心代码</span></span><br><span class="line">ServerSocket server = <span class="keyword">new</span> ServerSocket(ip, port);</span><br><span class="line"><span class="keyword">while</span>(<span class="keyword">true</span>)&#123;</span><br><span class="line">	Socket socket = server.accept();	<span class="comment">// 接收客户端的连接,会阻塞</span></span><br><span class="line">	out.put(<span class="string">&quot;收到新连接:&quot;</span> + socket.toString());</span><br><span class="line">	<span class="comment">// client have connected</span></span><br><span class="line">	<span class="comment">// start read</span></span><br><span class="line">	BufferedReader br = <span class="keyword">new</span> BuufferedReader(<span class="keyword">new</span> InputstreamReader(socket.getInputStream));</span><br><span class="line">	String line = br.readLine();		<span class="comment">// 	等待客户端发起请求进行读取操作,会阻塞</span></span><br><span class="line">	<span class="comment">// decode 	..</span></span><br><span class="line">	<span class="comment">// process  ..</span></span><br><span class="line">	<span class="comment">// encode   ..</span></span><br><span class="line">	<span class="comment">// send     ..</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>运行结果(启动两个客户端)<br><img src="https://img-blog.csdnimg.cn/20200224111717505.png" alt="在这里插入图片描述"><br><img src="https://img-blog.csdnimg.cn/2020022411180840.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dpbmRfNjAy,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"><br><img src="https://img-blog.csdnimg.cn/20200224111850175.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dpbmRfNjAy,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"></li>
+<li>分析<ul>
+<li>上述代码accept方法以及read方法需要等待客户端发送数据过来,服务端才能从操作系统的底层网卡获取数据,在没有获取数据之前将处于阻塞状态</li>
+<li>其次,可以看到上述的服务端程序只能处理一个客户端的连接和请求操作,只有当前的客户端连接以及请求执行完之后才能接收下一个客户端的连接以及请求处理操作</li>
+<li>不足: 上述代码压根无法满足服务端处理多客户端的连接和请求,同时造成CPU空闲,尤其是在接收客户端读取的时候,如果没有客户端读取其他客户端建立的连接请求根本无法处理,因此对上述进行改进为多线程处理方式</li>
+</ul>
+</li>
+</ul>
+<blockquote>
+<p>基于1:1的多线程BIO模型</p>
+</blockquote>
+<ul>
+<li>根据上述的BIO模型,现优化为主线程接收accept以及通过创建多线程方式处理IO的读写操作</li>
+<li>一个客户端的请求处理交由服务端新创建的一个线程进行处理,主线程仍然处理接收客户端连接的操作</li>
+<li>如下图<br><img src="https://img-blog.csdnimg.cn/20200224113035793.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dpbmRfNjAy,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"></li>
+<li>代码演示</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// thread-task.java</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">IOTask</span> <span class="keyword">implements</span> <span class="title">Runnable</span></span>&#123;</span><br><span class="line">	<span class="keyword">private</span> Socket client;</span><br><span class="line">	</span><br><span class="line">	<span class="function"><span class="keyword">public</span> <span class="title">IOTask</span><span class="params">(Socket client)</span></span>&#123;</span><br><span class="line">		<span class="keyword">this</span>.client = client;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	run()&#123;</span><br><span class="line">		<span class="keyword">while</span>(!Thread.isInterrupt())&#123;</span><br><span class="line">			<span class="comment">// read from socket inputstream</span></span><br><span class="line">			<span class="comment">// encode reading text</span></span><br><span class="line">			<span class="comment">// process</span></span><br><span class="line">			<span class="comment">// decode sent text</span></span><br><span class="line">			<span class="comment">// send</span></span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// server.java</span></span><br><span class="line">ServerSocket server = <span class="keyword">new</span> ServerSocket(ip, port);</span><br><span class="line"><span class="keyword">while</span>(<span class="keyword">true</span>)&#123;</span><br><span class="line">	Socket client = server.accept();</span><br><span class="line">	out.put(“收到新连接:” + client.toString());</span><br><span class="line">	<span class="keyword">new</span> Thread(<span class="keyword">new</span> IOTask(client)),start();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>运行效果(客户端启动服务端就接收到客户端的连接)<br><img src="https://img-blog.csdnimg.cn/20200224113906151.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dpbmRfNjAy,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"></li>
+<li>分析<ul>
+<li>通过多线程的方式将Accept与IO读写操作的阻塞方式进行分离,主线程处理accept接收客户端的连接,新开线程接收客户端的请求进行请求处理操作</li>
+<li>上述的方式仅仅是将阻塞的方式进行分离,但是如果处理的客户端数量越来越多的时候,上述服务器创建线程会越来越多,容易造成机器CPU出现100%情况,那么我们可以如何控制线程的方式,在并发编程中,一般通过管理并发处理任务的多线程技术是采用线程池的方式,于是就有了以下的M:N的多线程网络编程的BIO模型</li>
+</ul>
+</li>
+</ul>
+<blockquote>
+<p>基于M:N的线程池实现的BIO模式</p>
+</blockquote>
+<ul>
+<li>M:N的线程池实现的图解如下<br><img src="https://img-blog.csdnimg.cn/20200224115357526.jpg?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dpbmRfNjAy,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"></li>
+<li>示例代码</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// server.java</span></span><br><span class="line">ExecutorService executors = Executros.newFixedThreadPool(MAX_THREAD_NUM);</span><br><span class="line">ServerSocket server = <span class="keyword">new</span> ServerSocket(ip,port);</span><br><span class="line"><span class="keyword">while</span>(<span class="keyword">true</span>)&#123;</span><br><span class="line">	Socket client = server.accept();</span><br><span class="line">	out.put(“收到新连接:” + client.toString());</span><br><span class="line">	threadPool.submit(<span class="keyword">new</span> IOTask(ckient));</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>分析<ul>
+<li>上述运行结果与1:1的线程模型是一致的,但是相比1:1创建线程的方式,充分利用池化技术重复利用线程资源,有助于降低CPU占用的资源</li>
+<li>其次,上述的BIO都是属于阻塞式IO处理,每一次的accept操作以及read操作都需要等待客户端的操作才能给予响应,如果客户端不发生操作,那么新创建的线程将一直处于阻塞状态,将占用资源迟迟没有释放,也容易造成CPU发生瓶颈,于是我们想到能否等到客户端有发起相应的操作的时候线程才进行处理呢,在客户端还没有发生请求操作的时候,服务端线程资源是否可以优先处理其他任务,提升CPU利用率呢,这也就是接下来的非阻塞式IO,即Non-Blocking IO</li>
+</ul>
+</li>
+</ul>
+<h6 id="Java中的NIO演进"><a href="#Java中的NIO演进" class="headerlink" title="Java中的NIO演进"></a>Java中的NIO演进</h6><blockquote>
+<p>NIO概述</p>
+</blockquote>
+<ul>
+<li>在<a target="_blank" rel="noopener" href="https://blog.csdn.net/wind_602/article/details/104456904">《Unix的IO模型》</a>中的NIO模型有非阻塞式IO,IO复用模型以及信号驱动的IO模型,在Java中的NIO模型主要是以非阻塞式IO以及IO复用模型为主</li>
+<li>从上述的BIO可知,服务端会在accept方法以及read方法调用中导致当前线程处于阻塞状态,结合Unix中的非阻塞式IO可知,NIO本质上是将上述的方法设置为非阻塞,然后通过轮询的方式来检查当前的状态是否就绪,如果是Accept就处理客户端连接事件,如果是READ就处理客户端的请求事件</li>
+<li>Java实现NIO的方式注意依赖于以下三个核心组件<ul>
+<li>Channel通道:服务端与客户端建立连接以及进行数据传输的通道,分为ServerSocketChannel(接收客户端的TCP连接通道)以及SocketChannel(建立与服务端的连接通道) </li>
+<li>Buffer缓存区: 客户端与服务端在channel中建立一个连续数组的内存空间,用于在channel中接收和发送数据数据实现两端的数据通信</li>
+<li>Selector选择注册器,对比IO复用模型,Selector中包含select函数,用于向系统内核注册网络编程中的Aceept,Read以及Write等事件,相对于从Java而言,是指channel(不论是服务端还是客户端通道)可以向注册器selector发起注册事件,底层交由<code>select()</code>向操作系统进行事件注册</li>
+</ul>
+</li>
+<li>简要的NIO模型图<br><img src="https://img-blog.csdnimg.cn/20200314174446806.jpg?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dpbmRfNjAy,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"></li>
+</ul>
+<blockquote>
+<p>基于单线程通道轮询的NIO模式(NIO模型)</p>
+</blockquote>
+<ul>
+<li>这类IO模型与unix下的NIO模型是一致的,就是服务端不断地检查当前的连接状态信息,如果状态信息就绪那么就开始执行相应的处理逻辑</li>
+<li>NIO图解模型如下<br><img src="https://img-blog.csdnimg.cn/20200225203847897.jpg?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dpbmRfNjAy,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"></li>
+<li>在NIO模型图中,accept不断polling客户端是否有建立连接,如果有客户端连接到服务端,这个时候就会将其转发进行IO操作</li>
+<li>部分java示例伪代码</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// server.java</span></span><br><span class="line">ServerSocketChannel server = ServerSocketChannel.open();</span><br><span class="line"><span class="comment">// 设置所有的socket默认伪阻塞,必须设置服务端的通道为非阻塞模式</span></span><br><span class="line">server.configureBlocking(<span class="keyword">false</span>); </span><br><span class="line"><span class="comment">// 绑定端口以及最大可接收的连接数backlog</span></span><br><span class="line">server.socket().bind(<span class="keyword">new</span> InetSocketAddress(PORT), MAX_BACKLOG_NUM); </span><br><span class="line"><span class="keyword">while</span>(<span class="keyword">true</span>)&#123;</span><br><span class="line">	SocketChannel client = server.accept();</span><br><span class="line">	<span class="comment">// 非阻塞获取,所以client可能为null</span></span><br><span class="line">	<span class="keyword">if</span>(<span class="keyword">null</span> != client)&#123;</span><br><span class="line">		<span class="comment">// 设置客户端的通道为非阻塞</span></span><br><span class="line">		client.configureBlocking(<span class="keyword">false</span>);</span><br><span class="line">		<span class="comment">// 进行IO操作</span></span><br><span class="line">		<span class="comment">// read</span></span><br><span class="line">		ByteBuffer req = ByteBuffer.allocate(MAX_SIZE);</span><br><span class="line">		<span class="keyword">while</span>(client.isOpen() &amp;/&amp; client.read(req)!= -<span class="number">1</span>)&#123;</span><br><span class="line">			<span class="comment">// BufferCoding是自己封装的一个解码工具类,结合ByteBuffer与Charset使用,这里不演示代码实现</span></span><br><span class="line">			<span class="comment">// decode</span></span><br><span class="line">			<span class="keyword">byte</span>[] data = BufferCoding.decode(req);</span><br><span class="line">			<span class="keyword">if</span>(data != <span class="keyword">null</span>)&#123;</span><br><span class="line">				<span class="keyword">break</span>;</span><br><span class="line">			&#125;</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="comment">// prepared data to send </span></span><br><span class="line">		sentData = process(data);</span><br><span class="line">		<span class="comment">// encode </span></span><br><span class="line">		ByteBuffer sent = BufferCoding.encode(sentData);</span><br><span class="line">		<span class="comment">// write</span></span><br><span class="line">		client.writeAndFlush(sent);</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>分析<ul>
+<li>上述的代码与BIO的设计基本无差,只是在原有的基础上设置为非阻塞的操作,然后通过不断轮询的方式不断监控连接和读取操作,与BIO的多线程设计差别不大,只是BIO是多线程方式实现,这里是单线程实现</li>
+<li>小结:上述代码使用BIO的API方式,也就是说不断polling的过程都是调用阻塞的API去检查是否就绪的状态,结合先前的Unix的IO模型,非阻塞可以继续改进为给予select的方式来实现,而select不是属于调用阻塞式API而是通过事件轮询的方式等待套接字中的描述符变为就绪状态再进行业务处理操作</li>
+</ul>
+</li>
+</ul>
+<blockquote>
+<p>基于单线程的select事件轮询IO模式(IO多路复用模型)</p>
+</blockquote>
+<ul>
+<li>IO复用模型是通过调用select函数不断轮询获取当前socket的描述符是否就绪,是基于事件的方式实现非阻塞</li>
+<li>客户端与服务端都需要注册到selector上,告诉selector当前对哪个描述符感兴趣,再由selector将感兴趣的描述符注册到系统内核中,内核收到一份描述符的数组表,根据网络传输过来的事件告知selector当前对应的描述符的状态信息</li>
+<li>其简要的示例图如下<br><img src="https://img-blog.csdnimg.cn/20200225214336286.jpg?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dpbmRfNjAy,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"></li>
+<li>从上述模型可以看出<ul>
+<li>服务端启动的时候,首先需要创建channel并注册到selector上才能够监听到客户端建立的连接</li>
+<li>其次客户端要与服务端建立通信,也需要在客户端自己创建channel并注册到selector上</li>
+<li>当selector监听到客户端的连接就会转发给服务端的Accept事件进行处理</li>
+<li>当selector监听到客户端发起请求的操作,就会转发给处理READ事件进行处理,并且如果需要将数据通知客户端,并且在指定的事件上添加写操作</li>
+<li>此时selector监听到写操作的时候,就会转发给处理WRITE事件进行处理,并且当前在进行写操作之后取消写操作的事件</li>
+</ul>
+</li>
+<li>java实现的伪代码</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// server.java</span></span><br><span class="line">ServerSocketChannel server = ServerSocketChannel,open();</span><br><span class="line">server.configureBlocking(<span class="keyword">false</span>);</span><br><span class="line"></span><br><span class="line">Selector selector = Selector.open();</span><br><span class="line"><span class="comment">// 服务端只注册ACCEPT,作为接入客户端的连接</span></span><br><span class="line"><span class="comment">// DataWrap封装读写缓存ByteBuffer</span></span><br><span class="line">server.register(selector, SelectionKey.OP_ACCEPT, server);</span><br><span class="line">server.socket().bind(<span class="keyword">new</span> InetSocketAddress(PORT), MAX_BACKLOG_NUM); </span><br><span class="line"></span><br><span class="line"><span class="keyword">while</span>(<span class="keyword">true</span>)&#123;</span><br><span class="line">	<span class="keyword">int</span> key = selector.select();</span><br><span class="line">	<span class="keyword">if</span>(key == <span class="number">0</span>) <span class="keyword">continue</span>;</span><br><span class="line">	<span class="comment">// 获取注册到selecor所有感兴趣的事件</span></span><br><span class="line">	Set&lt;SelectionKey&gt; keys = selector.selectedKeys();</span><br><span class="line">    Iterator&lt;SelectionKey&gt; it = keys.iterator();</span><br><span class="line">    <span class="keyword">while</span>(it.hasNext())&#123;</span><br><span class="line">		SelectionKey key = it.next();</span><br><span class="line">		it.remove();</span><br><span class="line">		<span class="keyword">if</span>(key.isAcceptable())&#123;</span><br><span class="line">			<span class="comment">// 	接收accept事件</span></span><br><span class="line">			ServerSocketChannel serverChannel = (ServerSocketChannel)key.attachment();</span><br><span class="line">			SocketChannel client = server.accept();</span><br><span class="line">			client.configureBlocking(<span class="keyword">false</span>);</span><br><span class="line">			<span class="comment">// 客户端已经获取到连接,告诉客户端的channel可以开始进行读写操作</span></span><br><span class="line">			client.register(selector, SelectionKey.OP_READ | SelectionKey.OP_WRITE, <span class="keyword">new</span> DataWrap(<span class="number">256</span>, <span class="number">256</span>));</span><br><span class="line">		&#125;</span><br><span class="line">		</span><br><span class="line">		<span class="comment">// read</span></span><br><span class="line">		<span class="keyword">if</span>(key.isReadable())&#123;</span><br><span class="line">			<span class="comment">//...</span></span><br><span class="line">			</span><br><span class="line">			<span class="comment">// 在事件中添加写操作</span></span><br><span class="line">			key.interestOps(key.interestOps() | SelectionKey.OP_WRITE);</span><br><span class="line">		&#125;</span><br><span class="line">		</span><br><span class="line">		<span class="keyword">if</span>(key.isWriteable())&#123;</span><br><span class="line">			<span class="comment">// ...</span></span><br><span class="line">			<span class="comment">//  成功完成写操作,这个时候取消写操作</span></span><br><span class="line">          	key.interestOps(key.interestOps() &amp; (~SelectionKey.OP_WRITE));</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>分析<ul>
+<li>上述代码相比第一种方案的实现,主要是采用select函数调用获取注册的事件,阻塞于select事件</li>
+<li>另外上述的代码相比第一种稍微更为复杂,操作也更为繁琐</li>
+<li>同时两种方式存在的不足都是单线程的方式,在接入层支撑的连接并发量大的时候,并且如果处理的业务复杂且耗时,那么无疑也将会影响到程序的性能,无法快速响应给客户端,同时也会出现短暂的阻塞</li>
+</ul>
+</li>
+</ul>
+<blockquote>
+<p>基于多线程实现的NIO(Reactor模型)</p>
+</blockquote>
+<ul>
+<li>Reactor模型是参考《Scalable in Java》的文章,目的是为了更好地利用CPU资源将selector监听到事件分别进行相应的分发提高用户响应</li>
+<li>Reactor中主要包含selector, channel以及事件SelectionKey,通过不断polling的方式监听客户端的连接,如果有连接进来就将连接转发给Accept,将服务端channel与客户端的channel连接起来,并告知客户端可以进行读写操作</li>
+<li>后面在服务端接收到读取事件的时候,就会利用线程池的方式提交任务来处理客户端发过来的请求事件,并准备写数据到缓冲区,并再通知并注册写事件</li>
+<li>接收到写事件之后,从缓存区中获取数据并刷新到客户端</li>
+<li>Reactor简要图如下<br><img src="https://img-blog.csdnimg.cn/20200314173905118.jpg?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dpbmRfNjAy,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"></li>
+</ul>
+<blockquote>
+<p>多Reactor模式 + 多线程</p>
+</blockquote>
+<ul>
+<li>(Main)Reactor模型中主要接收服务端以及客户端的注册,其中服务端在启动的时候就注册到Reactor上,而客户端建立连接之前也需要现注册到Reactor中,再由监听到客户端连接的Reactor转发给处理Accept的事件操作,将客户端通道设置非阻塞且建立其可以进行读写的事件监听操作,对于单个而言仍然是在Reactor线程中,而多个Reactor模型中会将当前的客户端连接以及通道转给另一个Reactor进行网络IO操作</li>
+<li>对于单个Reactor模型,接收到客户端的请求之后,进行读取然后向线程池提交任务去处理实际业务,在发送给客户端之前向事件注册写事件然后交由Reactor执行写数据到客户端</li>
+<li>对于多个Reactor模型.接收到客户端的请求之后,将通过SubReactor读取数据,之后的操作与上述单个Reactor模型流程一致的</li>
+</ul>
+<p><img src="https://img-blog.csdnimg.cn/20200314173918989.jpg?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dpbmRfNjAy,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"><br>后面会详细写高性能IO编程模型,会再详细讲Reactor以及对应的实现</p>
+
+    </div>
+
+    <div>全文完。</div>
+  </article>
+  <div class="toc-container">
+    
+  <div id="toc" class="toc-article">
+    <strong class="toc-title">目录</strong>
+    <ol class="toc"><li class="toc-item toc-level-5"><a class="toc-link" href="#Java%E4%B8%AD%E7%9A%84BIO%E6%BC%94%E8%BF%9B"><span class="toc-text">Java中的BIO演进</span></a><ol class="toc-child"><li class="toc-item toc-level-6"><a class="toc-link" href="#Java%E4%B8%AD%E7%9A%84NIO%E6%BC%94%E8%BF%9B"><span class="toc-text">Java中的NIO演进</span></a></li></ol></li></ol>
+  </div>
+
+
+  </div>
+</div>
+<div class="copyright">
+    <span>本作品采用</span>
+    <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by/4.0/">知识共享署名 4.0 国际许可协议</a>
+    <span>进行许可。 转载时请注明原文链接。</span>
+</div>
+<div class="share" style="width: 100%;">
+  <img src="/images/wechat-small.jpg" alt="Running Geek" style="margin: auto; display: block;"/>
+
+  <div style="margin: auto; text-align: center; font-size: 0.8em; color: grey;">老铁们关注走一走，不迷路</div>
+  
+</div>
+
+  
+    <div class="post-nav">
+      <div class="post-nav-item post-nav-next">
+        
+          <span>〈 </span>
+          <a href="/2020/03/18/thread_pool/" rel="next" title="并发编程之线程池原理">
+          并发编程之线程池原理
+          </a>
+        
+      </div>
+  
+      <div class="post-nav-item post-nav-prev">
+          
+          <a href="/2020/03/20/volatile/" rel="prev" title="volatile工作原理">
+            volatile工作原理
+          </a>
+          <span>〉</span>
+        
+      </div>
+    </div>
+  
+
+
+    </div>
+
+    
+
+  </div>
+  <footer class="footer text-center">
+    <div id="bottom-inner">
+        <a class="bottom-item" href="https://xiaokunliu.github.io">首页</a> |
+        <a class="bottom-item" href="https://xiaokunliu.github.io" target="_blank">主站</a> |
+        <a class="bottom-item" href="https://github.com/xiaokunliu" target="_blank">GitHub</a> |
+        <a class="bottom-item" href="https://hexo.io" target="_blank">Powered by hexo</a> |
+        <a class="bottom-item" href="https://github.com/KevinOfNeu/hexo-theme-xoxo" target="_blank">Theme xoxo</a>
+    </div>
+</footer>
+  
+
+<script>
+  (function(window, document, undefined) {
+
+    var timer = null;
+
+    function returnTop() {
+      cancelAnimationFrame(timer);
+      timer = requestAnimationFrame(function fn() {
+        var oTop = document.body.scrollTop || document.documentElement.scrollTop;
+        if (oTop > 0) {
+          document.body.scrollTop = document.documentElement.scrollTop = oTop - 50;
+          timer = requestAnimationFrame(fn);
+        } else {
+          cancelAnimationFrame(timer);
+        }
+      });
+    }
+
+    var hearts = [];
+    window.requestAnimationFrame = (function() {
+      return window.requestAnimationFrame ||
+        window.webkitRequestAnimationFrame ||
+        window.mozRequestAnimationFrame ||
+        window.oRequestAnimationFrame ||
+        window.msRequestAnimationFrame ||
+        function(callback) {
+          setTimeout(callback, 1000 / 60);
+        }
+    })();
+    init();
+
+    function init() {
+      css(".heart{z-index:9999;width: 10px;height: 10px;position: fixed;background: #f00;transform: rotate(45deg);-webkit-transform: rotate(45deg);-moz-transform: rotate(45deg);}.heart:after,.heart:before{content: '';width: inherit;height: inherit;background: inherit;border-radius: 50%;-webkit-border-radius: 50%;-moz-border-radius: 50%;position: absolute;}.heart:after{top: -5px;}.heart:before{left: -5px;}");
+      attachEvent();
+      gameloop();
+      addMenuEvent();
+    }
+
+    function gameloop() {
+      for (var i = 0; i < hearts.length; i++) {
+        if (hearts[i].alpha <= 0) {
+          document.body.removeChild(hearts[i].el);
+          hearts.splice(i, 1);
+          continue;
+        }
+        hearts[i].y--;
+        hearts[i].scale += 0.004;
+        hearts[i].alpha -= 0.013;
+        hearts[i].el.style.cssText = "left:" + hearts[i].x + "px;top:" + hearts[i].y + "px;opacity:" + hearts[i].alpha + ";transform:scale(" + hearts[i].scale + "," + hearts[i].scale + ") rotate(45deg);background:" + hearts[i].color;
+      }
+      requestAnimationFrame(gameloop);
+    }
+
+    /**
+     * 给logo设置点击事件
+     * 
+     * - 回到顶部
+     * - 出现爱心
+     */
+    function attachEvent() {
+      var old = typeof window.onclick === "function" && window.onclick;
+      var logo = document.getElementById("logo");
+      if (logo) {
+        logo.onclick = function(event) {
+          returnTop();
+          old && old();
+          createHeart(event);
+        }
+      }
+      
+    }
+
+    function createHeart(event) {
+      var d = document.createElement("div");
+      d.className = "heart";
+      hearts.push({
+        el: d,
+        x: event.clientX - 5,
+        y: event.clientY - 5,
+        scale: 1,
+        alpha: 1,
+        color: randomColor()
+      });
+      document.body.appendChild(d);
+    }
+
+    function css(css) {
+      var style = document.createElement("style");
+      style.type = "text/css";
+      try {
+        style.appendChild(document.createTextNode(css));
+      } catch (ex) {
+        style.styleSheet.cssText = css;
+      }
+      document.getElementsByTagName('head')[0].appendChild(style);
+    }
+
+    function randomColor() {
+      // return "rgb(" + (~~(Math.random() * 255)) + "," + (~~(Math.random() * 255)) + "," + (~~(Math.random() * 255)) + ")";
+      return "#F44336";
+    }
+
+    function addMenuEvent() {
+      var menu = document.getElementById('menu-main-post');
+      if (menu) {
+        var toc = document.getElementById('toc');
+        if (toc) {
+          menu.onclick = function() {
+            if (toc) {
+              if (toc.style.display == 'block') {
+                toc.style.display = 'none';
+              } else {
+                toc.style.display = 'block';
+              }
+            }
+          };
+        } else {
+          menu.style.display = 'none';
+        }
+      }
+    }
+
+  })(window, document);
+</script>
+
+  
+
+
+
+</body>
+</html>

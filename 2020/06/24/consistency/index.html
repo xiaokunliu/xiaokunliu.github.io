@@ -1,0 +1,337 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<!--
+config header
+-->
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#202020"/>
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  <script src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" async></script>
+
+  
+      <meta name="google-site-verification" content="{{ theme.google_site_verification }}" />
+  
+
+  
+    <meta name="keywords" content="分布式架构设计," />
+  
+
+  
+    <meta name="description" content="分享个人学习工作的技术知识" />
+  
+  
+  <link rel="icon" type="image/x-icon" href="/logo.jpg">
+  <title>category: 分布式架构设计 [ 疾风先生 ]</title>
+  
+    <!-- stylesheets list from config.yml -->
+    
+      <link rel="stylesheet" href="//cdn.bootcss.com/pure/1.0.0/pure-min.css">
+    
+      <link rel="stylesheet" href="/css/xoxo.css">
+    
+  
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+
+<body>
+  <div class="nav-container">
+    <nav class="home-menu pure-menu pure-menu-horizontal">
+  <a class="pure-menu-heading" href="/">
+    <img class="avatar" src="https://xiaokunliu.github.io/images/logo.jpg">
+    <span class="title">疾风先生</span>
+  </a>
+
+  <ul class="pure-menu-list clearfix">
+      
+          
+            <li class="pure-menu-item"><a href="/" class="pure-menu-link">首页</a></li>
+          
+      
+          
+            <li class="pure-menu-item"><a href="/archives" class="pure-menu-link">归档</a></li>
+          
+      
+          
+            <li class="pure-menu-item"><a href="/tags" class="pure-menu-link">标签</a></li>
+          
+      
+          
+            <li class="pure-menu-item"><a href="/categories" class="pure-menu-link">分类</a></li>
+          
+      
+          
+            <li class="pure-menu-item"><a href="/search" class="pure-menu-link">搜索</a></li>
+          
+      
+  </ul>
+   
+</nav>
+  </div>
+
+  <div class="container" id="content-outer">
+    <div class="inner" id="content-inner">
+      <div class="post-container">
+  <article class="post" id="post">
+    <header class="post-header text-center">
+      <h1 class="title">
+        分布式一致性
+      </h1>
+      <span>
+        
+        <time class="time" datetime="2020-06-24T08:09:56.000Z">
+        2020-06-24
+      </time>
+        
+      </span>
+      <span class="slash">/</span>
+      <span class="post-meta">
+      <span class="post-tags">
+        <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E5%88%86%E5%B8%83%E5%BC%8F%E6%9E%B6%E6%9E%84%E8%AE%BE%E8%AE%A1/" rel="tag">分布式架构设计</a></li></ul>
+      </span>
+    </span>
+      <span class="slash">/</span>
+      <span class="read">
+      <span id="busuanzi_value_page_pv"></span> 点击
+    </span>
+    </header>
+
+    <div class="post-content">
+      <span id="more"></span>
+
+<h3 id="分布式一致性"><a href="#分布式一致性" class="headerlink" title="分布式一致性"></a>分布式一致性</h3><p>在讲述分布式一致性的时候,我们需要明确以下两件事情,其一是分布式事务与一致性的区分,事务的隔离主要是为了避免由于并发执行事务而产生的竞争条件,而分布式一致性主要是为了在遇到延迟和错误时协调副本的状态.两者的关注点并不相同;其二是分布式一致性与分布式共识问题,分布式一致性可以理解为“所有的服务节点看到的数据都是相同的状态”,而分布式共识问题可以理解为“所有的服务节点最终作出相同的决定值/策略”.但是分布式一致性又和上述的事务与共识问题存在着联系,也就是说当我们完成一个分布式事务抑或是服务节点达成共识之后就需要考虑一致性问题.因此对于一致性的讨论离不开共识问题的解决(事务也可以算共识问题的一个子域),因此文章会结合共识问题与一致性展开讨论.</p>
+<h4 id="分布式一致性简述"><a href="#分布式一致性简述" class="headerlink" title="分布式一致性简述"></a>分布式一致性简述</h4><ul>
+<li>复制延迟问题</li>
+</ul>
+<p>在一个存储的主从服务架构中,如果此时向主节点发起写请求操作成功之后,在主节点通过binlog进行从服务节点数据同步过程,这个时候主服务节点与从服务节点上看到的数据是不一致的,因为写请求的操作是在不同的时间点到达的,因此不论采取的存储服务是使用哪种架构方案(单leader复制架构/多leader复制架构/无leader复制架构)都会产生短暂时间内的数据的一致性.</p>
+<ul>
+<li>一致性保证</li>
+</ul>
+<p>大部分副本存储层系统都采取最终一致性,即在主节点进行数据同步过程中,期间如果有读取请求落地到从服务节点中,那么这个时候会将读取请求线程挂起并等待主从数据同步完成,当同步完成之后将当前的读取请求线程唤醒以保证当前读取请求服务是读取到最新的一份写入数据.换言之,就是当前的网络发生故障但是最终是可以修复的情况下,存储层服务节点会出现短暂的数据不一致,对于最终一致性有一个更好的名称,即收敛(convergence),因为我们期望存储层的服务节点最终收敛到相同的数据值.</p>
+<h4 id="线性一致性"><a href="#线性一致性" class="headerlink" title="线性一致性"></a>线性一致性</h4><h5 id="问题描述"><a href="#问题描述" class="headerlink" title="问题描述"></a>问题描述</h5><p>在上述的一个数据存储层架构中,主服务节点进行数据同步的时候会产生复制延迟导致从服务节点出现短暂的数据不一致性.那是否存在这样的解决方案,即如果数据库能够给对于读取请求服务的客户端程序而言只有一个数据副本的错觉,那么这个时候对于读取数据的客户端就能够实时读取到一份最新的数据而不需要关心复制延迟的问题?</p>
+<h5 id="解决方案的核心思想"><a href="#解决方案的核心思想" class="headerlink" title="解决方案的核心思想"></a>解决方案的核心思想</h5><p>要实现上述的需求,在分布式系统中有一个解决方案就是通过线性一致性(也可称为原子一致性/强一致性/直接一致性/外部一致性),其基本思想就是使系统看起来好像只有一个副本,并且对它的所有操作都具备原子性,有了这个保证,即使实际上有很多的数据副本应用程序也不需要再担心复制延迟的问题.</p>
+<h5 id="线性一致性分析"><a href="#线性一致性分析" class="headerlink" title="线性一致性分析"></a>线性一致性分析</h5><blockquote>
+<p>非一致性的系统模型</p>
+</blockquote>
+<ul>
+<li>由于网络延迟问题产生数据不一致</li>
+</ul>
+<p><img src="/Users/keithl/docker/dev/data/xiaokunliu.github.io/websites/zimages/arch/consistency/consistency.jpg"></p>
+<ul>
+<li>数据库强一致性分析</li>
+</ul>
+<p><img src="/Users/keithl/docker/dev/data/xiaokunliu.github.io/websites/zimages/arch/consistency/isoluation_consistency.jpg"></p>
+<p><img src="/Users/keithl/docker/dev/data/xiaokunliu.github.io/websites/zimages/arch/consistency/isoluation_consistency2.jpg"></p>
+<p><img src="/Users/keithl/docker/dev/data/xiaokunliu.github.io/websites/zimages/arch/consistency/isoluation_consistency3.jpg"></p>
+<blockquote>
+<p>串行化与强一致性区分</p>
+</blockquote>
+<ul>
+<li>串行化</li>
+</ul>
+<ul>
+<li>强一致性</li>
+</ul>
+<h4 id="顺序一致性"><a href="#顺序一致性" class="headerlink" title="顺序一致性"></a>顺序一致性</h4><p>分布事件的执行顺序一致性问题</p>
+<h4 id="最终一致性"><a href="#最终一致性" class="headerlink" title="最终一致性"></a>最终一致性</h4><h4 id="服务状态"><a href="#服务状态" class="headerlink" title="服务状态"></a>服务状态</h4><h5 id="有状态服务"><a href="#有状态服务" class="headerlink" title="有状态服务"></a>有状态服务</h5><h5 id="无状态服务"><a href="#无状态服务" class="headerlink" title="无状态服务"></a>无状态服务</h5>
+    </div>
+
+    <div>全文完。</div>
+  </article>
+  <div class="toc-container">
+    
+  <div id="toc" class="toc-article">
+    <strong class="toc-title">目录</strong>
+    <ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%88%86%E5%B8%83%E5%BC%8F%E4%B8%80%E8%87%B4%E6%80%A7"><span class="toc-text">分布式一致性</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%88%86%E5%B8%83%E5%BC%8F%E4%B8%80%E8%87%B4%E6%80%A7%E7%AE%80%E8%BF%B0"><span class="toc-text">分布式一致性简述</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%BA%BF%E6%80%A7%E4%B8%80%E8%87%B4%E6%80%A7"><span class="toc-text">线性一致性</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#%E9%97%AE%E9%A2%98%E6%8F%8F%E8%BF%B0"><span class="toc-text">问题描述</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88%E7%9A%84%E6%A0%B8%E5%BF%83%E6%80%9D%E6%83%B3"><span class="toc-text">解决方案的核心思想</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%E7%BA%BF%E6%80%A7%E4%B8%80%E8%87%B4%E6%80%A7%E5%88%86%E6%9E%90"><span class="toc-text">线性一致性分析</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E9%A1%BA%E5%BA%8F%E4%B8%80%E8%87%B4%E6%80%A7"><span class="toc-text">顺序一致性</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%9C%80%E7%BB%88%E4%B8%80%E8%87%B4%E6%80%A7"><span class="toc-text">最终一致性</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%9C%8D%E5%8A%A1%E7%8A%B6%E6%80%81"><span class="toc-text">服务状态</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#%E6%9C%89%E7%8A%B6%E6%80%81%E6%9C%8D%E5%8A%A1"><span class="toc-text">有状态服务</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%E6%97%A0%E7%8A%B6%E6%80%81%E6%9C%8D%E5%8A%A1"><span class="toc-text">无状态服务</span></a></li></ol></li></ol></li></ol>
+  </div>
+
+
+  </div>
+</div>
+<div class="copyright">
+    <span>本作品采用</span>
+    <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by/4.0/">知识共享署名 4.0 国际许可协议</a>
+    <span>进行许可。 转载时请注明原文链接。</span>
+</div>
+<div class="share" style="width: 100%;">
+  <img src="/images/wechat-small.jpg" alt="Running Geek" style="margin: auto; display: block;"/>
+
+  <div style="margin: auto; text-align: center; font-size: 0.8em; color: grey;">老铁们关注走一走，不迷路</div>
+  
+</div>
+
+  
+    <div class="post-nav">
+      <div class="post-nav-item post-nav-next">
+        
+          <span>〈 </span>
+          <a href="/2020/06/08/cap/" rel="next" title="分布式理论基础">
+          分布式理论基础
+          </a>
+        
+      </div>
+  
+      <div class="post-nav-item post-nav-prev">
+          
+          <a href="/2020/07/02/hashmap/" rel="prev" title="hashmap与concurrenthashmap分析">
+            hashmap与concurrenthashmap分析
+          </a>
+          <span>〉</span>
+        
+      </div>
+    </div>
+  
+
+
+    </div>
+
+    
+
+  </div>
+  <footer class="footer text-center">
+    <div id="bottom-inner">
+        <a class="bottom-item" href="https://xiaokunliu.github.io">首页</a> |
+        <a class="bottom-item" href="https://xiaokunliu.github.io" target="_blank">主站</a> |
+        <a class="bottom-item" href="https://github.com/xiaokunliu" target="_blank">GitHub</a> |
+        <a class="bottom-item" href="https://hexo.io" target="_blank">Powered by hexo</a> |
+        <a class="bottom-item" href="https://github.com/KevinOfNeu/hexo-theme-xoxo" target="_blank">Theme xoxo</a>
+    </div>
+</footer>
+  
+
+<script>
+  (function(window, document, undefined) {
+
+    var timer = null;
+
+    function returnTop() {
+      cancelAnimationFrame(timer);
+      timer = requestAnimationFrame(function fn() {
+        var oTop = document.body.scrollTop || document.documentElement.scrollTop;
+        if (oTop > 0) {
+          document.body.scrollTop = document.documentElement.scrollTop = oTop - 50;
+          timer = requestAnimationFrame(fn);
+        } else {
+          cancelAnimationFrame(timer);
+        }
+      });
+    }
+
+    var hearts = [];
+    window.requestAnimationFrame = (function() {
+      return window.requestAnimationFrame ||
+        window.webkitRequestAnimationFrame ||
+        window.mozRequestAnimationFrame ||
+        window.oRequestAnimationFrame ||
+        window.msRequestAnimationFrame ||
+        function(callback) {
+          setTimeout(callback, 1000 / 60);
+        }
+    })();
+    init();
+
+    function init() {
+      css(".heart{z-index:9999;width: 10px;height: 10px;position: fixed;background: #f00;transform: rotate(45deg);-webkit-transform: rotate(45deg);-moz-transform: rotate(45deg);}.heart:after,.heart:before{content: '';width: inherit;height: inherit;background: inherit;border-radius: 50%;-webkit-border-radius: 50%;-moz-border-radius: 50%;position: absolute;}.heart:after{top: -5px;}.heart:before{left: -5px;}");
+      attachEvent();
+      gameloop();
+      addMenuEvent();
+    }
+
+    function gameloop() {
+      for (var i = 0; i < hearts.length; i++) {
+        if (hearts[i].alpha <= 0) {
+          document.body.removeChild(hearts[i].el);
+          hearts.splice(i, 1);
+          continue;
+        }
+        hearts[i].y--;
+        hearts[i].scale += 0.004;
+        hearts[i].alpha -= 0.013;
+        hearts[i].el.style.cssText = "left:" + hearts[i].x + "px;top:" + hearts[i].y + "px;opacity:" + hearts[i].alpha + ";transform:scale(" + hearts[i].scale + "," + hearts[i].scale + ") rotate(45deg);background:" + hearts[i].color;
+      }
+      requestAnimationFrame(gameloop);
+    }
+
+    /**
+     * 给logo设置点击事件
+     * 
+     * - 回到顶部
+     * - 出现爱心
+     */
+    function attachEvent() {
+      var old = typeof window.onclick === "function" && window.onclick;
+      var logo = document.getElementById("logo");
+      if (logo) {
+        logo.onclick = function(event) {
+          returnTop();
+          old && old();
+          createHeart(event);
+        }
+      }
+      
+    }
+
+    function createHeart(event) {
+      var d = document.createElement("div");
+      d.className = "heart";
+      hearts.push({
+        el: d,
+        x: event.clientX - 5,
+        y: event.clientY - 5,
+        scale: 1,
+        alpha: 1,
+        color: randomColor()
+      });
+      document.body.appendChild(d);
+    }
+
+    function css(css) {
+      var style = document.createElement("style");
+      style.type = "text/css";
+      try {
+        style.appendChild(document.createTextNode(css));
+      } catch (ex) {
+        style.styleSheet.cssText = css;
+      }
+      document.getElementsByTagName('head')[0].appendChild(style);
+    }
+
+    function randomColor() {
+      // return "rgb(" + (~~(Math.random() * 255)) + "," + (~~(Math.random() * 255)) + "," + (~~(Math.random() * 255)) + ")";
+      return "#F44336";
+    }
+
+    function addMenuEvent() {
+      var menu = document.getElementById('menu-main-post');
+      if (menu) {
+        var toc = document.getElementById('toc');
+        if (toc) {
+          menu.onclick = function() {
+            if (toc) {
+              if (toc.style.display == 'block') {
+                toc.style.display = 'none';
+              } else {
+                toc.style.display = 'block';
+              }
+            }
+          };
+        } else {
+          menu.style.display = 'none';
+        }
+      }
+    }
+
+  })(window, document);
+</script>
+
+  
+
+
+
+</body>
+</html>

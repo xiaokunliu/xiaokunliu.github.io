@@ -1,0 +1,390 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<!--
+config header
+-->
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#202020"/>
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  <script src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" async></script>
+
+  
+      <meta name="google-site-verification" content="{{ theme.google_site_verification }}" />
+  
+
+  
+    <meta name="keywords" content="并发编程," />
+  
+
+  
+    <meta name="description" content="分享个人学习工作的技术知识" />
+  
+  
+  <link rel="icon" type="image/x-icon" href="/logo.jpg">
+  <title>category: 并发编程 [ 疾风先生 ]</title>
+  
+    <!-- stylesheets list from config.yml -->
+    
+      <link rel="stylesheet" href="//cdn.bootcss.com/pure/1.0.0/pure-min.css">
+    
+      <link rel="stylesheet" href="/css/xoxo.css">
+    
+  
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+
+<body>
+  <div class="nav-container">
+    <nav class="home-menu pure-menu pure-menu-horizontal">
+  <a class="pure-menu-heading" href="/">
+    <img class="avatar" src="https://xiaokunliu.github.io/images/logo.jpg">
+    <span class="title">疾风先生</span>
+  </a>
+
+  <ul class="pure-menu-list clearfix">
+      
+          
+            <li class="pure-menu-item"><a href="/" class="pure-menu-link">首页</a></li>
+          
+      
+          
+            <li class="pure-menu-item"><a href="/archives" class="pure-menu-link">归档</a></li>
+          
+      
+          
+            <li class="pure-menu-item"><a href="/tags" class="pure-menu-link">标签</a></li>
+          
+      
+          
+            <li class="pure-menu-item"><a href="/categories" class="pure-menu-link">分类</a></li>
+          
+      
+          
+            <li class="pure-menu-item"><a href="/search" class="pure-menu-link">搜索</a></li>
+          
+      
+  </ul>
+   
+</nav>
+  </div>
+
+  <div class="container" id="content-outer">
+    <div class="inner" id="content-inner">
+      <div class="post-container">
+  <article class="post" id="post">
+    <header class="post-header text-center">
+      <h1 class="title">
+        volatile工作原理
+      </h1>
+      <span>
+        
+        <time class="time" datetime="2020-03-20T20:47:28.000Z">
+        2020-03-20
+      </time>
+        
+      </span>
+      <span class="slash">/</span>
+      <span class="post-meta">
+      <span class="post-tags">
+        <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E5%B9%B6%E5%8F%91%E7%BC%96%E7%A8%8B/" rel="tag">并发编程</a></li></ul>
+      </span>
+    </span>
+      <span class="slash">/</span>
+      <span class="read">
+      <span id="busuanzi_value_page_pv"></span> 点击
+    </span>
+    </header>
+
+    <div class="post-content">
+      <span id="more"></span>
+<p>在前文中已经讲解到volatile的使用以及原子性的问题,volatile修饰的变量可以实现线程对变量的写操作能够让其他线程“看到”当前最新的变量数据值,从内存语义上而言,相当于告诉线程读取当前变量要从主内存中读取,对此,现将继续前文的volatile继续深入原理分析.</p>
+<h6 id="1-volatile作用与使用场景"><a href="#1-volatile作用与使用场景" class="headerlink" title="1. volatile作用与使用场景"></a>1. volatile作用与使用场景</h6><blockquote>
+<p>volatile规则与作用</p>
+</blockquote>
+<ul>
+<li>基于Happen-Before的原则,对volatile变量执行写操作happen-before该变量读操作的后续每个动作</li>
+<li>另外,基于内存语义,我们可以知道volatile读取的数据变量可以立马“看到”volatile在另一个线程写入的最新值,同时遵循先写后读的顺序规则</li>
+<li>对于声明volatile变量的单步的操作具有原子性</li>
+<li>还有一点就是volatile底层处理器是<strong>使用内存屏障的机制来强制工作内存失效,从而消除处理器的重排序</strong></li>
+</ul>
+<blockquote>
+<p>使用volatile的场景</p>
+</blockquote>
+<ul>
+<li>当定义的数据变量需要与其他CPU寄存器需要进行数据交互的时候,即在多核CPU的机器下需要声明为volatile,从而保证数据是可见的</li>
+<li>当数据存储在主内存(JMM中定义的共享内存)时,由于主内存中并没有存在锁的保护,并且依赖于内存的访问顺序,使用volatile的开销会比lock更“廉价”</li>
+</ul>
+<h6 id="2-volatile内存语义"><a href="#2-volatile内存语义" class="headerlink" title="2. volatile内存语义"></a>2. volatile内存语义</h6><blockquote>
+<p>部分源码</p>
+</blockquote>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// shared.java</span></span><br><span class="line"><span class="keyword">volatile</span> <span class="keyword">boolean</span> finished = <span class="keyword">false</span>;</span><br><span class="line">producer()&#123;</span><br><span class="line">    TimeUnit.SECONDS.sleep(<span class="number">1</span>);</span><br><span class="line">    finised = <span class="keyword">true</span>;</span><br><span class="line">    System.out.println(<span class="string">&quot;have finished product done ....&quot;</span>);</span><br><span class="line">&#125;</span><br><span class="line">consumer()&#123;</span><br><span class="line">   <span class="keyword">while</span> (!finised)&#123;</span><br><span class="line">    <span class="comment">// nothing</span></span><br><span class="line">  &#125;</span><br><span class="line">  System.out.println(<span class="string">&quot;have consume product done &quot;</span> + full);</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// producer.java</span></span><br><span class="line"><span class="comment">// 代码仅做演示,忽略其他因素</span></span><br><span class="line">run()&#123;</span><br><span class="line">	producer();</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// consumer.java</span></span><br><span class="line">run()&#123;</span><br><span class="line">	consumer();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>基于上述代码内存演示图</p>
+</blockquote>
+<ul>
+<li><p>代码初始化过程,将数据复制到工作内存中<br><img src="https://img-blog.csdnimg.cn/20200123110749810.jpg?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dpbmRfNjAy,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"></p>
+</li>
+<li><p>生产者开始对数据进行写操作,基于volatile语义可以看到写操作之后是刷新到主内存中<br><img src="https://img-blog.csdnimg.cn/20200123112223315.jpg?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dpbmRfNjAy,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"></p>
+</li>
+<li><p>运行结果</p>
+<ul>
+<li>使用volatile修饰的消费者线程退出循环完成程序的正常执行</li>
+<li>不使用volatile修饰的消费者线程由于读取工作内存的数据将会处于不断循环中,没有退出程序</li>
+</ul>
+</li>
+<li><p>基于上述的内存分析,我们也许会存在一个问题</p>
+<ul>
+<li>消费者线程在读取的时候看到finshed是volatile修饰为什么工作缓存会失效?</li>
+<li>也就是接下来要说明的内存屏障,内存语义的实现机制</li>
+</ul>
+</li>
+</ul>
+<h6 id="3-volatile内存屏障实现"><a href="#3-volatile内存屏障实现" class="headerlink" title="3. volatile内存屏障实现"></a>3. volatile内存屏障实现</h6><p>内存屏障是处理器层面进行的,因此这里直接查阅jvm下的cpu架构源码对volaitle的内存屏障进行说明</p>
+<blockquote>
+<p>关于ARM(指令集机器指令)参考说明</p>
+</blockquote>
+<ul>
+<li>dmb: Data Memory Barrier</li>
+<li>ish:  DMB operation only applies to the inner shareable domain.</li>
+<li>ishld: DMB operation that waits only for loads to complete, and only applies to the inner shareable domain.</li>
+<li>参考文档: <a target="_blank" rel="noopener" href="http://infocenter.arm.com/help/index.jsp?topic=/com.arm.doc.dui0802b/CIHGHHIE.html">http://infocenter.arm.com/help/index.jsp?topic=/com.arm.doc.dui0802b/CIHGHHIE.html</a></li>
+</ul>
+<blockquote>
+<p>JVM中的aarch64架构处理器对volatile的内存屏障说明</p>
+</blockquote>
+<ul>
+<li><p><code>ldar&lt;x&gt;</code> 表示volatile的读指令, <code>stlr&lt;x&gt;</code> 表示volatile的写指令</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// AArch64 has ldar&lt;x&gt; and stlr&lt;x&gt; instructions which we can safely</span></span><br><span class="line"><span class="comment">// use to implement volatile reads and writes. For a volatile read</span></span><br><span class="line"><span class="comment">// we simply need</span></span><br><span class="line"><span class="comment">//</span></span><br><span class="line"><span class="comment">//   ldar&lt;x&gt;</span></span><br><span class="line"><span class="comment">//</span></span><br><span class="line"><span class="comment">// and for a volatile write we need</span></span><br><span class="line"><span class="comment">//</span></span><br><span class="line"><span class="comment">//   stlr&lt;x&gt;</span></span><br></pre></td></tr></table></figure>
+</li>
+<li><p>读写屏障流程</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 读屏障</span></span><br><span class="line"><span class="comment">// Alternatively, we can implement them by pairing a normal</span></span><br><span class="line"><span class="comment">// load/store with a memory barrier. For a volatile read we need</span></span><br><span class="line"><span class="comment">//</span></span><br><span class="line"><span class="comment">//   ldr&lt;x&gt;			// 读取volatile数据</span></span><br><span class="line"><span class="comment">//   dmb ishld		// 内存屏障</span></span><br><span class="line">	</span><br><span class="line"><span class="comment">// 写屏障	</span></span><br><span class="line"><span class="comment">// for a volatile write</span></span><br><span class="line"><span class="comment">//</span></span><br><span class="line"><span class="comment">//   dmb ish		// 内存屏障</span></span><br><span class="line"><span class="comment">//   str&lt;x&gt;		    // 写volatile数据</span></span><br><span class="line"><span class="comment">//   dmb ish		// 内存屏障</span></span><br></pre></td></tr></table></figure>
+</li>
+<li><p>读写屏障伪代码实现</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// demo.java</span></span><br><span class="line"><span class="keyword">volatile</span> <span class="keyword">int</span> j = <span class="number">0</span>;</span><br><span class="line"><span class="comment">//threadA write </span></span><br><span class="line">run()&#123;</span><br><span class="line">	<span class="comment">// ...code start ...</span></span><br><span class="line">	j = <span class="number">9</span>;</span><br><span class="line">	<span class="comment">// ... code end ...</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">//threadB read</span></span><br><span class="line">run()&#123;</span><br><span class="line">	<span class="comment">// ... code start ...</span></span><br><span class="line">	a = j;</span><br><span class="line">	a ++;</span><br><span class="line">	<span class="comment">// ... code end ...</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+<li><p>对上述的读写转换为aarch伪指令如下</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 写屏障</span></span><br><span class="line"><span class="function">threadA <span class="title">run</span><span class="params">()</span></span>&#123;</span><br><span class="line">	<span class="comment">//... code start ...</span></span><br><span class="line">	dmb ish			<span class="comment">// 防止上面代码与写volatile代码重排</span></span><br><span class="line">	str&lt;i&gt;			<span class="comment">// j = 9,由于是写屏障,所以会使缓存失效,并更新到主内存中</span></span><br><span class="line">	dmb ish			<span class="comment">// 防止下面代码与写volatile代码重排</span></span><br><span class="line">	<span class="comment">//... code end ....</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 读屏障</span></span><br><span class="line"><span class="function">threadB <span class="title">run</span><span class="params">()</span></span>&#123;</span><br><span class="line">	<span class="comment">// ... code start ...</span></span><br><span class="line">	ldr&lt;x&gt;			<span class="comment">// 读取j的数据</span></span><br><span class="line">	dmb ishld		<span class="comment">// 内存屏障,防止与下面的a++重排序</span></span><br><span class="line">	a++;</span><br><span class="line">	<span class="comment">// ... code end ...</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>结果分析</p>
+<ul>
+<li>对于重排序目的无非就是要将一些读操作优先处理或者说是本地CPU能够不依赖于主内存处理的任务先处理</li>
+<li>因此,对于volatile的写操作,增加内存屏障一个是防止重排序,为什么可以防止重排序,主要是内存屏障强制CPU将当前的缓存失效,直接从主内存中读取数据,CPU就无需因为性能的问题再去重排序</li>
+<li>同理,对于volatile的读操作,增加内存屏障,也就是需要从主内存中获取数据进行下一步的操作,也无需再进行重排序</li>
+</ul>
+</li>
+</ul>
+<h6 id="4-volatile工作原理小结"><a href="#4-volatile工作原理小结" class="headerlink" title="4. volatile工作原理小结"></a>4. volatile工作原理小结</h6><blockquote>
+<p>问题思考</p>
+</blockquote>
+<p>就是前文说明有一个-server服务端模式,编译器会对代码进行重排序,而这里说的volatile因为内存屏障而没有重排序不会矛盾?<br>重排序有编译器重排序,也有CPU处理器重排序,内存屏障是在CPU层面进行的,也就是说使用volatile修饰的变量仍然会在编译阶段导致代码重排,但是字节码转换为机器码的时候会识别有带volatile的修饰,因此会增加内存屏障来防止处理器进行重排序,两者并不矛盾</p>
+<blockquote>
+<p>总结</p>
+</blockquote>
+<ul>
+<li>volatile变量的写操作将会使得当前本地缓存(线程/CPU等工作内存)失效,直接刷新数据到主内存(堆内存)中</li>
+<li>volatile变量的读操作将会使得当前本地缓存失效并从主内存中重新加载读取数据</li>
+<li>volatile的内存语义是基于内存屏障的机制实现,因此读取的数据可以保证写入的数据是最新的</li>
+</ul>
+
+    </div>
+
+    <div>全文完。</div>
+  </article>
+  <div class="toc-container">
+    
+  <div id="toc" class="toc-article">
+    <strong class="toc-title">目录</strong>
+    <ol class="toc"><li class="toc-item toc-level-6"><a class="toc-link" href="#1-volatile%E4%BD%9C%E7%94%A8%E4%B8%8E%E4%BD%BF%E7%94%A8%E5%9C%BA%E6%99%AF"><span class="toc-text">1. volatile作用与使用场景</span></a></li><li class="toc-item toc-level-6"><a class="toc-link" href="#2-volatile%E5%86%85%E5%AD%98%E8%AF%AD%E4%B9%89"><span class="toc-text">2. volatile内存语义</span></a></li><li class="toc-item toc-level-6"><a class="toc-link" href="#3-volatile%E5%86%85%E5%AD%98%E5%B1%8F%E9%9A%9C%E5%AE%9E%E7%8E%B0"><span class="toc-text">3. volatile内存屏障实现</span></a></li><li class="toc-item toc-level-6"><a class="toc-link" href="#4-volatile%E5%B7%A5%E4%BD%9C%E5%8E%9F%E7%90%86%E5%B0%8F%E7%BB%93"><span class="toc-text">4. volatile工作原理小结</span></a></li></ol>
+  </div>
+
+
+  </div>
+</div>
+<div class="copyright">
+    <span>本作品采用</span>
+    <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by/4.0/">知识共享署名 4.0 国际许可协议</a>
+    <span>进行许可。 转载时请注明原文链接。</span>
+</div>
+<div class="share" style="width: 100%;">
+  <img src="/images/wechat-small.jpg" alt="Running Geek" style="margin: auto; display: block;"/>
+
+  <div style="margin: auto; text-align: center; font-size: 0.8em; color: grey;">老铁们关注走一走，不迷路</div>
+  
+</div>
+
+  
+    <div class="post-nav">
+      <div class="post-nav-item post-nav-next">
+        
+          <span>〈 </span>
+          <a href="/2020/03/19/javaio/" rel="next" title="Java之IO演进简述">
+          Java之IO演进简述
+          </a>
+        
+      </div>
+  
+      <div class="post-nav-item post-nav-prev">
+          
+          <a href="/2020/03/24/volatile_used/" rel="prev" title="关键字volatile的使用与原子性问题">
+            关键字volatile的使用与原子性问题
+          </a>
+          <span>〉</span>
+        
+      </div>
+    </div>
+  
+
+
+    </div>
+
+    
+
+  </div>
+  <footer class="footer text-center">
+    <div id="bottom-inner">
+        <a class="bottom-item" href="https://xiaokunliu.github.io">首页</a> |
+        <a class="bottom-item" href="https://xiaokunliu.github.io" target="_blank">主站</a> |
+        <a class="bottom-item" href="https://github.com/xiaokunliu" target="_blank">GitHub</a> |
+        <a class="bottom-item" href="https://hexo.io" target="_blank">Powered by hexo</a> |
+        <a class="bottom-item" href="https://github.com/KevinOfNeu/hexo-theme-xoxo" target="_blank">Theme xoxo</a>
+    </div>
+</footer>
+  
+
+<script>
+  (function(window, document, undefined) {
+
+    var timer = null;
+
+    function returnTop() {
+      cancelAnimationFrame(timer);
+      timer = requestAnimationFrame(function fn() {
+        var oTop = document.body.scrollTop || document.documentElement.scrollTop;
+        if (oTop > 0) {
+          document.body.scrollTop = document.documentElement.scrollTop = oTop - 50;
+          timer = requestAnimationFrame(fn);
+        } else {
+          cancelAnimationFrame(timer);
+        }
+      });
+    }
+
+    var hearts = [];
+    window.requestAnimationFrame = (function() {
+      return window.requestAnimationFrame ||
+        window.webkitRequestAnimationFrame ||
+        window.mozRequestAnimationFrame ||
+        window.oRequestAnimationFrame ||
+        window.msRequestAnimationFrame ||
+        function(callback) {
+          setTimeout(callback, 1000 / 60);
+        }
+    })();
+    init();
+
+    function init() {
+      css(".heart{z-index:9999;width: 10px;height: 10px;position: fixed;background: #f00;transform: rotate(45deg);-webkit-transform: rotate(45deg);-moz-transform: rotate(45deg);}.heart:after,.heart:before{content: '';width: inherit;height: inherit;background: inherit;border-radius: 50%;-webkit-border-radius: 50%;-moz-border-radius: 50%;position: absolute;}.heart:after{top: -5px;}.heart:before{left: -5px;}");
+      attachEvent();
+      gameloop();
+      addMenuEvent();
+    }
+
+    function gameloop() {
+      for (var i = 0; i < hearts.length; i++) {
+        if (hearts[i].alpha <= 0) {
+          document.body.removeChild(hearts[i].el);
+          hearts.splice(i, 1);
+          continue;
+        }
+        hearts[i].y--;
+        hearts[i].scale += 0.004;
+        hearts[i].alpha -= 0.013;
+        hearts[i].el.style.cssText = "left:" + hearts[i].x + "px;top:" + hearts[i].y + "px;opacity:" + hearts[i].alpha + ";transform:scale(" + hearts[i].scale + "," + hearts[i].scale + ") rotate(45deg);background:" + hearts[i].color;
+      }
+      requestAnimationFrame(gameloop);
+    }
+
+    /**
+     * 给logo设置点击事件
+     * 
+     * - 回到顶部
+     * - 出现爱心
+     */
+    function attachEvent() {
+      var old = typeof window.onclick === "function" && window.onclick;
+      var logo = document.getElementById("logo");
+      if (logo) {
+        logo.onclick = function(event) {
+          returnTop();
+          old && old();
+          createHeart(event);
+        }
+      }
+      
+    }
+
+    function createHeart(event) {
+      var d = document.createElement("div");
+      d.className = "heart";
+      hearts.push({
+        el: d,
+        x: event.clientX - 5,
+        y: event.clientY - 5,
+        scale: 1,
+        alpha: 1,
+        color: randomColor()
+      });
+      document.body.appendChild(d);
+    }
+
+    function css(css) {
+      var style = document.createElement("style");
+      style.type = "text/css";
+      try {
+        style.appendChild(document.createTextNode(css));
+      } catch (ex) {
+        style.styleSheet.cssText = css;
+      }
+      document.getElementsByTagName('head')[0].appendChild(style);
+    }
+
+    function randomColor() {
+      // return "rgb(" + (~~(Math.random() * 255)) + "," + (~~(Math.random() * 255)) + "," + (~~(Math.random() * 255)) + ")";
+      return "#F44336";
+    }
+
+    function addMenuEvent() {
+      var menu = document.getElementById('menu-main-post');
+      if (menu) {
+        var toc = document.getElementById('toc');
+        if (toc) {
+          menu.onclick = function() {
+            if (toc) {
+              if (toc.style.display == 'block') {
+                toc.style.display = 'none';
+              } else {
+                toc.style.display = 'block';
+              }
+            }
+          };
+        } else {
+          menu.style.display = 'none';
+        }
+      }
+    }
+
+  })(window, document);
+</script>
+
+  
+
+
+
+</body>
+</html>

@@ -1,0 +1,465 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<!--
+config header
+-->
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#202020"/>
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  <script src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" async></script>
+
+  
+      <meta name="google-site-verification" content="{{ theme.google_site_verification }}" />
+  
+
+  
+    <meta name="keywords" content="TDD驱动设计," />
+  
+
+  
+    <meta name="description" content="分享个人学习工作的技术知识" />
+  
+  
+  <link rel="icon" type="image/x-icon" href="/logo.jpg">
+  <title>category: TDD驱动设计 [ 疾风先生 ]</title>
+  
+    <!-- stylesheets list from config.yml -->
+    
+      <link rel="stylesheet" href="//cdn.bootcss.com/pure/1.0.0/pure-min.css">
+    
+      <link rel="stylesheet" href="/css/xoxo.css">
+    
+  
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+
+<body>
+  <div class="nav-container">
+    <nav class="home-menu pure-menu pure-menu-horizontal">
+  <a class="pure-menu-heading" href="/">
+    <img class="avatar" src="https://xiaokunliu.github.io/images/logo.jpg">
+    <span class="title">疾风先生</span>
+  </a>
+
+  <ul class="pure-menu-list clearfix">
+      
+          
+            <li class="pure-menu-item"><a href="/" class="pure-menu-link">首页</a></li>
+          
+      
+          
+            <li class="pure-menu-item"><a href="/archives" class="pure-menu-link">归档</a></li>
+          
+      
+          
+            <li class="pure-menu-item"><a href="/tags" class="pure-menu-link">标签</a></li>
+          
+      
+          
+            <li class="pure-menu-item"><a href="/categories" class="pure-menu-link">分类</a></li>
+          
+      
+          
+            <li class="pure-menu-item"><a href="/search" class="pure-menu-link">搜索</a></li>
+          
+      
+  </ul>
+   
+</nav>
+  </div>
+
+  <div class="container" id="content-outer">
+    <div class="inner" id="content-inner">
+      <div class="post-container">
+  <article class="post" id="post">
+    <header class="post-header text-center">
+      <h1 class="title">
+        单元测试的编写与自动化
+      </h1>
+      <span>
+        
+        <time class="time" datetime="2020-05-27T19:41:07.000Z">
+        2020-05-27
+      </time>
+        
+      </span>
+      <span class="slash">/</span>
+      <span class="post-meta">
+      <span class="post-tags">
+        <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/TDD%E9%A9%B1%E5%8A%A8%E8%AE%BE%E8%AE%A1/" rel="tag">TDD驱动设计</a></li></ul>
+      </span>
+    </span>
+      <span class="slash">/</span>
+      <span class="read">
+      <span id="busuanzi_value_page_pv"></span> 点击
+    </span>
+    </header>
+
+    <div class="post-content">
+      <span id="more"></span>
+
+<h3 id="单元测试的编写与自动化"><a href="#单元测试的编写与自动化" class="headerlink" title="单元测试的编写与自动化"></a>单元测试的编写与自动化</h3><h4 id="单元测试的意义"><a href="#单元测试的意义" class="headerlink" title="单元测试的意义"></a>单元测试的意义</h4><blockquote>
+<p>单元测试属性概念</p>
+</blockquote>
+<p>单元测试可以理解为当一个开发人员开发一个class类或者是新增加已有的class类下的功能方法时,那么这个开发人员就需要对新开发的class类或者是class类下的功能实现的方法负责,保证实现的功能可以满足需求且能够正常运行交付,因此为了达到上述的目标,我们需要对class类或class类下的方法进行单元测试,那么对于一个单元测试具备的属性主要包含如下:</p>
+<ul>
+<li><strong>单元</strong>是软件系统组成的一个最小单位.</li>
+<li>满足输入,计算处理,输出三个核心步骤,即我们需要定义输入的信息,通过程序的加工计算处理(也就是我们实现的代码程序),输出就是返回处理结果,测试本身是对于返回的处理结果进行重复验证,保证其正确率不低于我们预设的一个阀值百分比.</li>
+<li>由单一的开发人员负责完成交付,实现的功能规模小,逻辑简单且相互独立, 能够更容易实现程序完整功能的集成.</li>
+</ul>
+<blockquote>
+<p>单元测试作用</p>
+</blockquote>
+<p>在极限编程的TDD流程中,驱动流程前进的开发周期称为“红灯-绿灯-重构”,其中红绿灯体现一个单元测试的失败与成功标识,红灯代表处于说明测试不通过需要被修复或者正处于编写测试状态,绿灯代表实现的功能全部测试通过.TDD流程可以根据红绿灯显示的状态结果来不断重复优化我们的程序代码,对此单元测试对于软件系统,开发人员具备有以下的意义:</p>
+<ul>
+<li>对于开发人员而言,由于测试规模小且功能独立,因而在不需要考虑外部因素引入的情况下,能够通过单元测试快速定位错误并实现程序代码不断迭代优化,促使测试状态变更为绿灯状态.</li>
+<li>对于软件系统而言,由于功能独立且规模小,那么在系统功能集成之前(尤其是大型软件系统)进行单元测试有助于提升系统功能实现的正确率,缩小排查异常的范围以及消耗的时间,提升需求功能实现的交付速度.</li>
+</ul>
+<h4 id="单元测试的工具使用"><a href="#单元测试的工具使用" class="headerlink" title="单元测试的工具使用"></a>单元测试的工具使用</h4><p>通过上述我们已经了解到单元测试的重要意义,基于单元测试的属性特征,进行单元测试的成本并不高,为了响应快速交付的目标,接下来讲述如何实现利用好工具进行单元测试.</p>
+<ul>
+<li>git在开发中的使用</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">## 先在github上fork下</span></span><br><span class="line"><span class="comment">## 拉取项目</span></span><br><span class="line">git <span class="built_in">clone</span> https://github.com/yourGithubId/boat-house.git</span><br><span class="line"></span><br><span class="line"><span class="comment">## 配置同步远程仓库</span></span><br><span class="line">git remote -v</span><br><span class="line">git remote add upstream https://github.com/idcf-boat-house/boat-house.git</span><br><span class="line"></span><br><span class="line"><span class="comment">## 更新到本地</span></span><br><span class="line">git fetch upstream &amp;&amp; git checkout master &amp;&amp; git pull &amp;&amp; git merge upstream/master</span><br><span class="line"></span><br><span class="line"><span class="comment">## 开发需求</span></span><br><span class="line"><span class="comment">## 基于小组owner成员的master</span></span><br><span class="line">git checkout master &amp;&amp; git pull &amp;&amp; git checkout -b feature-xxxx</span><br><span class="line"></span><br><span class="line"><span class="comment">## 完成需求的开发</span></span><br><span class="line">git pull &amp;&amp; git add files &amp;&amp; git commit -m <span class="string">&quot;add feature xxx&quot;</span> &amp;&amp; git push origin feature-xxxx</span><br><span class="line"></span><br><span class="line"><span class="comment">## 完成功能验证通过之后在github提PR合并到boat-house的master分支</span></span><br><span class="line"></span><br><span class="line"><span class="comment">## 完成PR提交到小组owner的master</span></span><br><span class="line">git checkout master &amp;&amp; git pull &amp;&amp; git merge feature-xxxx</span><br><span class="line"></span><br><span class="line"><span class="comment">## 有冲突修复然后提交</span></span><br><span class="line">git pull &amp;&amp; git add confilctfiles &amp;&amp; git commit -m <span class="string">&quot;fixing conflict&quot;</span> &amp;&amp; git push origin master</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>git使用细节(结合idea)</li>
+</ul>
+<p><img src="https://raw.githubusercontent.com/xiaokunliu/xiaokunliu.github.io/feature/writing/websites/zimages/junit/boathouse-structure-junit-git-use1.jpg"></p>
+<p>提交的时候上面有四个细节,一个是填写开发者名称以及邮件,一般就是name <email>, 第二个就是右边的勾选项,会对我们编写的代码做一些格式优化调整与检查,第三个就是填提交信息一般是简述自己做的事情,最后一个的话,很重要就是提交之前要review自己的代码,避免引入一些无关的代码,比如下面:</p>
+<p><img src="https://raw.githubusercontent.com/xiaokunliu/xiaokunliu.github.io/feature/writing/websites/zimages/junit/boathouse-structure-junit-git-use2.jpg"></p>
+<p>很有可能自己提交之前将英文逗号给改成中文逗号,但是自己没有检查就会报错.review的好处就是避免多次提交同时减少自己在一些可避免的错误上浪费时间.</p>
+<ul>
+<li>maven在开发中使用</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">## maven其他命令请参考相关资源</span></span><br><span class="line"><span class="comment">## 使用脚手架进行快速构建项目</span></span><br><span class="line"><span class="built_in">cd</span> /path/project</span><br><span class="line">mvn archetype:create-from-project</span><br><span class="line"><span class="built_in">cd</span> /target/generated-sources/archetype</span><br><span class="line">mvn install</span><br><span class="line"></span><br><span class="line"><span class="comment">## 从构建的脚手架快速项目</span></span><br><span class="line">mvn archetype:generate -DarchetypeCatalog=<span class="built_in">local</span></span><br><span class="line"></span><br><span class="line"><span class="comment">## maven的打包测试</span></span><br><span class="line"><span class="comment">## -Dmaven.test.failure.ignore=true表示单元测试失败仍然不影响打包</span></span><br><span class="line"><span class="comment">## -Dmaven.test.skip=true表示跳过单元测试</span></span><br><span class="line"><span class="comment">## -Pdev dev表示maven传递激活的环境</span></span><br><span class="line">mvn clean package -Dmaven.test.failure.ignore=<span class="literal">true</span></span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>idea使用</li>
+</ul>
+<p>打开idea的Preferences,搜索templates,找到File And Code Templates栏目,点击该栏目找到右侧的Junit4Class的模板配置,可以根据个人情况进行配置.</p>
+<p><img src="https://raw.githubusercontent.com/xiaokunliu/xiaokunliu.github.io/feature/writing/websites/zimages/junit/boathouse-structure-junit-idea-config.png" alt="image-20200417142513605"></p>
+<p>可以为本地的模板配置为一个基本SpringBoot的测试模板样例,如下模板代码:</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 配置Junit4 Test Class模板</span></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * date:$&#123;DATE&#125; $&#123;TIME&#125;</span></span><br><span class="line"><span class="comment"> * author: authorName   ## 开发者名称</span></span><br><span class="line"><span class="comment"> * desc: junit4 test case for $&#123;NAME&#125; </span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line">#parse(<span class="string">&quot;File Header.java&quot;</span>)</span><br><span class="line"><span class="comment">//@RunWith(SpringJUnit4ClassRunner.class)</span></span><br><span class="line"><span class="comment">//@ContextConfiguration()</span></span><br><span class="line"><span class="comment">//@ActiveProfiles(&quot;dev&quot;) </span></span><br><span class="line"><span class="meta">@SpringBootTest</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> $</span>&#123;NAME&#125; &#123;</span><br><span class="line">  </span><br><span class="line">    <span class="meta">@BeforeClass</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">start</span><span class="params">()</span> <span class="keyword">throws</span> Exception </span>&#123;</span><br><span class="line">       <span class="comment">// 这个方法仅在初始化的时候执行一次</span></span><br><span class="line">        $&#123;BODY&#125;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="meta">@AfterClass</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">shutdown</span><span class="params">()</span> <span class="keyword">throws</span> Exception </span>&#123;</span><br><span class="line">        <span class="comment">// 这个方法在所有测试完成之后会执行一次</span></span><br><span class="line">        $&#123;BODY&#125;</span><br><span class="line">    &#125; </span><br><span class="line">    </span><br><span class="line">    $&#123;BODY&#125;   </span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 配置Junit Test Method 模板</span></span><br><span class="line"><span class="comment">// 测试方法名称为testMethodName</span></span><br><span class="line"><span class="meta">@Test</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">void</span> test$&#123;NAME&#125;() &#123;</span><br><span class="line">   $&#123;BODY&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>使用IDEA快速创建一个单元测试类</li>
+</ul>
+<p>选中被测试的类,右键Go To -&gt; Test (同时可以把快捷键记住)</p>
+<p><img src="https://raw.githubusercontent.com/xiaokunliu/xiaokunliu.github.io/feature/writing/websites/zimages/junit/boathouse-structure-junit-idea-create1.png" alt="boathouse-structure-junit-idea-create1"></p>
+<p>这个时候弹出框构建单元测试类,选择Junit4的测试类库,同时按照上述规范命名测试类名称,最后根据实际需求情况勾选要进行单元测试的方法以及对应的setUp和tearDown方法,同时注意生成的测试类存放的包目录,一般情况下只需要勾选要进行测试的方法即可.</p>
+<p><img src="https://raw.githubusercontent.com/xiaokunliu/xiaokunliu.github.io/feature/writing/websites/zimages/junit/boathouse-structure-junit-idea-create2.png" alt="boathouse-structure-junit-idea-create2"></p>
+<p>最后就生成一个基于模板配置好的单元测试类并编写一个单元测试用例如下:</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//@RunWith(SpringJUnit4ClassRunner.class)</span></span><br><span class="line"><span class="comment">//@ContextConfiguration()</span></span><br><span class="line"><span class="comment">//@ActiveProfiles(&quot;dev&quot;)   // 使用dev环境进行测试</span></span><br><span class="line"><span class="meta">@SpringBootTest</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">JdbcUtilsTest</span> </span>&#123;</span><br><span class="line">   </span><br><span class="line">    <span class="meta">@Before</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setUp</span><span class="params">()</span>  </span>&#123;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@After</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">tearDown</span><span class="params">()</span> <span class="keyword">throws</span> Exception </span>&#123;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Test</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">testFindModeResult</span><span class="params">()</span> <span class="keyword">throws</span> Exception </span>&#123;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>Java Code Coverage测试覆盖率测量工具(可选)</li>
+</ul>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">&lt;!-- maven 配置 --&gt;</span></span><br><span class="line"> <span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">   <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.jacoco<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">   <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>org.jacoco.agent<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">   <span class="tag">&lt;<span class="name">version</span>&gt;</span>0.8.5<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line">   <span class="tag">&lt;<span class="name">scope</span>&gt;</span>test<span class="tag">&lt;/<span class="name">scope</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="comment">&lt;!-- maven plugin插件配置 --&gt;</span></span><br><span class="line"> <span class="tag">&lt;<span class="name">plugin</span>&gt;</span></span><br><span class="line">   <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.apache.maven.plugins<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">   <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>maven-surefire-plugin<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line"> <span class="tag">&lt;/<span class="name">plugin</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="comment">&lt;!-- 配置jacoco插件 --&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">plugin</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.jacoco<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>jacoco-maven-plugin<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">version</span>&gt;</span>0.8.5<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">configuration</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">rules</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">rule</span> <span class="attr">implementation</span>=<span class="string">&quot;org.jacoco.maven.RuleConfiguration&quot;</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">element</span>&gt;</span>BUNDLE<span class="tag">&lt;/<span class="name">element</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">limits</span>&gt;</span></span><br><span class="line">          <span class="comment">&lt;!-- 指定方法覆盖50% --&gt;</span></span><br><span class="line">          <span class="tag">&lt;<span class="name">limit</span> <span class="attr">implementation</span>=<span class="string">&quot;org.jacoco.report.check.Limit&quot;</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">counter</span>&gt;</span>METHOD<span class="tag">&lt;/<span class="name">counter</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">value</span>&gt;</span>COVEREDRATIO<span class="tag">&lt;/<span class="name">value</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">minimum</span>&gt;</span>0.50<span class="tag">&lt;/<span class="name">minimum</span>&gt;</span></span><br><span class="line">          <span class="tag">&lt;/<span class="name">limit</span>&gt;</span></span><br><span class="line">          <span class="comment">&lt;!-- 指定分支覆盖到50% --&gt;</span></span><br><span class="line">          <span class="tag">&lt;<span class="name">limit</span> <span class="attr">implementation</span>=<span class="string">&quot;org.jacoco.report.check.Limit&quot;</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">counter</span>&gt;</span>BRANCH<span class="tag">&lt;/<span class="name">counter</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">value</span>&gt;</span>COVEREDRATIO<span class="tag">&lt;/<span class="name">value</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">minimum</span>&gt;</span>0.50<span class="tag">&lt;/<span class="name">minimum</span>&gt;</span></span><br><span class="line">          <span class="tag">&lt;/<span class="name">limit</span>&gt;</span></span><br><span class="line">          <span class="comment">&lt;!-- 指定CLASS覆盖100% --&gt;</span></span><br><span class="line">          <span class="tag">&lt;<span class="name">limit</span> <span class="attr">implementation</span>=<span class="string">&quot;org.jacoco.report.check.Limit&quot;</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">counter</span>&gt;</span>CLASS<span class="tag">&lt;/<span class="name">counter</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">value</span>&gt;</span>MISSEDCOUNT<span class="tag">&lt;/<span class="name">value</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">maximum</span>&gt;</span>0<span class="tag">&lt;/<span class="name">maximum</span>&gt;</span></span><br><span class="line">          <span class="tag">&lt;/<span class="name">limit</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">limits</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;/<span class="name">rule</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">rules</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;/<span class="name">configuration</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">executions</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">execution</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">id</span>&gt;</span>pre-test<span class="tag">&lt;/<span class="name">id</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">goals</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">goal</span>&gt;</span>prepare-agent<span class="tag">&lt;/<span class="name">goal</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;/<span class="name">goals</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">configuration</span>&gt;</span></span><br><span class="line">        <span class="comment">&lt;!--  生成数据报告文件 --&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">destFile</span>&gt;</span>$&#123;project.build.directory&#125;/coverage-reports/jacoco-it.exec<span class="tag">&lt;/<span class="name">destFile</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;/<span class="name">configuration</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">execution</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">execution</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">id</span>&gt;</span>check<span class="tag">&lt;/<span class="name">id</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">goals</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">goal</span>&gt;</span>check<span class="tag">&lt;/<span class="name">goal</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;/<span class="name">goals</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">execution</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">execution</span>&gt;</span></span><br><span class="line">      <span class="comment">&lt;!-- 测试阶段输出覆盖率报告 --&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">id</span>&gt;</span>post-test<span class="tag">&lt;/<span class="name">id</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">phase</span>&gt;</span>test<span class="tag">&lt;/<span class="name">phase</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">goals</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">goal</span>&gt;</span>report<span class="tag">&lt;/<span class="name">goal</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;/<span class="name">goals</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">configuration</span>&gt;</span></span><br><span class="line">        <span class="comment">&lt;!--  读取数据报告文件,打印测试覆盖率报告文件并以html展示 --&gt;</span> </span><br><span class="line">        <span class="tag">&lt;<span class="name">dataFile</span>&gt;</span>$&#123;project.build.directory&#125;/coverage-reports/jacoco-it.exec<span class="tag">&lt;/<span class="name">dataFile</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">outputDirectory</span>&gt;</span>$&#123;project.reporting.outputDirectory&#125;/jacoco-it<span class="tag">&lt;/<span class="name">outputDirectory</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;/<span class="name">configuration</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">execution</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;/<span class="name">executions</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">plugin</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>上述配置之后,根据maven构建的生命周期,可以直接执行test之后(包含test)命令将输出测试覆盖率报告,即</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">## 执行测试</span></span><br><span class="line">mvn clean <span class="built_in">test</span></span><br><span class="line"></span><br><span class="line"><span class="comment">## 测试报告输出路径</span></span><br><span class="line">/path/project/target/site/jacoco-it</span><br><span class="line"></span><br><span class="line"><span class="comment">## 比如找到下面的路径的html(这个是我本地)</span></span><br><span class="line">/home/idcf-house/boat-house/product-service/api/target/site/jacoco-it</span><br></pre></td></tr></table></figure>
+
+<p>打开输出目录的index.html查看执行覆盖率报告结果:</p>
+<p><img src="https://raw.githubusercontent.com/xiaokunliu/xiaokunliu.github.io/feature/writing/websites/zimages/junit/boathouse-structure-junit-javacoco-report.png" alt="boathouse-structure-junit-javacoco-report"></p>
+<p>通过上述报告结果,说明当前进行单元测试的覆盖率只有2%,开发人员需要重新审核自身编写的测试代码情况,即是否测试全面.</p>
+<ul>
+<li>模拟框架(可选)</li>
+</ul>
+<p>当我们需要使用到第三方依赖接口或者是外部资源的时候,为了方便我们能够进行正常测试,在这里需要引入框架来解决依赖的外部资源,其中模拟框架有:</p>
+<ol>
+<li><p>Mockito: 官网地址, <a target="_blank" rel="noopener" href="https://site.mockito.org/">https://site.mockito.org/</a></p>
+</li>
+<li><p>EasyMock: 官网地址, <a target="_blank" rel="noopener" href="https://easymock.org/">https://easymock.org/</a></p>
+</li>
+<li><p>PowerMock: 这个主要是针对上述两者之一存在无法提供模拟部分特殊类或者方法或者字段支持,是一个功能更为全面且提供模拟测试对象的框架,同时使用到这个框架也意味着开发人员的代码很可能会存在一些不足,需要有其他开发人员协助审查代码质量,更多详细的信息可查阅github学习,<a target="_blank" rel="noopener" href="https://github.com/powermock/powermock">https://github.com/powermock/powermock</a></p>
+</li>
+</ol>
+<h4 id="Junit框架简介"><a href="#Junit框架简介" class="headerlink" title="Junit框架简介"></a>Junit框架简介</h4><ul>
+<li>单元测试框架类图结构设计</li>
+</ul>
+<p><img src="https://raw.githubusercontent.com/xiaokunliu/xiaokunliu.github.io/feature/writing/websites/zimages/junit/boathouse-structure-junit-Class.png" alt="boathouse-structure-junit-Class"></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Assert: 负责对单元测试结果进行校验</span></span><br><span class="line"><span class="comment">// TestResult: 单元测试输出结果</span></span><br><span class="line"><span class="comment">// TestCase: 开发人员编写的单元测试用例</span></span><br><span class="line"><span class="comment">// TestSuite: 测试集,相对地,如果添加一个单元测试类,则存在在同一个包下的所有单元测试类组成一个单元测试集合,如果是添加一个测试方法,则将所有方法存放在同一个类下组成的一个单元测试类也可以称为一个测试集</span></span><br><span class="line"><span class="comment">// Test: Junit框架提供测试接口</span></span><br><span class="line"><span class="comment">// TestRunner: 如果一个单元测试集(类)添加TestRunner/RunWith,如RunWith(SpringJUnit4ClassRunner.class),说明当前测试集/类/方法引入Spring相关的功能进行单元测试.</span></span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>Junit框架说明</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@RunWith(SpringJUnit4ClassRunner.class)</span></span><br><span class="line"><span class="meta">@SpringBootTest</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">TomcatTest</span> </span>&#123;</span><br><span class="line">  </span><br><span class="line">  <span class="meta">@BeforeClass</span></span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">init</span><span class="params">()</span></span>&#123;</span><br><span class="line">      <span class="comment">// 在执行测试类中进行初始化操作,整个过程仅执行一次且声明为static</span></span><br><span class="line">  &#125;</span><br><span class="line">  </span><br><span class="line">  <span class="meta">@Before</span></span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setUp</span><span class="params">()</span></span>&#123;</span><br><span class="line">     <span class="comment">// 在每次测试用例执行之前的操作</span></span><br><span class="line">  &#125;</span><br><span class="line">  </span><br><span class="line">  <span class="meta">@Ignore</span>  <span class="comment">// 忽略当前的测试用例</span></span><br><span class="line">  <span class="meta">@Test</span></span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">testCase</span><span class="params">()</span></span>&#123;</span><br><span class="line">     <span class="comment">// 执行测试用例</span></span><br><span class="line">  &#125;</span><br><span class="line">  </span><br><span class="line">  <span class="meta">@After</span></span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">tearDown</span><span class="params">()</span></span>&#123;</span><br><span class="line">     <span class="comment">// 在每次测试用例执行完成之后的后续操作</span></span><br><span class="line">  &#125;</span><br><span class="line">  </span><br><span class="line">  <span class="meta">@AfterClass</span></span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">release</span><span class="params">()</span></span>&#123;</span><br><span class="line">    <span class="comment">// 在所有测试用例执行完成之后的后续操作,整个过程只执行一次且声明为静态static</span></span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>junit框架额外知识(可选)</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// @FixMethodOrder: 决定单元测试方法的执行顺序,顺序规则有以下三种:</span></span><br><span class="line"><span class="comment">// MethodSorters.DEFAULT: 使用方法名称的hashcode的顺序执行测试用例</span></span><br><span class="line"><span class="comment">// MethodSorters.NAME_ASCENDING: 使用方法名称顺序执行测试用例</span></span><br><span class="line"><span class="comment">// MethodSorters.JVM: 使用JVM返回的方法名称顺序</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 单元测试之参数化</span></span><br><span class="line"><span class="comment">// 声明处于参数化环境</span></span><br><span class="line"><span class="meta">@RunWith(Parameterized.class)</span></span><br><span class="line"><span class="meta">@FixMethodOrder(MethodSorters.DEFAULT)</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ParameterClassTest</span> </span>&#123;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 构造参数化数据</span></span><br><span class="line">    <span class="meta">@Parameterized</span>.Parameters</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> Collection&lt;Object[]&gt; data() &#123;</span><br><span class="line">      <span class="keyword">return</span> Arrays.asList(<span class="keyword">new</span> Object[][]&#123;&#123;<span class="number">1</span>, <span class="number">2</span>&#125;&#125;);</span><br><span class="line">    &#125;</span><br><span class="line">  </span><br><span class="line">    <span class="comment">//开始测试用例</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="单元测试实践"><a href="#单元测试实践" class="headerlink" title="单元测试实践"></a>单元测试实践</h4><p>在进行单元测试实践之前,我们需要先了解下单元测试的准则与规范</p>
+<ul>
+<li>单元测试准则: <a target="_blank" rel="noopener" href="https://petroware.no/unittesting.html">参考准则英文版</a>  、<a target="_blank" rel="noopener" href="https://github.com/yangyubo/zh-unit-testing-guidelines/blob/master/readme.rst">参考准则中文版</a></li>
+<li>单元测试规范</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">命名规范: 可以通过上述定义模板来自动生成</span><br><span class="line">1. 测试类名称: ClassNameTest,即在原有的类中添加Test表示要进行单元测试的测试类</span><br><span class="line">2. 方法名称:  @BeforeClass对应的方法名称为init,表示初始化操作.</span><br><span class="line">             @AfterClass对应的方法名称为release,表示执行完所有测试用例之后要释放资源</span><br><span class="line">             @Before对应的方法名称为setUp,@After对应方法名称为tearDown</span><br><span class="line">             @Test对应的测试用例方法名称为testMethodName</span><br><span class="line">3. 单元测试集: 存放单元测试的测试类的包命名规范与被测试的类所处的包目录结构一致,如</span><br><span class="line">java/</span><br><span class="line">	com.idcf.boathouse.mapper.OrderMapper</span><br><span class="line">test/</span><br><span class="line">	com.idcf.boathouse.mapper.OrderMapperTest</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>基于需求的单元测试实践</li>
+</ul>
+<p>以订单需求为例,现在的需求是开发一个商家接单的功能,对于一个订单的基本流程有: 下单 - 支付  -  接单  -  确认订单  -  订单完成等流程,因此对商家接单功能进行单元测试实践如下:</p>
+<ol>
+<li>第一步是编写单元测试用例.</li>
+</ol>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">OrdersMapperTest</span> </span>&#123;</span><br><span class="line">  </span><br><span class="line">   <span class="comment">//由于mapper还没有实现,对此使用Mock框架模拟实现</span></span><br><span class="line">   <span class="comment">// 1. 这个时候还没有定义OrdersMapper,显示红灯,未定义错误</span></span><br><span class="line">   <span class="comment">// 2. 编写测试用例完成之后再定义OrdersMapper,定义并修复红灯</span></span><br><span class="line">   <span class="meta">@Mock</span></span><br><span class="line">   <span class="keyword">private</span> OrdersMapper ordersMapper;</span><br><span class="line">   </span><br><span class="line">   <span class="meta">@Before</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setUp</span><span class="params">()</span> <span class="keyword">throws</span> Exception </span>&#123;</span><br><span class="line">        <span class="comment">// 在每个测试方法之前都会执行</span></span><br><span class="line">        <span class="comment">//进行初始化操作</span></span><br><span class="line">        MockitoAnnotations.initMocks(<span class="keyword">this</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@After</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">tearDown</span><span class="params">()</span> <span class="keyword">throws</span> Exception </span>&#123;</span><br><span class="line">        <span class="comment">// 这个方法每个测试方法执行之后都会执行</span></span><br><span class="line">    &#125;</span><br><span class="line">  </span><br><span class="line">    <span class="meta">@Test</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">testConfirmOrder</span><span class="params">()</span></span>&#123;</span><br><span class="line">     	<span class="comment">// 商家接单,首先我需要有查询一个已支付的订单信息,于是在接口还没有进行完成开发之前,使用Mock进行模拟</span></span><br><span class="line">      String orderId = <span class="string">&quot;20200429143906111&quot;</span>;</span><br><span class="line">      Mockito.when(ordersMapper.selectByOrderId(orderId)).then(<span class="keyword">new</span> Answer&lt;Orders&gt;() &#123;</span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="function"><span class="keyword">public</span> Orders <span class="title">answer</span><span class="params">(InvocationOnMock invocationOnMock)</span> <span class="keyword">throws</span> Throwable </span>&#123;</span><br><span class="line">          Orders orders = <span class="keyword">new</span> Orders();</span><br><span class="line">          orders.setId(invocationOnMock.getArgument(<span class="number">0</span>, Integer.class));</span><br><span class="line">          orders.setOrderStatus(OrderStatusEnum.OrderWaitHandle.getValue());   <span class="comment">//已支付待受理状态</span></span><br><span class="line">          <span class="keyword">return</span> orders;</span><br><span class="line">        &#125;</span><br><span class="line">      &#125;);</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 执行查询并验证查询结果</span></span><br><span class="line">        Orders orders = ordersMapper.selectByOrderId(orderId);</span><br><span class="line">        Assert.assertEquals(orderId, orders.getOrderId());</span><br><span class="line">        Assert.assertEquals(OrderStatusEnum.OrderWaitHandle.getValue(), orders.getOrderStatus());</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 满足上述的条件之后，接下来我们需要进行商家接单操作</span></span><br><span class="line">        orders.setOrderStatus(OrderStatusEnum.OrderHandling.getValue());</span><br><span class="line">        Mockito.when(ordersMapper.confirmOrder(orders)).thenReturn(<span class="number">1</span>);</span><br><span class="line">      </span><br><span class="line">        <span class="comment">// 执行接单操作并验证</span></span><br><span class="line">        <span class="keyword">int</span> res = ordersMapper.confirmOrder(orders);</span><br><span class="line">        Assert.assertEquals(<span class="number">1</span>, res);</span><br><span class="line">      </span><br><span class="line">        <span class="comment">// 根据orderId查询订单验证订单状态</span></span><br><span class="line">       Mockito.when(ordersMapper.selectByOrderId(orderId)).then(<span class="keyword">new</span> Answer&lt;Orders&gt;() &#123;</span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="function"><span class="keyword">public</span> Orders <span class="title">answer</span><span class="params">(InvocationOnMock invocationOnMock)</span> <span class="keyword">throws</span> Throwable </span>&#123;</span><br><span class="line">          Orders orders = <span class="keyword">new</span> Orders();</span><br><span class="line">          orders.setId(invocationOnMock.getArgument(<span class="number">0</span>, Integer.class));</span><br><span class="line">          orders.setOrderStatus(OrderStatusEnum.OrderHandling.getValue());   <span class="comment">//已接单状态</span></span><br><span class="line">          <span class="keyword">return</span> orders;</span><br><span class="line">        &#125;</span><br><span class="line">      &#125;);</span><br><span class="line">      <span class="comment">// 验证订单状态</span></span><br><span class="line">      Orders orders = ordersMapper.selectByOrderId(orderId);</span><br><span class="line">      Assert.assertEquals(OrderStatusEnum.OrderHandling.getValue(), orders.getOrderStatus());</span><br><span class="line">       </span><br><span class="line">        <span class="comment">// 再次执行接单操作,这个时候测试结果应该是失败,已经执行过一次,需要保证幂等</span></span><br><span class="line">         Mockito.when(ordersMapper.confirmOrder(orders)).thenReturn(<span class="number">0</span>);</span><br><span class="line">         res = ordersMapper.confirmOrder(orders);</span><br><span class="line">         Assert.assertEquals(<span class="number">0</span>, res);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ol start="2">
+<li>优化代码并将红灯显示区域修复,运行单元测试用例并促使其出现绿灯,保证当前单元测试是成功的</li>
+</ol>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 比如上述还没有定义接口OrdersMapper,那么这个时候就需要先定义出OrdersMapper的接口</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">OrdersMapper</span> <span class="keyword">extends</span> <span class="title">BaseMapper</span>&lt;<span class="title">Orders</span>&gt;</span>&#123;</span><br><span class="line">   </span><br><span class="line">   <span class="function">Orders <span class="title">selectByOrderId</span><span class="params">(String orderId)</span></span>;</span><br><span class="line">   <span class="function"><span class="keyword">int</span> <span class="title">confirmOrder</span><span class="params">(Orders orders)</span></span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ol start="3">
+<li><p>当接口开发完成之后,我们根据上述的单元测试用例注释掉Mock数据,基于Spring的配置进行加载并对接口功能进行单元测试.</p>
+</li>
+<li><p>最后通过单元测试报告来优化功能代码,驱使一个接单功能的实现能够符合预期的业务需求目标.</p>
+</li>
+</ol>
+<p>更多关于单元测试实践参考如下:</p>
+<ul>
+<li><p><a target="_blank" rel="noopener" href="https://phauer.com/2019/modern-best-practices-testing-java/">Modern Best Practices for Testing in Java</a></p>
+</li>
+<li><p><a target="_blank" rel="noopener" href="https://dzone.com/articles/7-tips-for-writing-better-unit-tests-in-java">7-tips-for-writing-better-unit-tests-in-java</a></p>
+</li>
+<li><p><a target="_blank" rel="noopener" href="https://dzone.com/articles/java-unit-testing-best-practices-how-to-get-the-mo">Java Unit Testing Best Practices</a></p>
+</li>
+<li><p><a target="_blank" rel="noopener" href="https://dzone.com/articles/unit-level-performance-testing-in-java">Unit-Level Performance Testing in Java</a></p>
+</li>
+</ul>
+<h4 id="Jenkins构建自动化单元测试"><a href="#Jenkins构建自动化单元测试" class="headerlink" title="Jenkins构建自动化单元测试"></a>Jenkins构建自动化单元测试</h4><ul>
+<li>单元测试自动化</li>
+</ul>
+<ol>
+<li>使用docker-compose的方式对项目进行构建,即docker-compse-build.yaml</li>
+</ol>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">version:</span> <span class="string">&#x27;3&#x27;</span></span><br><span class="line"><span class="attr">services:</span></span><br><span class="line">  <span class="attr">product-service-api-ci:</span></span><br><span class="line">    <span class="attr">image:</span> <span class="string">maven:3.5.2-jdk-8-alpine</span></span><br><span class="line">    <span class="attr">volumes:</span></span><br><span class="line">      <span class="bullet">-</span> <span class="string">.:/build</span></span><br><span class="line">    <span class="attr">working_dir:</span> <span class="string">/build</span></span><br><span class="line">    <span class="attr">command:</span> <span class="string">bash</span> <span class="string">-c</span> <span class="string">&quot;mvn package &amp;&amp; mvn cobertura:cobertura&quot;</span></span><br></pre></td></tr></table></figure>
+
+<ol start="2">
+<li>根据maven的构建的生命周期,在进行maven打包的时候会执行当前项目下的单元测试类,直接通过docker compose up启动构建服务,至此在流水线上就可以看到Jenkins构建单元测试输出结果:</li>
+</ol>
+<p><img src="https://raw.githubusercontent.com/xiaokunliu/xiaokunliu.github.io/feature/writing/websites/zimages/junit/boathouse-structure-junit-jenkins-test.jpg" alt="boathouse-structure-junit-jenkins-test"></p>
+<ol start="3">
+<li>Jenkins安装Html Publisher插件输出单元测试报告</li>
+</ol>
+<p>打开Jenkins界面,在基于流水线的构建基础下,点击进入左侧的Manage Jenkins(系统配置),找到插件管理并点击进入,点开可选插件面板,搜索html,如下界面:</p>
+<p><img src="https://raw.githubusercontent.com/xiaokunliu/xiaokunliu.github.io/feature/writing/websites/zimages/junit/boathouse-structure-junit-jenkins-search.jpg" alt="boathouse-structure-junit-jenkins-search"></p>
+<p>这个时候点击直接安装即可(上述已经安装过插件).</p>
+<ol start="3">
+<li><p>需要在项目的pom文件进行配置,在上述单元测试的工具已经介绍并贴出相关的配置(Java Code Coverage)</p>
+</li>
+<li><p>根据上述的pom文件配置以及maven的插件,在执行构建打包的时候会输出Java Code Coverage的测试报告结果.只需要将报告结果export出来,即在JenkinsFile的构建步骤中增加输出报告的结果,即如下:</p>
+</li>
+</ol>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">## product-service项目使用maven进行构建输出报告目录: ./product-service/api/target/site/jacoco-it</span></span><br><span class="line"><span class="comment">## 在JenkinsFile下的构建build-product-service的步骤最后增加以下命令即可</span></span><br><span class="line">publishHTML([allowMissing: <span class="literal">false</span>, alwaysLinkToLastBuild: <span class="literal">false</span>, keepAll: <span class="literal">true</span>, reportDir: <span class="string">&#x27;./product-service/api/target/site/jacoco-it&#x27;</span>, reportFiles: <span class="string">&#x27;index.html&#x27;</span>, reportName: <span class="string">&#x27;Junit Report&#x27;</span>, reportTitles: <span class="string">&#x27;&#x27;</span>])</span><br></pre></td></tr></table></figure>
+
+<p>最后只需要在Jenkins上构建流水线,等待单元测试报告的结果输出即可,如下:</p>
+<p><img src="https://raw.githubusercontent.com/xiaokunliu/xiaokunliu.github.io/feature/writing/websites/zimages/junit/boathouse-structure-junit-jenkins-report1.jpg" alt="boathouse-structure-junit-jenkins-report1"></p>
+<p>然后在当前界面的右上角点击“制品”Tab,显示如下:</p>
+<p><img src="https://raw.githubusercontent.com/xiaokunliu/xiaokunliu.github.io/feature/writing/websites/zimages/junit/boathouse-structure-junit-jenkins-report2.jpg" alt="boathouse-structure-junit-jenkins-report2"></p>
+<p>点击上述的Junit Report即可显示单元测试输出报告,即:</p>
+<p><img src="https://raw.githubusercontent.com/xiaokunliu/xiaokunliu.github.io/feature/writing/websites/zimages/junit/boathouse-structure-junit-jenkins-report3.jpg" alt="boathouse-structure-junit-jenkins-report3"></p>
+
+    </div>
+
+    <div>全文完。</div>
+  </article>
+  <div class="toc-container">
+    
+  <div id="toc" class="toc-article">
+    <strong class="toc-title">目录</strong>
+    <ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8D%95%E5%85%83%E6%B5%8B%E8%AF%95%E7%9A%84%E7%BC%96%E5%86%99%E4%B8%8E%E8%87%AA%E5%8A%A8%E5%8C%96"><span class="toc-text">单元测试的编写与自动化</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%8D%95%E5%85%83%E6%B5%8B%E8%AF%95%E7%9A%84%E6%84%8F%E4%B9%89"><span class="toc-text">单元测试的意义</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%8D%95%E5%85%83%E6%B5%8B%E8%AF%95%E7%9A%84%E5%B7%A5%E5%85%B7%E4%BD%BF%E7%94%A8"><span class="toc-text">单元测试的工具使用</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Junit%E6%A1%86%E6%9E%B6%E7%AE%80%E4%BB%8B"><span class="toc-text">Junit框架简介</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%8D%95%E5%85%83%E6%B5%8B%E8%AF%95%E5%AE%9E%E8%B7%B5"><span class="toc-text">单元测试实践</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Jenkins%E6%9E%84%E5%BB%BA%E8%87%AA%E5%8A%A8%E5%8C%96%E5%8D%95%E5%85%83%E6%B5%8B%E8%AF%95"><span class="toc-text">Jenkins构建自动化单元测试</span></a></li></ol></li></ol>
+  </div>
+
+
+  </div>
+</div>
+<div class="copyright">
+    <span>本作品采用</span>
+    <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by/4.0/">知识共享署名 4.0 国际许可协议</a>
+    <span>进行许可。 转载时请注明原文链接。</span>
+</div>
+<div class="share" style="width: 100%;">
+  <img src="/images/wechat-small.jpg" alt="Running Geek" style="margin: auto; display: block;"/>
+
+  <div style="margin: auto; text-align: center; font-size: 0.8em; color: grey;">老铁们关注走一走，不迷路</div>
+  
+</div>
+
+  
+    <div class="post-nav">
+      <div class="post-nav-item post-nav-next">
+        
+          <span>〈 </span>
+          <a href="/2020/05/27/byzantine/" rel="next" title="分布式共识问题">
+          分布式共识问题
+          </a>
+        
+      </div>
+  
+      <div class="post-nav-item post-nav-prev">
+          
+          <a href="/2020/06/03/mysql01/" rel="prev" title="mysql">
+            mysql
+          </a>
+          <span>〉</span>
+        
+      </div>
+    </div>
+  
+
+
+    </div>
+
+    
+
+  </div>
+  <footer class="footer text-center">
+    <div id="bottom-inner">
+        <a class="bottom-item" href="https://xiaokunliu.github.io">首页</a> |
+        <a class="bottom-item" href="https://xiaokunliu.github.io" target="_blank">主站</a> |
+        <a class="bottom-item" href="https://github.com/xiaokunliu" target="_blank">GitHub</a> |
+        <a class="bottom-item" href="https://hexo.io" target="_blank">Powered by hexo</a> |
+        <a class="bottom-item" href="https://github.com/KevinOfNeu/hexo-theme-xoxo" target="_blank">Theme xoxo</a>
+    </div>
+</footer>
+  
+
+<script>
+  (function(window, document, undefined) {
+
+    var timer = null;
+
+    function returnTop() {
+      cancelAnimationFrame(timer);
+      timer = requestAnimationFrame(function fn() {
+        var oTop = document.body.scrollTop || document.documentElement.scrollTop;
+        if (oTop > 0) {
+          document.body.scrollTop = document.documentElement.scrollTop = oTop - 50;
+          timer = requestAnimationFrame(fn);
+        } else {
+          cancelAnimationFrame(timer);
+        }
+      });
+    }
+
+    var hearts = [];
+    window.requestAnimationFrame = (function() {
+      return window.requestAnimationFrame ||
+        window.webkitRequestAnimationFrame ||
+        window.mozRequestAnimationFrame ||
+        window.oRequestAnimationFrame ||
+        window.msRequestAnimationFrame ||
+        function(callback) {
+          setTimeout(callback, 1000 / 60);
+        }
+    })();
+    init();
+
+    function init() {
+      css(".heart{z-index:9999;width: 10px;height: 10px;position: fixed;background: #f00;transform: rotate(45deg);-webkit-transform: rotate(45deg);-moz-transform: rotate(45deg);}.heart:after,.heart:before{content: '';width: inherit;height: inherit;background: inherit;border-radius: 50%;-webkit-border-radius: 50%;-moz-border-radius: 50%;position: absolute;}.heart:after{top: -5px;}.heart:before{left: -5px;}");
+      attachEvent();
+      gameloop();
+      addMenuEvent();
+    }
+
+    function gameloop() {
+      for (var i = 0; i < hearts.length; i++) {
+        if (hearts[i].alpha <= 0) {
+          document.body.removeChild(hearts[i].el);
+          hearts.splice(i, 1);
+          continue;
+        }
+        hearts[i].y--;
+        hearts[i].scale += 0.004;
+        hearts[i].alpha -= 0.013;
+        hearts[i].el.style.cssText = "left:" + hearts[i].x + "px;top:" + hearts[i].y + "px;opacity:" + hearts[i].alpha + ";transform:scale(" + hearts[i].scale + "," + hearts[i].scale + ") rotate(45deg);background:" + hearts[i].color;
+      }
+      requestAnimationFrame(gameloop);
+    }
+
+    /**
+     * 给logo设置点击事件
+     * 
+     * - 回到顶部
+     * - 出现爱心
+     */
+    function attachEvent() {
+      var old = typeof window.onclick === "function" && window.onclick;
+      var logo = document.getElementById("logo");
+      if (logo) {
+        logo.onclick = function(event) {
+          returnTop();
+          old && old();
+          createHeart(event);
+        }
+      }
+      
+    }
+
+    function createHeart(event) {
+      var d = document.createElement("div");
+      d.className = "heart";
+      hearts.push({
+        el: d,
+        x: event.clientX - 5,
+        y: event.clientY - 5,
+        scale: 1,
+        alpha: 1,
+        color: randomColor()
+      });
+      document.body.appendChild(d);
+    }
+
+    function css(css) {
+      var style = document.createElement("style");
+      style.type = "text/css";
+      try {
+        style.appendChild(document.createTextNode(css));
+      } catch (ex) {
+        style.styleSheet.cssText = css;
+      }
+      document.getElementsByTagName('head')[0].appendChild(style);
+    }
+
+    function randomColor() {
+      // return "rgb(" + (~~(Math.random() * 255)) + "," + (~~(Math.random() * 255)) + "," + (~~(Math.random() * 255)) + ")";
+      return "#F44336";
+    }
+
+    function addMenuEvent() {
+      var menu = document.getElementById('menu-main-post');
+      if (menu) {
+        var toc = document.getElementById('toc');
+        if (toc) {
+          menu.onclick = function() {
+            if (toc) {
+              if (toc.style.display == 'block') {
+                toc.style.display = 'none';
+              } else {
+                toc.style.display = 'block';
+              }
+            }
+          };
+        } else {
+          menu.style.display = 'none';
+        }
+      }
+    }
+
+  })(window, document);
+</script>
+
+  
+
+
+
+</body>
+</html>

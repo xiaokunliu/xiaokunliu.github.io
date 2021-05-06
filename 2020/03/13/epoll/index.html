@@ -1,0 +1,399 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<!--
+config header
+-->
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#202020"/>
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  <script src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" async></script>
+
+  
+      <meta name="google-site-verification" content="{{ theme.google_site_verification }}" />
+  
+
+  
+    <meta name="keywords" content="网络IO编程," />
+  
+
+  
+    <meta name="description" content="分享个人学习工作的技术知识" />
+  
+  
+  <link rel="icon" type="image/x-icon" href="/logo.jpg">
+  <title>category: 网络IO [ 疾风先生 ]</title>
+  
+    <!-- stylesheets list from config.yml -->
+    
+      <link rel="stylesheet" href="//cdn.bootcss.com/pure/1.0.0/pure-min.css">
+    
+      <link rel="stylesheet" href="/css/xoxo.css">
+    
+  
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+
+<body>
+  <div class="nav-container">
+    <nav class="home-menu pure-menu pure-menu-horizontal">
+  <a class="pure-menu-heading" href="/">
+    <img class="avatar" src="https://xiaokunliu.github.io/images/logo.jpg">
+    <span class="title">疾风先生</span>
+  </a>
+
+  <ul class="pure-menu-list clearfix">
+      
+          
+            <li class="pure-menu-item"><a href="/" class="pure-menu-link">首页</a></li>
+          
+      
+          
+            <li class="pure-menu-item"><a href="/archives" class="pure-menu-link">归档</a></li>
+          
+      
+          
+            <li class="pure-menu-item"><a href="/tags" class="pure-menu-link">标签</a></li>
+          
+      
+          
+            <li class="pure-menu-item"><a href="/categories" class="pure-menu-link">分类</a></li>
+          
+      
+          
+            <li class="pure-menu-item"><a href="/search" class="pure-menu-link">搜索</a></li>
+          
+      
+  </ul>
+   
+</nav>
+  </div>
+
+  <div class="container" id="content-outer">
+    <div class="inner" id="content-inner">
+      <div class="post-container">
+  <article class="post" id="post">
+    <header class="post-header text-center">
+      <h1 class="title">
+        epoll技术扩展
+      </h1>
+      <span>
+        
+        <time class="time" datetime="2020-03-13T16:44:43.000Z">
+        2020-03-13
+      </time>
+        
+      </span>
+      <span class="slash">/</span>
+      <span class="post-meta">
+      <span class="post-tags">
+        <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E7%BD%91%E7%BB%9CIO%E7%BC%96%E7%A8%8B/" rel="tag">网络IO编程</a></li></ul>
+      </span>
+    </span>
+      <span class="slash">/</span>
+      <span class="read">
+      <span id="busuanzi_value_page_pv"></span> 点击
+    </span>
+    </header>
+
+    <div class="post-content">
+      <span id="more"></span>
+<h5 id="Epoll技术回顾"><a href="#Epoll技术回顾" class="headerlink" title="Epoll技术回顾"></a>Epoll技术回顾</h5><p>基于上一篇的epoll技术存在一些问题，对此将纠正部分要点</p>
+<h6 id="epoll使用技术"><a href="#epoll使用技术" class="headerlink" title="epoll使用技术"></a>epoll使用技术</h6><blockquote>
+<p>使用锁的技术</p>
+</blockquote>
+<ul>
+<li>读写锁:内核在操作对象进行轮询的时候加读锁,而通过加写锁为了保证唤醒只执行一次,即在网络socket数据报可达,通过中断上下文调用<code>wake_up()</code>方法来触发回调<code>callback</code>方法的执行,通过callback方法将执行的task添加到CPU就绪队列️中，方便CPU进行调度执行</li>
+<li>使用epoll空间的内置的锁<code>mtx</code>:当事件就绪的时候,内核需要将就绪的socket拷贝到用户空间,为了保证期间能够被拷贝而能够进行休眠,休眠的过程需要进行加锁</li>
+<li>全局锁:通过加全局锁释放epoll容器下的资源,避免产生死锁</li>
+</ul>
+<h6 id="epoll技术使用SLAB的方式进行内存管理"><a href="#epoll技术使用SLAB的方式进行内存管理" class="headerlink" title="epoll技术使用SLAB的方式进行内存管理"></a>epoll技术使用SLAB的方式进行内存管理</h6><p>epoll技术基于SLAB的方式管理内存,通过SLAB的方式来创建epoll空间以及epitem结构体对象</p>
+<blockquote>
+<p>epoll对象</p>
+</blockquote>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// eventpoll.c</span></span><br><span class="line">ep = kzalloc(<span class="keyword">sizeof</span>(*ep), GFP_KERNEL);</span><br><span class="line"></span><br><span class="line"><span class="comment">// slab.h</span></span><br><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">inline</span> <span class="keyword">void</span> *<span class="title">kzalloc</span><span class="params">(<span class="keyword">size_t</span> size, <span class="keyword">gfp_t</span> gfp)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">     <span class="keyword">return</span> kmalloc(size, gfp | __GFP_ZERO);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>epitem结构体</p>
+</blockquote>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/* Slab cache used to allocate &quot;struct epitem&quot; */</span></span><br><span class="line"><span class="keyword">static</span> <span class="class"><span class="keyword">struct</span> <span class="title">kmem_cache</span> *<span class="title">epi_cache</span> __<span class="title">read_mostly</span>;</span></span><br><span class="line"></span><br><span class="line"><span class="comment">/* Slab cache used to allocate &quot;struct eppoll_entry&quot; */</span></span><br><span class="line"><span class="keyword">static</span> <span class="class"><span class="keyword">struct</span> <span class="title">kmem_cache</span> *<span class="title">pwq_cache</span> __<span class="title">read_mostly</span>;</span></span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>SLAB内存管理特点</p>
+</blockquote>
+<ul>
+<li>使用连续的内存地址空间来存储epitem/epoll,避免内存碎片(多个epoll的产生是在多核下多进程)</li>
+<li>使用的epitem/epoll释放存放在”对象池”中进行重复利用，同时减少创建和销毁epitem带来的性能开销(内存申请和释放的开销),可以理解为高速缓存</li>
+<li>内存分配原理如下:<br><img src="http://s1.wailian.download/2020/03/14/slab_principle9dde9930a78a6378.jpg" alt="slab_principle9dde9930a78a6378.jpg"></li>
+</ul>
+<h6 id="epoll技术设计"><a href="#epoll技术设计" class="headerlink" title="epoll技术设计"></a>epoll技术设计</h6><blockquote>
+<p>epoll空间以及epitem部分源代码</p>
+</blockquote>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">eventpoll</span> &#123;</span></span><br><span class="line">    <span class="comment">/* Wait queue used by sys_epoll_wait() */</span></span><br><span class="line">    <span class="keyword">wait_queue_head_t</span> wq;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">/* Wait queue used by file-&gt;poll() */</span></span><br><span class="line">    <span class="keyword">wait_queue_head_t</span> poll_wait;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">/* List of ready file descriptors */</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">list_head</span> <span class="title">rdllist</span>;</span></span><br><span class="line">    </span><br><span class="line">    <span class="comment">/* Lock which protects rdllist and ovflist */</span></span><br><span class="line">    <span class="keyword">rwlock_t</span> lock;  <span class="comment">// 读写锁</span></span><br><span class="line">    </span><br><span class="line">    <span class="comment">/* RB tree root used to store monitored fd structs */</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">rb_root_cached</span> <span class="title">rbr</span>;</span>  <span class="comment">// 红黑树根节点</span></span><br><span class="line">    </span><br><span class="line">    <span class="comment">/*</span></span><br><span class="line"><span class="comment">     * This is a single linked list that chains all the &quot;struct epitem&quot; that</span></span><br><span class="line"><span class="comment">     * happened while transferring ready events to userspace w/out</span></span><br><span class="line"><span class="comment">     * holding -&gt;lock.</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">epitem</span> *<span class="title">ovflist</span>;</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">epitem</span> &#123;</span></span><br><span class="line">	<span class="class"><span class="keyword">union</span> &#123;</span></span><br><span class="line">		<span class="comment">/* RB tree node links this structure to the eventpoll RB tree */</span></span><br><span class="line">		<span class="class"><span class="keyword">struct</span> <span class="title">rb_node</span> <span class="title">rbn</span>;</span>     <span class="comment">//连接红黑树结构的节点</span></span><br><span class="line">		<span class="comment">/* Used to free the struct epitem */</span></span><br><span class="line">		<span class="class"><span class="keyword">struct</span> <span class="title">rcu_head</span> <span class="title">rcu</span>;</span></span><br><span class="line">	&#125;;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">/* List header used to link this structure to the eventpoll ready list */</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">list_head</span> <span class="title">rdllink</span>;</span>   <span class="comment">// 就绪队列header节点，与epoll空间的ready list连接</span></span><br><span class="line">    </span><br><span class="line">    <span class="comment">/* The file descriptor information this item refers to */</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">epoll_filefd</span> <span class="title">ffd</span>;</span>    <span class="comment">// 存储注册的socket的fd以及对应的file</span></span><br><span class="line">    </span><br><span class="line">	<span class="comment">/* The &quot;container&quot; of this item */</span></span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">eventpoll</span> *<span class="title">ep</span>;</span>   <span class="comment">// 指向epoll容器</span></span><br><span class="line">	</span><br><span class="line">	<span class="comment">/* wakeup_source used when EPOLLWAKEUP is set */</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">wakeup_source</span> __<span class="title">rcu</span> *<span class="title">ws</span>;</span></span><br><span class="line">    </span><br><span class="line">    <span class="comment">/* The structure that describe the interested events and the source fd */</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">epoll_event</span> <span class="title">event</span>;</span>   <span class="comment">// 监听的事件变化结构</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>epoll设计分析</p>
+</blockquote>
+<ul>
+<li>epoll技术在逻辑设计上,epoll空间作为epitem的容器,同时将注册的socket绑定到epitem中,并且epoll空间与epitem在逻辑设计存储上用红黑树结构进行存储，方便通过socket的fd快速定义到对应的epitem</li>
+<li>epoll空间通过ovflist将所有就绪的epitem以单链表的结构连接起来</li>
+<li>epitem包含wake_up唤醒函数以及对应的socket描述符信息，同时在注册新的socket的时候绑定对应的一个epitem,而每个epitem都将添加到对应的epoll_entry节点上,并将epoll_entry节点添加到epoll空间下的等待队列中,在系统调用<code>epoll_wait</code>的时候进行轮询</li>
+<li><code>ep_wait</code>通过epoll空间的轮询队列wait queue进行事件轮询遍历检测当前是否有就绪事件,如果有会将就绪事件拷贝到<code>ready list</code>队列中</li>
+<li>对此基于上述进行小结,对于wait_queue - poll_wait_queue - ovflist - ready_list,其流程如下：<br><img src="http://s1.wailian.download/2020/03/14/epoll_logic_struct.jpg" alt="epoll_logic_struct.jpg"></li>
+</ul>
+<h6 id="Epoll给予的思考小结"><a href="#Epoll给予的思考小结" class="headerlink" title="Epoll给予的思考小结"></a>Epoll给予的思考小结</h6><blockquote>
+<p>使用epitem&amp;epoll技术的思考</p>
+</blockquote>
+<ul>
+<li>epoll技术通过使用epitem中间层的方式来完成对每个注册的socket进行监控,通过对等待队列上事件节点的轮询将就绪节点以链表的方式连接起来,避免了数组遍历与查找</li>
+<li>借助epoll容器来对每个epitem进行管理,由内核对epoll空间进行事件监控,即将所有的事情委托给容器来进行操作,epoll容器将最终的结果返回告知唤醒处理逻辑</li>
+<li>从epoll技术的思考中，我们也可以想到在实际业务工作领域中，可以借鉴epoll思想引入中间层来解决原有结构存在的不足,通过中间层增强功能来弥补不足 </li>
+</ul>
+<blockquote>
+<p>采用分散冗余思想</p>
+</blockquote>
+<ul>
+<li>epoll技术为了解决大内存数据拷贝问题,将注册和等待进行拆分,分别针对对应的细小功能模块进行优化和改进,也就是相比select/poll设计上更为细粒度且专业化</li>
+<li>为了提升性能,在内部使用SLAB内存管理方式会预先申请连续内存存储对应的对象,也就是在某一个时刻上存在空间的冗余</li>
+<li>对此,在我们大型系统中,为了缓解高并发流量的压力,也会采取集群分布式的方式来分担系统的流量负载,也会存在分散冗余的设计</li>
+</ul>
+<h5 id="其他高级轮询技术"><a href="#其他高级轮询技术" class="headerlink" title="其他高级轮询技术"></a>其他高级轮询技术</h5><h6 id="dev-poll"><a href="#dev-poll" class="headerlink" title="/dev/poll"></a>/dev/poll</h6><p>是Solaris操作系统上名为<code>/dev/poll</code>的特殊文件提供了可扩展的轮询大量描述,相比select技术,其轮询技术可以预先设置好待查询的文件描述符列表,然后进入一个循环等待事件发生,每次循环回来之后不需要再设置该列表,其流程如下:</p>
+<ul>
+<li>打开<code>/dev/poll</code>文件，然后初始化一个pollfd结构数组(poll使用的结构)</li>
+<li>调用<code>write</code>方法往<code>/dev/poll</code>写这个结构数组并传递给内核</li>
+<li>执行<code>io_ctl</code>的<code>DP_POLL</code>阻塞自身以等待事件的发生</li>
+<li>调用结构如下:</li>
+</ul>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">dvpoll</span>&#123;</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">pollfd</span>* <span class="title">dp_fds</span>;</span>      <span class="comment">// 链表的形式,指向一个缓冲区,提供给ioctl返回的时候存储一个链表的数组</span></span><br><span class="line">    <span class="keyword">int</span>            dp_nfds;     <span class="comment">// 缓冲区成员大小</span></span><br><span class="line">    <span class="keyword">int</span>            timeout; </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>解决大内存拷贝问题,但是对于<code>/dev/poll</code>的实现需要查看对应的solaris系统细节,存在兼容性问题</li>
+</ul>
+<h6 id="kqueue技术"><a href="#kqueue技术" class="headerlink" title="kqueue技术"></a>kqueue技术</h6><ul>
+<li>FreeBSD4.1引入kqueue技术,允许进程向内核注册描述所关注的kqueue事件的事件过滤器(event filter),其定义如下:</li>
+</ul>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 返回一个新的kqueue描述符,用户后续的kevent调用</span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">kqueue</span><span class="params">(<span class="keyword">void</span>)</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 用于注册事件也用于确定是否有事件发生</span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">kevent</span><span class="params">(<span class="keyword">int</span> kq,                                                                  <span class="comment">// kqueue的注册事件fd</span></span></span></span><br><span class="line"><span class="params"><span class="function">           <span class="keyword">const</span> struct kevent *changelist, <span class="keyword">int</span> nchanges,                           <span class="comment">// 给出关注事件作出的更改,无更改为NULL &amp; 0</span></span></span></span><br><span class="line"><span class="params"><span class="function">           struct kevent *eventlist, <span class="keyword">int</span> nevents,                                   <span class="comment">// kevent结构数组</span></span></span></span><br><span class="line"><span class="params"><span class="function">           <span class="keyword">const</span> struct timespc *timeout)</span></span>;                                          <span class="comment">// 超时</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 更新事件函数</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">EV_SET</span><span class="params">(struct kevent *kev, <span class="keyword">uintptr_t</span> ident, <span class="keyword">short</span> filter, u_short flags, u_int fflags, intptr_r data, <span class="keyword">void</span> *udata)</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">// kevent结构体</span></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">kevent</span> &#123;</span></span><br><span class="line">    <span class="keyword">uintptr_t</span>   ident;</span><br><span class="line">    <span class="keyword">short</span> filter;</span><br><span class="line">    u_short flags;</span><br><span class="line">    u_int fflags;</span><br><span class="line">    intptr_r data;</span><br><span class="line">    <span class="keyword">void</span> *udata;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>从上述的结构可以推测出与<code>epoll</code>的实现原理类似,只不过相比epoll实现,增加更多事件的监听(异步IO/文件修改通知/进程跟踪/信号处理等)</li>
+<li>但是和<code>/dev/poll</code>一样存在的兼容性问题,目前是在FreeBSD系统中</li>
+<li>对应不同的事件以及事件的过滤器，如下：<br><img src="http://s1.wailian.download/2020/03/14/kqueue_filters.jpg" alt="kqueue_filters.jpg"><br><img src="http://s1.wailian.download/2020/03/14/kqueue_flags.jpg" alt="kqueue_flags.jpg"></li>
+</ul>
+<h5 id="C10K"><a href="#C10K" class="headerlink" title="C10K"></a>C10K</h5><h6 id="什么是C10K问题"><a href="#什么是C10K问题" class="headerlink" title="什么是C10K问题"></a>什么是C10K问题</h6><blockquote>
+<p>对于C10K问题,给出以下的参考链接</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">https://en.wikipedia.org/wiki/C10k_problem</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>C10K的理解</p>
+</blockquote>
+<p>摘录wiki百科,在互联网应用中,服务端进程要处理大量的客户端的socket,C10K命名是为了同时处理1w个连接的缩写名称,是属于一个优化问题.</p>
+<h6 id="现有解决C10K成熟方案"><a href="#现有解决C10K成熟方案" class="headerlink" title="现有解决C10K成熟方案"></a>现有解决C10K成熟方案</h6><ul>
+<li>Nginx是为了解决C10K设计的高并发连接处理服务器</li>
+<li>IO框架</li>
+<li>事件驱动设计</li>
+<li>Reactor设计模式</li>
+</ul>
+<h6 id="C10K与C10M相关文章"><a href="#C10K与C10M相关文章" class="headerlink" title="C10K与C10M相关文章"></a>C10K与C10M相关文章</h6><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">http://www.kegel.com/c10k.html</span><br><span class="line">http://highscalability.com/blog/2013/5/13/the-secret-to-10-million-concurrent-connections-the-kernel-i.html</span><br></pre></td></tr></table></figure>
+
+    </div>
+
+    <div>全文完。</div>
+  </article>
+  <div class="toc-container">
+    
+  <div id="toc" class="toc-article">
+    <strong class="toc-title">目录</strong>
+    <ol class="toc"><li class="toc-item toc-level-5"><a class="toc-link" href="#Epoll%E6%8A%80%E6%9C%AF%E5%9B%9E%E9%A1%BE"><span class="toc-text">Epoll技术回顾</span></a><ol class="toc-child"><li class="toc-item toc-level-6"><a class="toc-link" href="#epoll%E4%BD%BF%E7%94%A8%E6%8A%80%E6%9C%AF"><span class="toc-text">epoll使用技术</span></a></li><li class="toc-item toc-level-6"><a class="toc-link" href="#epoll%E6%8A%80%E6%9C%AF%E4%BD%BF%E7%94%A8SLAB%E7%9A%84%E6%96%B9%E5%BC%8F%E8%BF%9B%E8%A1%8C%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86"><span class="toc-text">epoll技术使用SLAB的方式进行内存管理</span></a></li><li class="toc-item toc-level-6"><a class="toc-link" href="#epoll%E6%8A%80%E6%9C%AF%E8%AE%BE%E8%AE%A1"><span class="toc-text">epoll技术设计</span></a></li><li class="toc-item toc-level-6"><a class="toc-link" href="#Epoll%E7%BB%99%E4%BA%88%E7%9A%84%E6%80%9D%E8%80%83%E5%B0%8F%E7%BB%93"><span class="toc-text">Epoll给予的思考小结</span></a></li></ol></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%E5%85%B6%E4%BB%96%E9%AB%98%E7%BA%A7%E8%BD%AE%E8%AF%A2%E6%8A%80%E6%9C%AF"><span class="toc-text">其他高级轮询技术</span></a><ol class="toc-child"><li class="toc-item toc-level-6"><a class="toc-link" href="#dev-poll"><span class="toc-text">&#x2F;dev&#x2F;poll</span></a></li><li class="toc-item toc-level-6"><a class="toc-link" href="#kqueue%E6%8A%80%E6%9C%AF"><span class="toc-text">kqueue技术</span></a></li></ol></li><li class="toc-item toc-level-5"><a class="toc-link" href="#C10K"><span class="toc-text">C10K</span></a><ol class="toc-child"><li class="toc-item toc-level-6"><a class="toc-link" href="#%E4%BB%80%E4%B9%88%E6%98%AFC10K%E9%97%AE%E9%A2%98"><span class="toc-text">什么是C10K问题</span></a></li><li class="toc-item toc-level-6"><a class="toc-link" href="#%E7%8E%B0%E6%9C%89%E8%A7%A3%E5%86%B3C10K%E6%88%90%E7%86%9F%E6%96%B9%E6%A1%88"><span class="toc-text">现有解决C10K成熟方案</span></a></li><li class="toc-item toc-level-6"><a class="toc-link" href="#C10K%E4%B8%8EC10M%E7%9B%B8%E5%85%B3%E6%96%87%E7%AB%A0"><span class="toc-text">C10K与C10M相关文章</span></a></li></ol></li></ol>
+  </div>
+
+
+  </div>
+</div>
+<div class="copyright">
+    <span>本作品采用</span>
+    <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by/4.0/">知识共享署名 4.0 国际许可协议</a>
+    <span>进行许可。 转载时请注明原文链接。</span>
+</div>
+<div class="share" style="width: 100%;">
+  <img src="/images/wechat-small.jpg" alt="Running Geek" style="margin: auto; display: block;"/>
+
+  <div style="margin: auto; text-align: center; font-size: 0.8em; color: grey;">老铁们关注走一走，不迷路</div>
+  
+</div>
+
+  
+    <div class="post-nav">
+      <div class="post-nav-item post-nav-next">
+        
+          <span>〈 </span>
+          <a href="/2020/03/12/sync_used/" rel="next" title="Java线程synchronized使用">
+          Java线程synchronized使用
+          </a>
+        
+      </div>
+  
+      <div class="post-nav-item post-nav-prev">
+          
+          <a href="/2020/03/14/reactor/" rel="prev" title="高性能IO编程设计">
+            高性能IO编程设计
+          </a>
+          <span>〉</span>
+        
+      </div>
+    </div>
+  
+
+
+    </div>
+
+    
+
+  </div>
+  <footer class="footer text-center">
+    <div id="bottom-inner">
+        <a class="bottom-item" href="https://xiaokunliu.github.io">首页</a> |
+        <a class="bottom-item" href="https://xiaokunliu.github.io" target="_blank">主站</a> |
+        <a class="bottom-item" href="https://github.com/xiaokunliu" target="_blank">GitHub</a> |
+        <a class="bottom-item" href="https://hexo.io" target="_blank">Powered by hexo</a> |
+        <a class="bottom-item" href="https://github.com/KevinOfNeu/hexo-theme-xoxo" target="_blank">Theme xoxo</a>
+    </div>
+</footer>
+  
+
+<script>
+  (function(window, document, undefined) {
+
+    var timer = null;
+
+    function returnTop() {
+      cancelAnimationFrame(timer);
+      timer = requestAnimationFrame(function fn() {
+        var oTop = document.body.scrollTop || document.documentElement.scrollTop;
+        if (oTop > 0) {
+          document.body.scrollTop = document.documentElement.scrollTop = oTop - 50;
+          timer = requestAnimationFrame(fn);
+        } else {
+          cancelAnimationFrame(timer);
+        }
+      });
+    }
+
+    var hearts = [];
+    window.requestAnimationFrame = (function() {
+      return window.requestAnimationFrame ||
+        window.webkitRequestAnimationFrame ||
+        window.mozRequestAnimationFrame ||
+        window.oRequestAnimationFrame ||
+        window.msRequestAnimationFrame ||
+        function(callback) {
+          setTimeout(callback, 1000 / 60);
+        }
+    })();
+    init();
+
+    function init() {
+      css(".heart{z-index:9999;width: 10px;height: 10px;position: fixed;background: #f00;transform: rotate(45deg);-webkit-transform: rotate(45deg);-moz-transform: rotate(45deg);}.heart:after,.heart:before{content: '';width: inherit;height: inherit;background: inherit;border-radius: 50%;-webkit-border-radius: 50%;-moz-border-radius: 50%;position: absolute;}.heart:after{top: -5px;}.heart:before{left: -5px;}");
+      attachEvent();
+      gameloop();
+      addMenuEvent();
+    }
+
+    function gameloop() {
+      for (var i = 0; i < hearts.length; i++) {
+        if (hearts[i].alpha <= 0) {
+          document.body.removeChild(hearts[i].el);
+          hearts.splice(i, 1);
+          continue;
+        }
+        hearts[i].y--;
+        hearts[i].scale += 0.004;
+        hearts[i].alpha -= 0.013;
+        hearts[i].el.style.cssText = "left:" + hearts[i].x + "px;top:" + hearts[i].y + "px;opacity:" + hearts[i].alpha + ";transform:scale(" + hearts[i].scale + "," + hearts[i].scale + ") rotate(45deg);background:" + hearts[i].color;
+      }
+      requestAnimationFrame(gameloop);
+    }
+
+    /**
+     * 给logo设置点击事件
+     * 
+     * - 回到顶部
+     * - 出现爱心
+     */
+    function attachEvent() {
+      var old = typeof window.onclick === "function" && window.onclick;
+      var logo = document.getElementById("logo");
+      if (logo) {
+        logo.onclick = function(event) {
+          returnTop();
+          old && old();
+          createHeart(event);
+        }
+      }
+      
+    }
+
+    function createHeart(event) {
+      var d = document.createElement("div");
+      d.className = "heart";
+      hearts.push({
+        el: d,
+        x: event.clientX - 5,
+        y: event.clientY - 5,
+        scale: 1,
+        alpha: 1,
+        color: randomColor()
+      });
+      document.body.appendChild(d);
+    }
+
+    function css(css) {
+      var style = document.createElement("style");
+      style.type = "text/css";
+      try {
+        style.appendChild(document.createTextNode(css));
+      } catch (ex) {
+        style.styleSheet.cssText = css;
+      }
+      document.getElementsByTagName('head')[0].appendChild(style);
+    }
+
+    function randomColor() {
+      // return "rgb(" + (~~(Math.random() * 255)) + "," + (~~(Math.random() * 255)) + "," + (~~(Math.random() * 255)) + ")";
+      return "#F44336";
+    }
+
+    function addMenuEvent() {
+      var menu = document.getElementById('menu-main-post');
+      if (menu) {
+        var toc = document.getElementById('toc');
+        if (toc) {
+          menu.onclick = function() {
+            if (toc) {
+              if (toc.style.display == 'block') {
+                toc.style.display = 'none';
+              } else {
+                toc.style.display = 'block';
+              }
+            }
+          };
+        } else {
+          menu.style.display = 'none';
+        }
+      }
+    }
+
+  })(window, document);
+</script>
+
+  
+
+
+
+</body>
+</html>

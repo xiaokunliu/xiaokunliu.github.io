@@ -1,0 +1,368 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<!--
+config header
+-->
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#202020"/>
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  <script src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" async></script>
+
+  
+      <meta name="google-site-verification" content="{{ theme.google_site_verification }}" />
+  
+
+  
+    <meta name="keywords" content="并发编程," />
+  
+
+  
+    <meta name="description" content="分享个人学习工作的技术知识" />
+  
+  
+  <link rel="icon" type="image/x-icon" href="/logo.jpg">
+  <title>category: 并发编程 [ 疾风先生 ]</title>
+  
+    <!-- stylesheets list from config.yml -->
+    
+      <link rel="stylesheet" href="//cdn.bootcss.com/pure/1.0.0/pure-min.css">
+    
+      <link rel="stylesheet" href="/css/xoxo.css">
+    
+  
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+
+<body>
+  <div class="nav-container">
+    <nav class="home-menu pure-menu pure-menu-horizontal">
+  <a class="pure-menu-heading" href="/">
+    <img class="avatar" src="https://xiaokunliu.github.io/images/logo.jpg">
+    <span class="title">疾风先生</span>
+  </a>
+
+  <ul class="pure-menu-list clearfix">
+      
+          
+            <li class="pure-menu-item"><a href="/" class="pure-menu-link">首页</a></li>
+          
+      
+          
+            <li class="pure-menu-item"><a href="/archives" class="pure-menu-link">归档</a></li>
+          
+      
+          
+            <li class="pure-menu-item"><a href="/tags" class="pure-menu-link">标签</a></li>
+          
+      
+          
+            <li class="pure-menu-item"><a href="/categories" class="pure-menu-link">分类</a></li>
+          
+      
+          
+            <li class="pure-menu-item"><a href="/search" class="pure-menu-link">搜索</a></li>
+          
+      
+  </ul>
+   
+</nav>
+  </div>
+
+  <div class="container" id="content-outer">
+    <div class="inner" id="content-inner">
+      <div class="post-container">
+  <article class="post" id="post">
+    <header class="post-header text-center">
+      <h1 class="title">
+        synchronized基于JVM规范的工作原理(一)
+      </h1>
+      <span>
+        
+        <time class="time" datetime="2020-03-02T20:47:28.000Z">
+        2020-03-02
+      </time>
+        
+      </span>
+      <span class="slash">/</span>
+      <span class="post-meta">
+      <span class="post-tags">
+        <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E5%B9%B6%E5%8F%91%E7%BC%96%E7%A8%8B/" rel="tag">并发编程</a></li></ul>
+      </span>
+    </span>
+      <span class="slash">/</span>
+      <span class="read">
+      <span id="busuanzi_value_page_pv"></span> 点击
+    </span>
+    </header>
+
+    <div class="post-content">
+      <span id="more"></span>
+<h6 id="1-synchronized同步方法"><a href="#1-synchronized同步方法" class="headerlink" title="1. synchronized同步方法"></a>1. synchronized同步方法</h6><blockquote>
+<p>synchronized同步方法的字节码还原</p>
+</blockquote>
+<ul>
+<li>java声明的方法在jvm中的结构格式method_info<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">method_info &#123;</span><br><span class="line">       u2             access_flags;</span><br><span class="line">       u2             name_index;</span><br><span class="line">       u2             descriptor_index;</span><br><span class="line">       u2             attributes_count;</span><br><span class="line">       attribute_info attributes[attributes_count];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+<li>其中关注method_info的access_flags取值<ul>
+<li>ACC_SYNCHRONIZED,对应标示值为0x0020,作用是声明为同步方法,在jvm内部包装一个监视器锁被调用</li>
+<li>ACC_PUBLIC,对应标示值为0x0001,作用声明方法为public,运行被包外的类公开访问</li>
+</ul>
+</li>
+<li>带synchronized的部分java代码<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Account.java</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">synchronized</span> <span class="keyword">void</span> <span class="title">setBalance</span><span class="params">(<span class="keyword">double</span> balance)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.balance = balance;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+<li>对应的java代码的字节码<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">## 上述代码的字节码如下</span><br><span class="line">public synchronized void setBalance(double);</span><br><span class="line">    descriptor: (D)V</span><br><span class="line">    flags: ACC_PUBLIC, ACC_SYNCHRONIZED</span><br><span class="line">    Code:</span><br><span class="line">      stack=3, locals=3, args_size=2</span><br><span class="line">         0: aload_0</span><br><span class="line">         1: dload_1</span><br><span class="line">         2: putfield      #2                  // Field balance:D</span><br><span class="line">         5: return</span><br><span class="line">      LineNumberTable:</span><br><span class="line">        line 20: 0</span><br><span class="line">        line 21: 5</span><br><span class="line">      LocalVariableTable:</span><br><span class="line">        Start  Length  Slot  Name   Signature</span><br><span class="line">            0       6     0  this   Lcom/xiaokunliu/concurrency/sync/syncmethod/Account;</span><br><span class="line">            0       6     1 balance   D</span><br><span class="line"> ## 从字节码中可以看出在方法添加synchronized关键字,会在编译阶段多产生一个flag,即ACC_SYNCHRONIZED</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>synchronized同步方法的本质</p>
+</blockquote>
+</li>
+<li>摘录jvm规范中的原文<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">1) Method-level synchronization is performed implicitly, as part of method invocation and return.</span><br><span class="line">2) A synchronized method is distinguished in the run-time constant pool&#x27;s method_info structure by the ACC_SYNCHRONIZED flag, which is checked by the method invocation instructions. </span><br><span class="line">3) When invoking a method for which ACC_SYNCHRONIZED is set, the executing thread enters a monitor, invokes the method itself, and exits the monitor whether the method invocation completes normally or abruptly. </span><br><span class="line">4) During the time the executing thread owns the monitor, no other thread may enter it. If an exception is thrown during invocation of the synchronized method and the synchronized method does not handle the exception, the monitor for the method is automatically exited before the exception is rethrown out of the synchronized method</span><br></pre></td></tr></table></figure></li>
+<li>简言概括<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">1) 方法级同步在JVM中是隐式执行的，是作为方法调用和返回的一部分</span><br><span class="line">2) 同步方法在运行时常量池的method_info结构中由ACC_SYNCHRONIZED标志加以区分，该标志由方法调用指令进行检查</span><br><span class="line">3) 执行线程识别到方法中含有ACC_SYNCHRONIZED标志将会获取一个监视器对象然后调用方法,最后而且不论当线程正常执行或是异常退出时将会释放监视器对象</span><br><span class="line">4) 在执行期间,执行线程持有监视器对象,而其他执行线程将无法获取监视器对象,如果方法抛出异常将会释放监视器对象</span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+<h6 id="2-synchronized同步代码块"><a href="#2-synchronized同步代码块" class="headerlink" title="2. synchronized同步代码块"></a>2. synchronized同步代码块</h6><blockquote>
+<p>synchronized同步代码块字节码还原</p>
+</blockquote>
+<ul>
+<li>java同步代码块<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Cinema.java</span></span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">addTickets1</span><span class="params">(<span class="keyword">int</span> number)</span></span>&#123;</span><br><span class="line">        <span class="keyword">synchronized</span> (controlCinema1)&#123;</span><br><span class="line">            System.out.println(Thread.currentThread().getName() + <span class="string">&quot; get controlCinema1 lock, add number is &quot;</span> + number);</span><br><span class="line">            <span class="keyword">this</span>.vacanciesCinema1 += number;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure></li>
+<li>同步代码块对应的字节码<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br></pre></td><td class="code"><pre><span class="line">public void addTickets1(int);</span><br><span class="line">    descriptor: (I)V</span><br><span class="line">    flags: ACC_PUBLIC</span><br><span class="line">    Code:</span><br><span class="line">      stack=5, locals=4, args_size=2</span><br><span class="line">         0: aload_0</span><br><span class="line">         1: getfield      #3                  // Field controlCinema1:Ljava/lang/Object;</span><br><span class="line">         4: dup</span><br><span class="line">         5: astore_2</span><br><span class="line">        // ========================= //</span><br><span class="line">         6: monitorenter</span><br><span class="line">        // ========================= //</span><br><span class="line">         7: getstatic     #9                  // Field java/lang/System.out:Ljava/io/PrintStream;</span><br><span class="line">        10: new           #10                 // class java/lang/StringBuilder</span><br><span class="line">        13: dup</span><br><span class="line">        14: invokespecial #11                 // Method java/lang/StringBuilder.&quot;&lt;init&gt;&quot;:()V</span><br><span class="line">        17: invokestatic  #12                 // Method java/lang/Thread.currentThread:()Ljava/lang/Thread;</span><br><span class="line">        20: invokevirtual #13                 // Method java/lang/Thread.getName:()Ljava/lang/String;</span><br><span class="line">        23: invokevirtual #14                 // Method java/lang/StringBuilder.append:(Ljava/lang/String;)Ljava/lang/StringBuilder;</span><br><span class="line">        26: ldc           #20                 // String  get controlCinema1 lock, add number is</span><br><span class="line">        28: invokevirtual #14                 // Method java/lang/StringBuilder.append:(Ljava/lang/String;)Ljava/lang/StringBuilder;</span><br><span class="line">        31: iload_1</span><br><span class="line">        32: invokevirtual #16                 // Method java/lang/StringBuilder.append:(I)Ljava/lang/StringBuilder;</span><br><span class="line">        35: invokevirtual #17                 // Method java/lang/StringBuilder.toString:()Ljava/lang/String;</span><br><span class="line">        38: invokevirtual #18                 // Method java/io/PrintStream.println:(Ljava/lang/String;)V</span><br><span class="line">        41: aload_0</span><br><span class="line">        42: dup</span><br><span class="line">        43: getfield      #7                  // Field vacanciesCinema1:J</span><br><span class="line">        46: iload_1</span><br><span class="line">        47: i2l</span><br><span class="line">        48: ladd</span><br><span class="line">        49: putfield      #7                  // Field vacanciesCinema1:J</span><br><span class="line">        52: aload_2</span><br><span class="line">        // ========================= //</span><br><span class="line">        53: monitorexit</span><br><span class="line">        // ========================= //</span><br><span class="line">        54: goto          62</span><br><span class="line">        57: astore_3</span><br><span class="line">        58: aload_2</span><br><span class="line">        // ========================= //</span><br><span class="line">        59: monitorexit</span><br><span class="line">        // ========================= //</span><br><span class="line">        60: aload_3</span><br><span class="line">        61: athrow</span><br><span class="line">        62: return</span><br><span class="line">      Exception table:</span><br><span class="line">         from    to  target type</span><br><span class="line">             7    54    57   any</span><br><span class="line">            57    60    57   any</span><br><span class="line">      LineNumberTable:</span><br><span class="line">        line 42: 0</span><br><span class="line">        line 43: 7</span><br><span class="line">        line 44: 41</span><br><span class="line">        line 45: 52</span><br><span class="line">        line 46: 62</span><br><span class="line">      LocalVariableTable:</span><br><span class="line">        Start  Length  Slot  Name   Signature</span><br><span class="line">            0      63     0  this   Lcom/xiaokunliu/concurrency/sync/syncAttribute/Cinema;</span><br><span class="line">            0      63     1 number   I</span><br><span class="line">      StackMapTable: number_of_entries = 2</span><br><span class="line">        frame_type = 255 /* full_frame */</span><br><span class="line">          offset_delta = 57</span><br><span class="line">          locals = [ class com/xiaokunliu/concurrency/sync/syncAttribute/Cinema, int, class java/lang/Object ]</span><br><span class="line">          stack = [ class java/lang/Throwable ]</span><br><span class="line">        frame_type = 250 /* chop */</span><br><span class="line">          offset_delta = 4</span><br></pre></td></tr></table></figure></li>
+<li>字节码解读<ul>
+<li>jvm通过monitorenter来完成加锁的操作</li>
+<li>53行的monitorexit之后是go语句到62行,属于程序正常退出释放锁的操作</li>
+<li>59行的monitorexit之后是athrow的字节码指令,表示当程序异常的时候释放锁的操作</li>
+<li>monitorenter和monitorexit支持编译指令来实现同步指令</li>
+</ul>
+</li>
+</ul>
+<blockquote>
+<p>synchronized同步代码块的工作原理</p>
+</blockquote>
+<ul>
+<li>引入jvm规范原语<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">1) Synchronization of sequences of instructions is typically used to encode the synchronized block of the Java programming language. </span><br><span class="line">2) The Java Virtual Machine supplies the monitorenter and monitorexit instructions to support such language constructs. </span><br><span class="line">3) Proper implementation of synchronized blocks requires cooperation from a compiler targeting the Java Virtual Machine</span><br></pre></td></tr></table></figure></li>
+<li>简言概括之<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">1) 指令序列的同步通常用于java程序中的同步代码块</span><br><span class="line">2) jvm支持在编译阶段执行同步指令</span><br><span class="line">3) 同步块的实现需要java编译器的支持</span><br></pre></td></tr></table></figure>
+<h6 id="3-synchronized工作原理小结"><a href="#3-synchronized工作原理小结" class="headerlink" title="3. synchronized工作原理小结"></a>3. synchronized工作原理小结</h6><blockquote>
+<p>结构化锁</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">结构化锁定是这样一种情况:在方法调用期间，给定监视器上的每个出口与该监视器上的前一个入口匹配。</span><br><span class="line">由于不能保证提交给Java虚拟机的所有代码都将执行结构化锁定，所以允许Java虚拟机的实现，</span><br></pre></td></tr></table></figure></li>
+<li>jvm通过以下规则保证结构化锁定:<ul>
+<li>不论方法是正常还是异常退出,jvm必须保证线程对监视器入口(monitorenter)的执行次数与对监视器出口(monitorexit)的执行次数相等</li>
+<li>在方法调用期间,线程对监视器执行的出口次数(monitorexit)不可能超过对监视器入口的执行次数(monitorenter)</li>
+</ul>
+</li>
+</ul>
+<blockquote>
+<p>工作原理本质</p>
+</blockquote>
+<ul>
+<li>synchronized的实现是通过jvm的监视器的入口和出口来实现的</li>
+<li>synchronized同步方法是隐式实现(编译阶段仅看到同步标志)</li>
+<li>synchronized同步代码块是显示实现(编译阶段可见)</li>
+</ul>
+<blockquote>
+<p>注意点</p>
+</blockquote>
+<ul>
+<li>jvm通过一个单一的同步结构:监视器来支持方法和方法中的指令序列的同步</li>
+<li>使用synchronized同步代码块不论程序是正常完成还是异常退出都会自动释放锁</li>
+</ul>
+
+    </div>
+
+    <div>全文完。</div>
+  </article>
+  <div class="toc-container">
+    
+  <div id="toc" class="toc-article">
+    <strong class="toc-title">目录</strong>
+    <ol class="toc"><li class="toc-item toc-level-6"><a class="toc-link" href="#1-synchronized%E5%90%8C%E6%AD%A5%E6%96%B9%E6%B3%95"><span class="toc-text">1. synchronized同步方法</span></a></li><li class="toc-item toc-level-6"><a class="toc-link" href="#2-synchronized%E5%90%8C%E6%AD%A5%E4%BB%A3%E7%A0%81%E5%9D%97"><span class="toc-text">2. synchronized同步代码块</span></a></li><li class="toc-item toc-level-6"><a class="toc-link" href="#3-synchronized%E5%B7%A5%E4%BD%9C%E5%8E%9F%E7%90%86%E5%B0%8F%E7%BB%93"><span class="toc-text">3. synchronized工作原理小结</span></a></li></ol>
+  </div>
+
+
+  </div>
+</div>
+<div class="copyright">
+    <span>本作品采用</span>
+    <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by/4.0/">知识共享署名 4.0 国际许可协议</a>
+    <span>进行许可。 转载时请注明原文链接。</span>
+</div>
+<div class="share" style="width: 100%;">
+  <img src="/images/wechat-small.jpg" alt="Running Geek" style="margin: auto; display: block;"/>
+
+  <div style="margin: auto; text-align: center; font-size: 0.8em; color: grey;">老铁们关注走一走，不迷路</div>
+  
+</div>
+
+  
+    <div class="post-nav">
+      <div class="post-nav-item post-nav-next">
+        
+          <span>〈 </span>
+          <a href="/2020/02/28/inshort/" rel="next" title="并发编程面临的问题小结">
+          并发编程面临的问题小结
+          </a>
+        
+      </div>
+  
+      <div class="post-nav-item post-nav-prev">
+          
+          <a href="/2020/03/04/sync02/" rel="prev" title="synchronized基于内存语义的工作原理(二)">
+            synchronized基于内存语义的工作原理(二)
+          </a>
+          <span>〉</span>
+        
+      </div>
+    </div>
+  
+
+
+    </div>
+
+    
+
+  </div>
+  <footer class="footer text-center">
+    <div id="bottom-inner">
+        <a class="bottom-item" href="https://xiaokunliu.github.io">首页</a> |
+        <a class="bottom-item" href="https://xiaokunliu.github.io" target="_blank">主站</a> |
+        <a class="bottom-item" href="https://github.com/xiaokunliu" target="_blank">GitHub</a> |
+        <a class="bottom-item" href="https://hexo.io" target="_blank">Powered by hexo</a> |
+        <a class="bottom-item" href="https://github.com/KevinOfNeu/hexo-theme-xoxo" target="_blank">Theme xoxo</a>
+    </div>
+</footer>
+  
+
+<script>
+  (function(window, document, undefined) {
+
+    var timer = null;
+
+    function returnTop() {
+      cancelAnimationFrame(timer);
+      timer = requestAnimationFrame(function fn() {
+        var oTop = document.body.scrollTop || document.documentElement.scrollTop;
+        if (oTop > 0) {
+          document.body.scrollTop = document.documentElement.scrollTop = oTop - 50;
+          timer = requestAnimationFrame(fn);
+        } else {
+          cancelAnimationFrame(timer);
+        }
+      });
+    }
+
+    var hearts = [];
+    window.requestAnimationFrame = (function() {
+      return window.requestAnimationFrame ||
+        window.webkitRequestAnimationFrame ||
+        window.mozRequestAnimationFrame ||
+        window.oRequestAnimationFrame ||
+        window.msRequestAnimationFrame ||
+        function(callback) {
+          setTimeout(callback, 1000 / 60);
+        }
+    })();
+    init();
+
+    function init() {
+      css(".heart{z-index:9999;width: 10px;height: 10px;position: fixed;background: #f00;transform: rotate(45deg);-webkit-transform: rotate(45deg);-moz-transform: rotate(45deg);}.heart:after,.heart:before{content: '';width: inherit;height: inherit;background: inherit;border-radius: 50%;-webkit-border-radius: 50%;-moz-border-radius: 50%;position: absolute;}.heart:after{top: -5px;}.heart:before{left: -5px;}");
+      attachEvent();
+      gameloop();
+      addMenuEvent();
+    }
+
+    function gameloop() {
+      for (var i = 0; i < hearts.length; i++) {
+        if (hearts[i].alpha <= 0) {
+          document.body.removeChild(hearts[i].el);
+          hearts.splice(i, 1);
+          continue;
+        }
+        hearts[i].y--;
+        hearts[i].scale += 0.004;
+        hearts[i].alpha -= 0.013;
+        hearts[i].el.style.cssText = "left:" + hearts[i].x + "px;top:" + hearts[i].y + "px;opacity:" + hearts[i].alpha + ";transform:scale(" + hearts[i].scale + "," + hearts[i].scale + ") rotate(45deg);background:" + hearts[i].color;
+      }
+      requestAnimationFrame(gameloop);
+    }
+
+    /**
+     * 给logo设置点击事件
+     * 
+     * - 回到顶部
+     * - 出现爱心
+     */
+    function attachEvent() {
+      var old = typeof window.onclick === "function" && window.onclick;
+      var logo = document.getElementById("logo");
+      if (logo) {
+        logo.onclick = function(event) {
+          returnTop();
+          old && old();
+          createHeart(event);
+        }
+      }
+      
+    }
+
+    function createHeart(event) {
+      var d = document.createElement("div");
+      d.className = "heart";
+      hearts.push({
+        el: d,
+        x: event.clientX - 5,
+        y: event.clientY - 5,
+        scale: 1,
+        alpha: 1,
+        color: randomColor()
+      });
+      document.body.appendChild(d);
+    }
+
+    function css(css) {
+      var style = document.createElement("style");
+      style.type = "text/css";
+      try {
+        style.appendChild(document.createTextNode(css));
+      } catch (ex) {
+        style.styleSheet.cssText = css;
+      }
+      document.getElementsByTagName('head')[0].appendChild(style);
+    }
+
+    function randomColor() {
+      // return "rgb(" + (~~(Math.random() * 255)) + "," + (~~(Math.random() * 255)) + "," + (~~(Math.random() * 255)) + ")";
+      return "#F44336";
+    }
+
+    function addMenuEvent() {
+      var menu = document.getElementById('menu-main-post');
+      if (menu) {
+        var toc = document.getElementById('toc');
+        if (toc) {
+          menu.onclick = function() {
+            if (toc) {
+              if (toc.style.display == 'block') {
+                toc.style.display = 'none';
+              } else {
+                toc.style.display = 'block';
+              }
+            }
+          };
+        } else {
+          menu.style.display = 'none';
+        }
+      }
+    }
+
+  })(window, document);
+</script>
+
+  
+
+
+
+</body>
+</html>

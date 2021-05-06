@@ -1,0 +1,328 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<!--
+config header
+-->
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#202020"/>
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  <script src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" async></script>
+
+  
+      <meta name="google-site-verification" content="{{ theme.google_site_verification }}" />
+  
+
+  
+    <meta name="keywords" content="Spring技术小结," />
+  
+
+  
+    <meta name="description" content="分享个人学习工作的技术知识" />
+  
+  
+  <link rel="icon" type="image/x-icon" href="/logo.jpg">
+  <title>Spring小结(2) [ 疾风先生 ]</title>
+  
+    <!-- stylesheets list from config.yml -->
+    
+      <link rel="stylesheet" href="//cdn.bootcss.com/pure/1.0.0/pure-min.css">
+    
+      <link rel="stylesheet" href="/css/xoxo.css">
+    
+  
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+
+<body>
+  <div class="nav-container">
+    <nav class="home-menu pure-menu pure-menu-horizontal">
+  <a class="pure-menu-heading" href="/">
+    <img class="avatar" src="https://xiaokunliu.github.io/images/logo.jpg">
+    <span class="title">疾风先生</span>
+  </a>
+
+  <ul class="pure-menu-list clearfix">
+      
+          
+            <li class="pure-menu-item"><a href="/" class="pure-menu-link">首页</a></li>
+          
+      
+          
+            <li class="pure-menu-item"><a href="/archives" class="pure-menu-link">归档</a></li>
+          
+      
+          
+            <li class="pure-menu-item"><a href="/tags" class="pure-menu-link">标签</a></li>
+          
+      
+          
+            <li class="pure-menu-item"><a href="/categories" class="pure-menu-link">分类</a></li>
+          
+      
+          
+            <li class="pure-menu-item"><a href="/search" class="pure-menu-link">搜索</a></li>
+          
+      
+  </ul>
+   
+</nav>
+  </div>
+
+  <div class="container" id="content-outer">
+    <div class="inner" id="content-inner">
+      <div class="post-container">
+  <article class="post" id="post">
+    <header class="post-header text-center">
+      <h1 class="title">
+        Spring小结(2)
+      </h1>
+      <span>
+        
+        <time class="time" datetime="2019-07-24T10:51:03.000Z">
+        2019-07-24
+      </time>
+        
+      </span>
+      <span class="slash">/</span>
+      <span class="post-meta">
+      <span class="post-tags">
+        <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Spring%E6%8A%80%E6%9C%AF%E5%B0%8F%E7%BB%93/" rel="tag">Spring技术小结</a></li></ul>
+      </span>
+    </span>
+      <span class="slash">/</span>
+      <span class="read">
+      <span id="busuanzi_value_page_pv"></span> 点击
+    </span>
+    </header>
+
+    <div class="post-content">
+      <span id="more"></span>
+
+<p>创建应用对象之间协作关系的行为通常称为装配(wiring)，这也是依赖注入(DI)的本质</p>
+<h5 id="三种装配机制"><a href="#三种装配机制" class="headerlink" title="三种装配机制"></a>三种装配机制</h5><ul>
+<li>在XML中进行显式配置</li>
+<li>在Java中进行显式配置</li>
+<li>隐式的bean发现机制和自动装配</li>
+</ul>
+<h5 id="自动化装配"><a href="#自动化装配" class="headerlink" title="自动化装配"></a>自动化装配</h5><p><img src="https://imgconvert.csdnimg.cn/aHR0cDovL2ltZy5ibG9nLmNzZG4ubmV0LzIwMTcxMDE3MTE1MjU4ODIw" alt="这里写图片描述"></p>
+<ul>
+<li>组件扫描(component scanning):Spring会自动发现应用上下文中所创建的bean</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 启动自动扫描</span></span><br><span class="line"><span class="meta">@Configuration</span></span><br><span class="line"><span class="meta">@ComponentScan</span>  <span class="comment">// 默认扫描当前的java配置类下的包</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">CDPlayerConfig</span> </span>&#123;&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 定义javabean</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">CompactDisc</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">play</span><span class="params">()</span></span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 实现类并声明组件</span></span><br><span class="line"><span class="meta">@Component(&quot;peppersBean&quot;)</span>   <span class="comment">// peppersBean为当前bean指定id名称</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">SgtPeppers</span> <span class="keyword">implements</span> <span class="title">CompactDisc</span></span>&#123;</span><br><span class="line">	 <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@Component</span>:该类会作为组件类，并告知Spring要为这个类创建bean,前提是要启动扫描器</span></span><br><span class="line"><span class="comment">     * Spring应用上下文中所有的bean都会给定一个ID:将类名的第一个字母变为小写,即sgtPeppers</span></span><br><span class="line"><span class="comment">     * 自定义指定bean的Id:<span class="doctag">@Component</span>(idName)</span></span><br><span class="line"><span class="comment">     * 也可以通过<span class="doctag">@Named</span>注解来为bean设置ID,但是命名不好,不推荐使用</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">play</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        System.out.println(String.format(<span class="string">&quot;playing %s by %s&quot;</span>,title,artist));</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>自动装配(autowiring):Spring自动满足bean之间的依赖</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 启动spring测试类测试</span></span><br><span class="line"><span class="meta">@RunWith(SpringJUnit4ClassRunner.class)</span></span><br><span class="line"><span class="meta">@ContextConfiguration(classes = CDPlayerConfig.class)</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">CDPlayerTest</span> </span>&#123;</span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * SpringJUnit4ClassRunner:在测试开始的时候自动创建Spring的应用上下文</span></span><br><span class="line"><span class="comment">     * 注解<span class="doctag">@ContextConfiguration</span>:告诉它需要在CDPlayerConfig中加载配置</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@Autowired</span>:自动装配依赖的bean,即Spring自动满足bean依赖的一种方法，在满足依赖的过程中，会在 Spring应用上下文中寻找匹配某个bean需求的其他bean</span></span><br><span class="line"><span class="comment">     * 如果没有匹配的bean，那么在应用上下文创建的时候，Spring会抛出一个异常。为了避免异常的出现，你可以将<span class="doctag">@Autowired</span>的required属性设置为false</span></span><br><span class="line"><span class="comment">     * 如果有多个bean都能满足依赖关系的话，Spring将会抛出一个异常，表明没有明确指定要选择哪 个bean进行自动装配</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line"></span><br><span class="line">    <span class="meta">@Autowired</span></span><br><span class="line">    <span class="keyword">private</span> CompactDisc compactDisc;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Autowired</span></span><br><span class="line">    <span class="keyword">private</span> MediaPlayer cdPlayer;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Test</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">testCompactDiscNotNull</span><span class="params">()</span></span>&#123;</span><br><span class="line">        assertNotNull(compactDisc);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h5 id="基于Java显式的配置"><a href="#基于Java显式的配置" class="headerlink" title="基于Java显式的配置"></a>基于Java显式的配置</h5><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// CDPlayer.java</span></span><br><span class="line"><span class="meta">@Configuration</span></span><br><span class="line"><span class="meta">@ComponentScan(basePackageClasses = &#123;CompactDisc.class&#125;)</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">CDPlayerConfig</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@ComponentScan</span>:注解能够在Spring中启用组件扫描,默认会扫描与配置类相同的包,即会扫描这个包以及这个包下的所有子包,查找带有<span class="doctag">@Component</span>注解的类</span></span><br><span class="line"><span class="comment">     * 为何设置基础包:有一个原因会促使我们明确地设置基础包，那就是我们想要将配置类放在单独的包中，使其与其他的应用代码区分开</span></span><br><span class="line"><span class="comment">     * 使用String设置组件扫描的基础包:</span></span><br><span class="line"><span class="comment">     *      单个:basePackages = &quot;com.dtrees.spring.bean&quot;</span></span><br><span class="line"><span class="comment">     *      多个:basePackages = &#123;&quot;com.dtrees.spring.bean&quot;,&quot;com.dtrees.spring.bean2&quot;,...&#125;</span></span><br><span class="line"><span class="comment">     * 使用Class来设置组件扫描的基础包(推荐):</span></span><br><span class="line"><span class="comment">     *      basePackageClasses = &#123;&#125;,basePackageClasses属性所设置的数组中包含了类,这些类所在的包将会作为组件扫描的基础包</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">// 声明简单的bean并指定bean的id名称</span></span><br><span class="line">    <span class="meta">@Bean(name = &quot;sgtPeppers&quot;)</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> CompactDisc <span class="title">getCompactDisc</span><span class="params">()</span></span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> SgtPeppers();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h5 id="Java配置和xml配置混合"><a href="#Java配置和xml配置混合" class="headerlink" title="Java配置和xml配置混合"></a>Java配置和xml配置混合</h5><figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">beans</span> <span class="attr">xmlns</span>=<span class="string">&quot;http://www.springframework.org/schema/beans&quot;</span></span></span><br><span class="line"><span class="tag">       <span class="attr">xmlns:c</span>=<span class="string">&quot;http://www.springframework.org/schema/c&quot;</span></span></span><br><span class="line"><span class="tag">       <span class="attr">xmlns:xsi</span>=<span class="string">&quot;http://www.w3.org/2001/XMLSchema-instance&quot;</span></span></span><br><span class="line"><span class="tag">       <span class="attr">xmlns:context</span>=<span class="string">&quot;http://www.springframework.org/schema/context&quot;</span></span></span><br><span class="line"><span class="tag">       <span class="attr">xmlns:tx</span>=<span class="string">&quot;http://www.springframework.org/schema/tx&quot;</span></span></span><br><span class="line"><span class="tag">       <span class="attr">xmlns:aop</span>=<span class="string">&quot;http://www.springframework.org/schema/aop&quot;</span></span></span><br><span class="line"><span class="tag">       <span class="attr">xsi:schemaLocation</span>=<span class="string">&quot;http://www.springframework.org/schema/beans</span></span></span><br><span class="line"><span class="string"><span class="tag">                           http://www.springframework.org/schema/beans/spring-beans-4.0.xsd</span></span></span><br><span class="line"><span class="string"><span class="tag">                           http://www.springframework.org/schema/context</span></span></span><br><span class="line"><span class="string"><span class="tag">                           http://www.springframework.org/schema/context/spring-context-4.0.xsd</span></span></span><br><span class="line"><span class="string"><span class="tag">                           http://www.springframework.org/schema/aop</span></span></span><br><span class="line"><span class="string"><span class="tag">                           http://www.springframework.org/schema/aop/spring-aop-4.0.xsd</span></span></span><br><span class="line"><span class="string"><span class="tag">                           http://www.springframework.org/schema/tx</span></span></span><br><span class="line"><span class="string"><span class="tag">                           http://www.springframework.org/schema/tx/spring-tx-4.0.xsd&quot;</span>&gt;</span></span><br><span class="line"></span><br><span class="line"> <span class="tag">&lt;<span class="name">bean</span> <span class="attr">id</span>=<span class="string">&quot;compactDisc&quot;</span> <span class="attr">class</span>=<span class="string">&quot;com.dtrees.spring.bean.SgtPeppers&quot;</span>&gt;</span><span class="tag">&lt;/<span class="name">bean</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">beans</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<h5 id="Java配置"><a href="#Java配置" class="headerlink" title="Java配置"></a>Java配置</h5><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//beans.xml在maven项目的resources目录</span></span><br><span class="line"><span class="meta">@Import(CDConfig.class)</span></span><br><span class="line"><span class="meta">@ImportResource(&quot;classpath:beans.xml&quot;)</span>	</span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">CDPlayerConfig</span> </span>&#123;</span><br><span class="line">	<span class="comment">/**</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@Import</span>(&#123;&#125;):将多个配置类进行组合一起</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@ImportResource</span>(&quot;classpath:beans.xml&quot;):将spring配置的xml组合在一起</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line"><span class="meta">@Bean(name = &quot;cdPlayer&quot;)</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> MediaPlayer <span class="title">getMediaPlayer</span><span class="params">(CompactDisc compactDisc)</span></span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> CDPlayer(compactDisc);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h5 id="spring装配的命名空间"><a href="#spring装配的命名空间" class="headerlink" title="spring装配的命名空间"></a>spring装配的命名空间</h5><figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">## 开头省略...</span><br><span class="line"><span class="comment">&lt;!-- </span></span><br><span class="line"><span class="comment">c-命名空间来声明构造器参数</span></span><br><span class="line"><span class="comment">beans.xml中必须引入xmlns:c=&quot;http://www.springframework.org/schema/c&quot;的声明</span></span><br><span class="line"><span class="comment">--&gt;</span></span><br><span class="line"><span class="comment">&lt;!--</span></span><br><span class="line"><span class="comment">        使用命名</span></span><br><span class="line"><span class="comment">        c:compactDisc-ref=&quot;sgtPeppers1&quot;</span></span><br><span class="line"><span class="comment">        属性名称c:命名空间的前缀</span></span><br><span class="line"><span class="comment">        compactDisc:装配的构造器参数名</span></span><br><span class="line"><span class="comment">        -ref:这是一个命名的约定,它会告诉Spring,正在装配的是一个bean的引用,这个bean的名字是compactDisc,而不是字面量“compactDisc”</span></span><br><span class="line"><span class="comment">        sgtPeppers1:要注入的bean的ID名称</span></span><br><span class="line"><span class="comment">    --&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">bean</span> <span class="attr">id</span>=<span class="string">&quot;cdPlayer2&quot;</span> <span class="attr">class</span>=<span class="string">&quot;com.dtrees.spring.bean.CDPlayer&quot;</span> <span class="attr">c:compactDisc-ref</span>=<span class="string">&quot;sgtPeppers1&quot;</span>&gt;</span><span class="tag">&lt;/<span class="name">bean</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<h5 id="使用属性的命名空间"><a href="#使用属性的命名空间" class="headerlink" title="使用属性的命名空间"></a>使用属性的命名空间</h5><figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"> <span class="comment">&lt;!--</span></span><br><span class="line"><span class="comment">        使用属性命名空间（p-命名空间的属性）:</span></span><br><span class="line"><span class="comment">        p:title-ref=&quot;title-ref&quot;</span></span><br><span class="line"><span class="comment">        属性的名字使用了“p:”前缀，表明我们所设置的是一个属性</span></span><br><span class="line"><span class="comment">        &quot;title&quot;:接下来就是要注入的属性名。</span></span><br><span class="line"><span class="comment">        -ref:这会提示Spring要进行装配的是引用，而不是字面量</span></span><br><span class="line"><span class="comment">        title-ref:要注入的bean的ID名称</span></span><br><span class="line"><span class="comment">    --&gt;</span></span><br><span class="line">// 引入属性的命名空间xmlns:p=&quot;http://www.springframework.org/schema/p&quot;</span><br><span class="line"></span><br><span class="line">//设置字面值</span><br><span class="line"><span class="tag">&lt;<span class="name">bean</span> <span class="attr">id</span>=<span class="string">&quot;compactDisc&quot;</span> <span class="attr">class</span>=<span class="string">&quot;com.dtrees.spring.bean.SgtPeppers&quot;</span> <span class="attr">p:title</span>=<span class="string">&quot;xxx value&quot;</span>&gt;</span><span class="tag">&lt;/<span class="name">bean</span>&gt;</span></span><br><span class="line"></span><br><span class="line">// 设置引用</span><br><span class="line"><span class="tag">&lt;<span class="name">bean</span> <span class="attr">id</span>=<span class="string">&quot;compactDisc&quot;</span> <span class="attr">class</span>=<span class="string">&quot;com.dtrees.spring.bean.SgtPeppers&quot;</span> <span class="attr">p:title-ref</span>=<span class="string">&quot;title-ref&quot;</span>&gt;</span><span class="tag">&lt;/<span class="name">bean</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<p><strong>小结：c与p的命名空间，在装配bean引用与装配字面量的唯一区别在于是否带有“-ref”后缀，如果没 有“-ref”后缀的话，所装配的就是字面量</strong></p>
+<h5 id="bean的注入方式-这里只用JavaConfig注入方式，不用xml配置"><a href="#bean的注入方式-这里只用JavaConfig注入方式，不用xml配置" class="headerlink" title="bean的注入方式(这里只用JavaConfig注入方式，不用xml配置)"></a>bean的注入方式(这里只用JavaConfig注入方式，不用xml配置)</h5><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Component</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">CDPlayer</span> <span class="keyword">implements</span> <span class="title">MediaPlayer</span></span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> CompactDisc compactDisc;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 通过构造器自动装配</span></span><br><span class="line">    <span class="meta">@Autowired</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">CDPlayer</span><span class="params">(CompactDisc compactDisc)</span></span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.compactDisc = compactDisc;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 通过设置器自动装配</span></span><br><span class="line">    <span class="meta">@Autowired</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setCompactDisc</span><span class="params">(CompactDisc compactDisc)</span></span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.compactDisc = compactDisc;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 其他方法</span></span><br><span class="line">    <span class="meta">@Autowired</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">insertCompactDisc</span><span class="params">(CompactDisc compactDisc)</span></span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.compactDisc = compactDisc;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> CompactDisc <span class="title">getCompactDisc</span><span class="params">()</span></span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">this</span>.compactDisc;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+    </div>
+
+    <div>全文完。</div>
+  </article>
+  <div class="toc-container">
+    
+  <div id="toc" class="toc-article">
+    <strong class="toc-title">目录</strong>
+    <ol class="toc"><li class="toc-item toc-level-5"><a class="toc-link" href="#%E4%B8%89%E7%A7%8D%E8%A3%85%E9%85%8D%E6%9C%BA%E5%88%B6"><span class="toc-text">三种装配机制</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%E8%87%AA%E5%8A%A8%E5%8C%96%E8%A3%85%E9%85%8D"><span class="toc-text">自动化装配</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%E5%9F%BA%E4%BA%8EJava%E6%98%BE%E5%BC%8F%E7%9A%84%E9%85%8D%E7%BD%AE"><span class="toc-text">基于Java显式的配置</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#Java%E9%85%8D%E7%BD%AE%E5%92%8Cxml%E9%85%8D%E7%BD%AE%E6%B7%B7%E5%90%88"><span class="toc-text">Java配置和xml配置混合</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#Java%E9%85%8D%E7%BD%AE"><span class="toc-text">Java配置</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#spring%E8%A3%85%E9%85%8D%E7%9A%84%E5%91%BD%E5%90%8D%E7%A9%BA%E9%97%B4"><span class="toc-text">spring装配的命名空间</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%E4%BD%BF%E7%94%A8%E5%B1%9E%E6%80%A7%E7%9A%84%E5%91%BD%E5%90%8D%E7%A9%BA%E9%97%B4"><span class="toc-text">使用属性的命名空间</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#bean%E7%9A%84%E6%B3%A8%E5%85%A5%E6%96%B9%E5%BC%8F-%E8%BF%99%E9%87%8C%E5%8F%AA%E7%94%A8JavaConfig%E6%B3%A8%E5%85%A5%E6%96%B9%E5%BC%8F%EF%BC%8C%E4%B8%8D%E7%94%A8xml%E9%85%8D%E7%BD%AE"><span class="toc-text">bean的注入方式(这里只用JavaConfig注入方式，不用xml配置)</span></a></li></ol>
+  </div>
+
+
+  </div>
+</div>
+<div class="copyright">
+    <span>本作品采用</span>
+    <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by/4.0/">知识共享署名 4.0 国际许可协议</a>
+    <span>进行许可。 转载时请注明原文链接。</span>
+</div>
+<div class="share" style="width: 100%;">
+  <img src="/images/wechat-small.jpg" alt="Running Geek" style="margin: auto; display: block;"/>
+
+  <div style="margin: auto; text-align: center; font-size: 0.8em; color: grey;">老铁们关注走一走，不迷路</div>
+  
+</div>
+
+  
+    <div class="post-nav">
+      <div class="post-nav-item post-nav-next">
+        
+          <span>〈 </span>
+          <a href="/2019/07/24/spring3/" rel="next" title="Spring小结(3)">
+          Spring小结(3)
+          </a>
+        
+      </div>
+  
+      <div class="post-nav-item post-nav-prev">
+          
+          <a href="/2019/12/10/uwsgi/" rel="prev" title="python之uwsgi配置">
+            python之uwsgi配置
+          </a>
+          <span>〉</span>
+        
+      </div>
+    </div>
+  
+
+
+    </div>
+
+    
+
+  </div>
+  <footer class="footer text-center">
+    <div id="bottom-inner">
+        <a class="bottom-item" href="https://xiaokunliu.github.io">首页</a> |
+        <a class="bottom-item" href="https://xiaokunliu.github.io" target="_blank">主站</a> |
+        <a class="bottom-item" href="https://github.com/xiaokunliu" target="_blank">GitHub</a> |
+        <a class="bottom-item" href="https://hexo.io" target="_blank">Powered by hexo</a> |
+        <a class="bottom-item" href="https://github.com/KevinOfNeu/hexo-theme-xoxo" target="_blank">Theme xoxo</a>
+    </div>
+</footer>
+  
+
+<script>
+  (function(window, document, undefined) {
+
+    var timer = null;
+
+    function returnTop() {
+      cancelAnimationFrame(timer);
+      timer = requestAnimationFrame(function fn() {
+        var oTop = document.body.scrollTop || document.documentElement.scrollTop;
+        if (oTop > 0) {
+          document.body.scrollTop = document.documentElement.scrollTop = oTop - 50;
+          timer = requestAnimationFrame(fn);
+        } else {
+          cancelAnimationFrame(timer);
+        }
+      });
+    }
+
+    var hearts = [];
+    window.requestAnimationFrame = (function() {
+      return window.requestAnimationFrame ||
+        window.webkitRequestAnimationFrame ||
+        window.mozRequestAnimationFrame ||
+        window.oRequestAnimationFrame ||
+        window.msRequestAnimationFrame ||
+        function(callback) {
+          setTimeout(callback, 1000 / 60);
+        }
+    })();
+    init();
+
+    function init() {
+      css(".heart{z-index:9999;width: 10px;height: 10px;position: fixed;background: #f00;transform: rotate(45deg);-webkit-transform: rotate(45deg);-moz-transform: rotate(45deg);}.heart:after,.heart:before{content: '';width: inherit;height: inherit;background: inherit;border-radius: 50%;-webkit-border-radius: 50%;-moz-border-radius: 50%;position: absolute;}.heart:after{top: -5px;}.heart:before{left: -5px;}");
+      attachEvent();
+      gameloop();
+      addMenuEvent();
+    }
+
+    function gameloop() {
+      for (var i = 0; i < hearts.length; i++) {
+        if (hearts[i].alpha <= 0) {
+          document.body.removeChild(hearts[i].el);
+          hearts.splice(i, 1);
+          continue;
+        }
+        hearts[i].y--;
+        hearts[i].scale += 0.004;
+        hearts[i].alpha -= 0.013;
+        hearts[i].el.style.cssText = "left:" + hearts[i].x + "px;top:" + hearts[i].y + "px;opacity:" + hearts[i].alpha + ";transform:scale(" + hearts[i].scale + "," + hearts[i].scale + ") rotate(45deg);background:" + hearts[i].color;
+      }
+      requestAnimationFrame(gameloop);
+    }
+
+    /**
+     * 给logo设置点击事件
+     * 
+     * - 回到顶部
+     * - 出现爱心
+     */
+    function attachEvent() {
+      var old = typeof window.onclick === "function" && window.onclick;
+      var logo = document.getElementById("logo");
+      if (logo) {
+        logo.onclick = function(event) {
+          returnTop();
+          old && old();
+          createHeart(event);
+        }
+      }
+      
+    }
+
+    function createHeart(event) {
+      var d = document.createElement("div");
+      d.className = "heart";
+      hearts.push({
+        el: d,
+        x: event.clientX - 5,
+        y: event.clientY - 5,
+        scale: 1,
+        alpha: 1,
+        color: randomColor()
+      });
+      document.body.appendChild(d);
+    }
+
+    function css(css) {
+      var style = document.createElement("style");
+      style.type = "text/css";
+      try {
+        style.appendChild(document.createTextNode(css));
+      } catch (ex) {
+        style.styleSheet.cssText = css;
+      }
+      document.getElementsByTagName('head')[0].appendChild(style);
+    }
+
+    function randomColor() {
+      // return "rgb(" + (~~(Math.random() * 255)) + "," + (~~(Math.random() * 255)) + "," + (~~(Math.random() * 255)) + ")";
+      return "#F44336";
+    }
+
+    function addMenuEvent() {
+      var menu = document.getElementById('menu-main-post');
+      if (menu) {
+        var toc = document.getElementById('toc');
+        if (toc) {
+          menu.onclick = function() {
+            if (toc) {
+              if (toc.style.display == 'block') {
+                toc.style.display = 'none';
+              } else {
+                toc.style.display = 'block';
+              }
+            }
+          };
+        } else {
+          menu.style.display = 'none';
+        }
+      }
+    }
+
+  })(window, document);
+</script>
+
+  
+
+
+
+</body>
+</html>

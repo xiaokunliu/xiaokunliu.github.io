@@ -1,0 +1,428 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<!--
+config header
+-->
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#202020"/>
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  <script src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" async></script>
+
+  
+      <meta name="google-site-verification" content="{{ theme.google_site_verification }}" />
+  
+
+  
+    <meta name="keywords" content="网络IO编程," />
+  
+
+  
+    <meta name="description" content="分享个人学习工作的技术知识" />
+  
+  
+  <link rel="icon" type="image/x-icon" href="/logo.jpg">
+  <title>category: 网络IO编程 [ 疾风先生 ]</title>
+  
+    <!-- stylesheets list from config.yml -->
+    
+      <link rel="stylesheet" href="//cdn.bootcss.com/pure/1.0.0/pure-min.css">
+    
+      <link rel="stylesheet" href="/css/xoxo.css">
+    
+  
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+
+<body>
+  <div class="nav-container">
+    <nav class="home-menu pure-menu pure-menu-horizontal">
+  <a class="pure-menu-heading" href="/">
+    <img class="avatar" src="https://xiaokunliu.github.io/images/logo.jpg">
+    <span class="title">疾风先生</span>
+  </a>
+
+  <ul class="pure-menu-list clearfix">
+      
+          
+            <li class="pure-menu-item"><a href="/" class="pure-menu-link">首页</a></li>
+          
+      
+          
+            <li class="pure-menu-item"><a href="/archives" class="pure-menu-link">归档</a></li>
+          
+      
+          
+            <li class="pure-menu-item"><a href="/tags" class="pure-menu-link">标签</a></li>
+          
+      
+          
+            <li class="pure-menu-item"><a href="/categories" class="pure-menu-link">分类</a></li>
+          
+      
+          
+            <li class="pure-menu-item"><a href="/search" class="pure-menu-link">搜索</a></li>
+          
+      
+  </ul>
+   
+</nav>
+  </div>
+
+  <div class="container" id="content-outer">
+    <div class="inner" id="content-inner">
+      <div class="post-container">
+  <article class="post" id="post">
+    <header class="post-header text-center">
+      <h1 class="title">
+        深入Netty事件流程分析(下)
+      </h1>
+      <span>
+        
+        <time class="time" datetime="2020-04-24T09:39:59.000Z">
+        2020-04-24
+      </time>
+        
+      </span>
+      <span class="slash">/</span>
+      <span class="post-meta">
+      <span class="post-tags">
+        <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E7%BD%91%E7%BB%9CIO%E7%BC%96%E7%A8%8B/" rel="tag">网络IO编程</a></li></ul>
+      </span>
+    </span>
+      <span class="slash">/</span>
+      <span class="read">
+      <span id="busuanzi_value_page_pv"></span> 点击
+    </span>
+    </header>
+
+    <div class="post-content">
+      <span id="more"></span>
+<p><img src="https://raw.githubusercontent.com/xiaokunliu/xiaokunliu.github.io/feature/writing/websites/zimages/netty/event2/title2.jpg" alt="title2"></p>
+<p>继上篇Netty事件分析,本文主要讲述Netty的责任链流程,Channel与Handler生命周期以及网络IO事件分析流程,最后对Netty事件流程进行一个总结梳理.</p>
+<h4 id="pipeline责任链流程分析"><a href="#pipeline责任链流程分析" class="headerlink" title="pipeline责任链流程分析"></a>pipeline责任链流程分析</h4><h5 id="责任链创建流程"><a href="#责任链创建流程" class="headerlink" title="责任链创建流程"></a>责任链创建流程</h5><ul>
+<li>入口程序</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 责任链的创建是在Channel的初始化的时候进行的</span></span><br><span class="line"><span class="comment">// AbstractChannel.java</span></span><br><span class="line"><span class="function"><span class="keyword">protected</span> <span class="title">AbstractChannel</span><span class="params">(Channel parent)</span> </span>&#123;</span><br><span class="line">  <span class="comment">// 如果当前为服务端的channel，则parent=null</span></span><br><span class="line">  <span class="keyword">this</span>.parent = parent;</span><br><span class="line">  <span class="comment">// 创建channelId</span></span><br><span class="line">  id = newId();</span><br><span class="line">  <span class="comment">// 使用NioServerSocketChannel父类的AbstractNioMessageChannel下的NioMessageUnsafe</span></span><br><span class="line">  <span class="comment">// 使用NioSocketChannel父类的AbstractNioByteChannel下的AbstractNioUnsafe</span></span><br><span class="line">  unsafe = newUnsafe();</span><br><span class="line">  <span class="comment">// 创建channel的责任链,DefaultChannelPipeline</span></span><br><span class="line">  pipeline = newChannelPipeline();</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 创建默认的责任链实例对象</span></span><br><span class="line"> <span class="function"><span class="keyword">protected</span> DefaultChannelPipeline <span class="title">newChannelPipeline</span><span class="params">()</span> </span>&#123;</span><br><span class="line">   <span class="keyword">return</span> <span class="keyword">new</span> DefaultChannelPipeline(<span class="keyword">this</span>);</span><br><span class="line"> &#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>Channel的类关系图</li>
+</ul>
+<p><img src="https://raw.githubusercontent.com/xiaokunliu/xiaokunliu.github.io/feature/writing/websites/zimages/netty/event2/channel_class.jpg"></p>
+<p>通过源码与类图可知,不论是服务端Channel的创建还是客户端Channel的创建,其默认的pipeline均通过AbstractChannel的构造方法来初始化一个责任链实例,且默认为<code>DefaultChannelPipeline</code>,接下来我们来看下责任链创建的流程</p>
+<ul>
+<li>创建源码分析</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// DefaultChannelPipeline.java</span></span><br><span class="line"><span class="function"><span class="keyword">protected</span> <span class="title">DefaultChannelPipeline</span><span class="params">(Channel channel)</span> </span>&#123;</span><br><span class="line">  <span class="comment">// 当前的责任链保存对应的channel信息</span></span><br><span class="line">  <span class="keyword">this</span>.channel = ObjectUtil.checkNotNull(channel, <span class="string">&quot;channel&quot;</span>);</span><br><span class="line">  </span><br><span class="line">  <span class="comment">// channel在整个责任链处理正常返回的成功结果对象Future</span></span><br><span class="line">  succeededFuture = <span class="keyword">new</span> SucceededChannelFuture(channel, <span class="keyword">null</span>);</span><br><span class="line">  </span><br><span class="line">  <span class="comment">// 对channel在整个责任链处理添加监听,负责异常的捕获</span></span><br><span class="line">  voidPromise =  <span class="keyword">new</span> VoidChannelPromise(channel, <span class="keyword">true</span>);</span><br><span class="line"></span><br><span class="line"> <span class="comment">// 创建上下文对象，每个上下文对象都包含当前pipeline实例对象</span></span><br><span class="line">  tail = <span class="keyword">new</span> TailContext(<span class="keyword">this</span>);</span><br><span class="line">  head = <span class="keyword">new</span> HeadContext(<span class="keyword">this</span>);</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 在逻辑结构上通过双端链表的方式存储上文对象</span></span><br><span class="line">  head.next = tail;</span><br><span class="line">  tail.prev = head;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment">// 对于HeadContext与TailContext特殊上下文的创建</span></span><br><span class="line"><span class="comment">// 上下文创建</span></span><br><span class="line"><span class="comment">// AbstractChannelHandlerContext.java</span></span><br><span class="line">HeadContext(DefaultChannelPipeline pipeline) &#123;</span><br><span class="line">  <span class="keyword">super</span>(pipeline, <span class="keyword">null</span>, HEAD_NAME, HeadContext.class);</span><br><span class="line">  </span><br><span class="line">  <span class="comment">// 根据channel的类型来区分,服务端为NioMessageUnsafe</span></span><br><span class="line">  <span class="comment">// 客户端为NioSocketChannelUnsafe</span></span><br><span class="line">  unsafe = pipeline.channel().unsafe();</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 保证handler调用方法的顺序，可以理解为handler执行的生命周期，通过状态机来控制生命周期</span></span><br><span class="line">  setAddComplete();</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"> TailContext(DefaultChannelPipeline pipeline) &#123;</span><br><span class="line">   <span class="keyword">super</span>(pipeline, <span class="keyword">null</span>, TAIL_NAME, TailContext.class);</span><br><span class="line">   setAddComplete();</span><br><span class="line"> &#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 对于Netty责任链使用的EventLoop是属于有序的执行器,为了保证handlerAdd与handlerRemove的执行存在先后关系,通过以下的状态机来控制,即handler方法执行的生命周期保证,如果EventLoop不保证有序的话,只需要通过ADD_COMPLETE或者REMOVE_COMPLETE来告知方法是否被调用即可</span></span><br><span class="line"><span class="comment">// 初始化状态,创建责任链的时候上下文的handlerState默认为初始化,表示handlerAdd/handlerRemove均没有被调用</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> INIT = <span class="number">0</span>;</span><br><span class="line"><span class="comment">// handlerAdded即将被调用(实际还没有调用,准备就绪,可以被调用),一般是在不需要保证有序的情况下</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> ADD_PENDING = <span class="number">1</span>;</span><br><span class="line"><span class="comment">// handlerAdd已经被调用</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> ADD_COMPLETE = <span class="number">2</span>;</span><br><span class="line"><span class="comment">// handlerRemoved已经被调用</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> REMOVE_COMPLETE = <span class="number">3</span>;</span><br></pre></td></tr></table></figure>
+
+<p>相比其他的handler的上下文创建,HeadContext与TailContext在构建方法中多了一个动作<code>setAddComplete()</code>,主要目的是由于双端链表的head与tail都是在初始化channel的时候构建而不是通过addLast或者是addFirst的方式构建,为了保证handler方法执行的有序性,于是在构建上下文的时候多添加一个步骤,接下来我们可以看到普通的handler添加方式,会在addLast中也调用上述<code>setAddComplete()</code>相应的方法执行.</p>
+<ul>
+<li>创建流程</li>
+</ul>
+<p><img src="https://raw.githubusercontent.com/xiaokunliu/xiaokunliu.github.io/feature/writing/websites/zimages/netty/event2/pipeline_init.jpg"></p>
+<h5 id="添加handler流程"><a href="#添加handler流程" class="headerlink" title="添加handler流程"></a>添加handler流程</h5><ul>
+<li>程序入口代码</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 获取当前的责任链pipeline</span></span><br><span class="line">Pipeline pipeline = channel.pipeline();</span><br><span class="line"><span class="comment">// 添加handler,这里以特殊的initHandler添加为准来说明,摘录启动类的init方法</span></span><br><span class="line">pipeline.addLast(<span class="keyword">new</span> ChannelInitializer&lt;Channel&gt;() &#123;</span><br><span class="line">  <span class="comment">// ChannelInitializer是一个特殊的入站事件，添加到channel中的pipeline中</span></span><br><span class="line">  <span class="comment">//  一旦channel已经注册到EventLoop中就会触发执行</span></span><br><span class="line">  <span class="meta">@Override</span></span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">initChannel</span><span class="params">(<span class="keyword">final</span> Channel ch)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">final</span> ChannelPipeline pipeline = ch.pipeline();</span><br><span class="line">    <span class="comment">// 获取服务端channel的handler处理类</span></span><br><span class="line">    ChannelHandler handler = config.handler();</span><br><span class="line">    <span class="keyword">if</span> (handler != <span class="keyword">null</span>) &#123;</span><br><span class="line">      pipeline.addLast(handler);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    ch.eventLoop().execute(<span class="keyword">new</span> Runnable() &#123;</span><br><span class="line">      <span class="meta">@Override</span></span><br><span class="line">      <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        pipeline.addLast(<span class="keyword">new</span> ServerBootstrapAcceptor(</span><br><span class="line">          ch, currentChildGroup, currentChildHandler, currentChildOptions, currentChildAttrs));</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><code>addLast()</code>源代码</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// DefaultChannelPipeline.java</span></span><br><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">final</span> ChannelPipeline <span class="title">addLast</span><span class="params">(EventExecutorGroup group, String name, ChannelHandler handler)</span> </span>&#123;</span><br><span class="line">  <span class="keyword">final</span> AbstractChannelHandlerContext newCtx;</span><br><span class="line">  <span class="keyword">synchronized</span> (<span class="keyword">this</span>) &#123;</span><br><span class="line">    checkMultiplicity(handler);</span><br><span class="line">		<span class="comment">// 创建一个上下文对象,默认为DefaultChannelHandlerContext</span></span><br><span class="line">    newCtx = newContext(group, filterName(name, handler), handler);</span><br><span class="line">		</span><br><span class="line">    <span class="comment">// 将上下文对象添加到责任链尾部</span></span><br><span class="line">    addLast0(newCtx);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (!registered) &#123;</span><br><span class="line">      <span class="comment">// channel还没有注册,设置当前handler处于等待状态</span></span><br><span class="line">      newCtx.setAddPending();</span><br><span class="line">      <span class="comment">// 将其添加到等待链表的尾部中</span></span><br><span class="line">      callHandlerCallbackLater(newCtx, <span class="keyword">true</span>);</span><br><span class="line">      <span class="keyword">return</span> <span class="keyword">this</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    EventExecutor executor = newCtx.executor();</span><br><span class="line">    <span class="keyword">if</span> (!executor.inEventLoop()) &#123;</span><br><span class="line">      <span class="comment">// 当前线程持有的eventloop非独占,需要将其添加到任务队列中</span></span><br><span class="line">      callHandlerAddedInEventLoop(newCtx, executor);</span><br><span class="line">      <span class="keyword">return</span> <span class="keyword">this</span>;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="comment">// 核心方法</span></span><br><span class="line">  callHandlerAdded0(newCtx);</span><br><span class="line">  <span class="keyword">return</span> <span class="keyword">this</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// callHandlerAdded0下会执行方法</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">callHandlerAdded0</span><span class="params">()</span></span>&#123;</span><br><span class="line">  ctx.callHandlerAdded();</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// AbstractChannelContext.java</span></span><br><span class="line"><span class="function"><span class="keyword">final</span> <span class="keyword">void</span> <span class="title">callHandlerAdded</span><span class="params">()</span> <span class="keyword">throws</span> Exception </span>&#123;</span><br><span class="line">  <span class="comment">// 可以看到在执行handlerAdd方法之前会调用setAddComplete方法</span></span><br><span class="line">  <span class="keyword">if</span> (setAddComplete()) &#123;</span><br><span class="line">    handler().handlerAdded(<span class="keyword">this</span>);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 最终会当channel完成注册的时候会调用handlerAdd方法,而ChannelInitial的handlerAdd方法如下:</span></span><br><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">handlerAdded</span><span class="params">(ChannelHandlerContext ctx)</span> <span class="keyword">throws</span> Exception </span>&#123;</span><br><span class="line">  <span class="keyword">if</span> (ctx.channel().isRegistered()) &#123;</span><br><span class="line">    <span class="comment">// 调用initChannel方法</span></span><br><span class="line">    <span class="keyword">if</span> (initChannel(ctx)) &#123;</span><br><span class="line">      <span class="comment">// 完成channel的初始化链会将当前实例移除</span></span><br><span class="line">      removeState(ctx);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">boolean</span> <span class="title">initChannel</span><span class="params">(ChannelHandlerContext ctx)</span> <span class="keyword">throws</span> Exception </span>&#123;</span><br><span class="line">  <span class="keyword">if</span> (initMap.add(ctx)) &#123; <span class="comment">// Guard against re-entrance.</span></span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">      <span class="comment">// 模板(钩子hook)方法,也就是我们上述的入口程序添加initHandler重载的initChannel方法</span></span><br><span class="line">      initChannel((C) ctx.channel());</span><br><span class="line">    &#125; <span class="keyword">catch</span> (Throwable cause) &#123;</span><br><span class="line">      exceptionCaught(ctx, cause);</span><br><span class="line">    &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">      <span class="comment">// 最后会在pipeline链中删除当前实例</span></span><br><span class="line">      ChannelPipeline pipeline = ctx.pipeline();</span><br><span class="line">      <span class="keyword">if</span> (pipeline.context(<span class="keyword">this</span>) != <span class="keyword">null</span>) &#123;</span><br><span class="line">         pipeline.remove(<span class="keyword">this</span>);</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">true</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>添加handler的流程</li>
+</ul>
+<p><img src="https://raw.githubusercontent.com/xiaokunliu/xiaokunliu.github.io/feature/writing/websites/zimages/netty/event2/pipeline_add_flow.jpg"></p>
+<p>通过上述流程图可知,初始化initHandler在channel注册之后责任链pipeline会将initHandler从中移除并将用户添加的handler添加到责)</p>
+<h5 id="责任链销毁流程"><a href="#责任链销毁流程" class="headerlink" title="责任链销毁流程"></a>责任链销毁流程</h5><p>在查看责任链销毁的源代码之前,我们是否应该先思考是什么样的动作行为会销毁pipeline责任链,如果想不出来,我们换另一个思路,责任链是什么时候创建的,根据上述的分析,责任链pipeline是创建channel的时候创建的,那么我们是否可以推测销毁时机是不是在channel销毁的时候对应的pipeline也将会销毁呢?那么channel是在什么时候销毁的呢,我们可以考虑一个已熟知的数据库连接connection创建与销毁,什么时候需要销毁connection,自然是调用<code>close()</code>方法的时候,这个时候connection要么等待被JVM回收要么就是存放到回收资源池中,对此关于责任链的销毁分析如下</p>
+<ul>
+<li>入口程序</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 服务端channel销毁,也就是服务端channel调用close()关闭服务</span></span><br><span class="line"><span class="comment">// 对于客户端channel,自然是断开与服务端的连接</span></span><br><span class="line"><span class="comment">// channel的关闭是属于事件触发,于是我们直接定位到事件轮询器下的方法processSelectedKey,该方法负责处理就绪事件</span></span><br><span class="line"><span class="comment">// 对于NIO的api,每个socket的就绪事件都存储在SelectionKey中,如果channel销毁,当前的SelectionKey也将会在销毁之前取消事件监听</span></span><br><span class="line"><span class="comment">// NioEventLoop.javas</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">processSelectedKey</span><span class="params">()</span></span>&#123;</span><br><span class="line">  <span class="keyword">if</span> (!k.isValid()) &#123;</span><br><span class="line">    <span class="comment">// ...</span></span><br><span class="line">    unsafe.close(unsafe.voidPromise());</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">try</span>&#123;</span><br><span class="line">    </span><br><span class="line">  &#125;<span class="keyword">catch</span> (CancelledKeyException ignored) &#123;</span><br><span class="line">    unsafe.close(unsafe.voidPromise());</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>源码分析</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 通过代码定位最终会执行以下代码块</span></span><br><span class="line"><span class="comment">// AbstractChannel.java</span></span><br><span class="line"><span class="keyword">try</span> &#123;</span><br><span class="line">  <span class="comment">// 调用java饿的socket进行关闭</span></span><br><span class="line">  doClose0(promise);</span><br><span class="line">&#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">  <span class="comment">// Call invokeLater so closeAndDeregister is executed in the EventLoop again!</span></span><br><span class="line">  invokeLater(<span class="keyword">new</span> Runnable() &#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</span><br><span class="line">      <span class="keyword">if</span> (outboundBuffer != <span class="keyword">null</span>) &#123;</span><br><span class="line">        <span class="comment">// Fail all the queued messages</span></span><br><span class="line">        outboundBuffer.failFlushed(cause, notify);</span><br><span class="line">        outboundBuffer.close(closeCause);</span><br><span class="line">      &#125;</span><br><span class="line">      <span class="comment">// 将channel事件传播到责任链中</span></span><br><span class="line">      fireChannelInactiveAndDeregister(wasActive);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>销毁流程</li>
+</ul>
+<p><img src="https://raw.githubusercontent.com/xiaokunliu/xiaokunliu.github.io/feature/writing/websites/zimages/netty/event2/pipeline_destroy.jpg"></p>
+<h4 id="IO事件流程分析"><a href="#IO事件流程分析" class="headerlink" title="IO事件流程分析"></a>IO事件流程分析</h4><h5 id="监听连接事件"><a href="#监听连接事件" class="headerlink" title="监听连接事件"></a>监听连接事件</h5><p>基于上一篇的Netty事件流程分析中的事件轮询说明可知,服务端监听的事件变化以及事件转发处理都在EventLoop.run方法中,对此,我们详细看下Netty的服务端是如何接收并处理客户端的连接事件以及对应的事件流程是如何的.</p>
+<ul>
+<li>Netty框架下的核心事件轮询run方法源代码</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 仅贴出部分核心代码</span></span><br><span class="line"><span class="comment">// NioServerSocketChannel.java</span></span><br><span class="line">run()&#123;</span><br><span class="line">  <span class="comment">// 服务端不断轮询监听事件</span></span><br><span class="line">  <span class="keyword">for</span> (;;) &#123;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 执行select操作</span></span><br><span class="line">    <span class="keyword">if</span> (!hasTasks()) &#123;</span><br><span class="line">      strategy = select(curDeadlineNanos);</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 处理就绪事件</span></span><br><span class="line">    processSelectedKeys();</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 处理任务队列中的任务</span></span><br><span class="line">    ranTasks = runAllTasks();</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 既然关注ACCEPT事件,这个时候我们需要知道服务端Channel在创建注册并绑定的时候初始化handler并将Acceptor添加到handler中,对此我们追踪下bind方法,最后查阅代码到init方法,其代码如下:</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">init</span><span class="params">(Channel channel)</span></span>&#123;</span><br><span class="line">  <span class="comment">// 在先前分析可知,这里已经完成了channel的创建,且此时channel为NioServerSocketChannel事件</span></span><br><span class="line">  ChannelPipeline p = channel.pipeline();</span><br><span class="line">  p.addLast(<span class="keyword">new</span> ChannelInitializer&lt;Channel&gt;() &#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">initChannel</span><span class="params">(<span class="keyword">final</span> Channel ch)</span> </span>&#123;</span><br><span class="line">      <span class="keyword">final</span> ChannelPipeline pipeline = ch.pipeline();</span><br><span class="line">      <span class="comment">// 获取服务端channel的handler处理类</span></span><br><span class="line">      ChannelHandler handler = config.handler();</span><br><span class="line">      <span class="keyword">if</span> (handler != <span class="keyword">null</span>) &#123;</span><br><span class="line">        pipeline.addLast(handler);</span><br><span class="line">      &#125;</span><br><span class="line"></span><br><span class="line">      ch.eventLoop().execute(<span class="keyword">new</span> Runnable() &#123;</span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</span><br><span class="line">          pipeline.addLast(<span class="keyword">new</span> ServerBootstrapAcceptor(</span><br><span class="line">            ch, currentChildGroup, currentChildHandler, currentChildOptions, currentChildAttrs));</span><br><span class="line">        &#125;</span><br><span class="line">      &#125;);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>ServerBootstrapAcceptor监听连接的源码</li>
+</ul>
+<p>在上一篇的事件分析中,我们对服务端的一个绑定事件进行了分析(包括服务端channel的创建/初始化与注册,客户端的channel基本与服务端一致,这里也不再详细说明),最终的监听连接的事件将会调用<code>unsafe.read()</code>方法并且会将事件通过责任链pipeline传播到channelRead方法下,对此,我们关注Acceptor处理连接可以通过查看handler实现的<code>channelRead()</code>方法即可.</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// ServerBootstrapAcceptor.java</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">channelRead</span><span class="params">(ChannelHandlerContext ctx, Object msg)</span> </span>&#123;</span><br><span class="line">  <span class="keyword">final</span> Channel child = (Channel) msg;</span><br><span class="line">  <span class="comment">// 将处理客户端channel的handler添加到责任链pipeline中</span></span><br><span class="line">  child.pipeline().addLast(childHandler);</span><br><span class="line"></span><br><span class="line">  setChannelOptions(child, childOptions, logger);</span><br><span class="line">  setAttributes(child, childAttrs);</span><br><span class="line"></span><br><span class="line">  <span class="keyword">try</span> &#123;</span><br><span class="line">    <span class="comment">// 客户端channel注册到EventLoop,注册流程与之前服务端注册流程基本一致,这里不再详述</span></span><br><span class="line">    childGroup.register(child).addListener(<span class="keyword">new</span> ChannelFutureListener() &#123;</span><br><span class="line">      <span class="meta">@Override</span></span><br><span class="line">      <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">operationComplete</span><span class="params">(ChannelFuture future)</span> <span class="keyword">throws</span> Exception </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (!future.isSuccess()) &#123;</span><br><span class="line">          forceClose(child, future.cause());</span><br><span class="line">        &#125;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;);</span><br><span class="line">  &#125; <span class="keyword">catch</span> (Throwable t) &#123;</span><br><span class="line">    forceClose(child, t);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>监听连接的事件流程</li>
+</ul>
+<p>通过上述源码以及责任链添加handler的流程可知,当服务端channel完成之后,pipeline链将会是<code>head -&gt; handlers -&gt; ServerBootstrapAcceptor -&gt; tail</code>,因而我们根据现有的线索以及上述源码,对监听连接事件流程绘制如下:</p>
+<p><img src="https://raw.githubusercontent.com/xiaokunliu/xiaokunliu.github.io/feature/writing/websites/zimages/netty/event2/channel_listen_flow.jpg"></p>
+<h5 id="请求读取事件"><a href="#请求读取事件" class="headerlink" title="请求读取事件"></a>请求读取事件</h5><ul>
+<li>入口程序</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// NioEventLoop.run()方法</span></span><br><span class="line"><span class="comment">// 在这里关注的读写事件是NioSocketChannel</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">processSelectedKey</span><span class="params">()</span></span>&#123;</span><br><span class="line">  <span class="keyword">if</span> ((readyOps &amp; SelectionKey.OP_WRITE) != <span class="number">0</span>) &#123;</span><br><span class="line">     ch.unsafe().forceFlush();</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 对于处理请求,我们需要关注NioSocketChannel处理读取事件流程</span></span><br><span class="line">  <span class="keyword">if</span> ((readyOps &amp; (SelectionKey.OP_READ | SelectionKey.OP_ACCEPT)) != <span class="number">0</span> || readyOps == <span class="number">0</span>) &#123;</span><br><span class="line">     unsafe.read();</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>NioSocketChannel的类图组件</li>
+</ul>
+<p><img src="https://raw.githubusercontent.com/xiaokunliu/xiaokunliu.github.io/feature/writing/websites/zimages/netty/event2/nio_socket_channel_class.jpg"></p>
+<ul>
+<li>读取事件实现</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 根据上述代码以及类图可知,NioSocketChannel使用初始化safe实现类为NioSocketChannelUnsafe</span></span><br><span class="line"><span class="comment">// 于是查看其的源码实现,但是方法NioSocketChannelUnsafe并没有read方法,而是在NioByteUnsafe类中,因而找到对应的read方法,摘录部分核心代码如下:</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">read</span><span class="params">()</span> </span>&#123;</span><br><span class="line">  <span class="keyword">try</span>&#123;</span><br><span class="line">      <span class="keyword">do</span>&#123;</span><br><span class="line">      <span class="comment">// 从socket中读取数据</span></span><br><span class="line">      doReadBytes(byteBuff);</span><br><span class="line"></span><br><span class="line">      <span class="comment">// 传播读取事件到责任链中</span></span><br><span class="line">      pipeline.fireChannelRead(byteBuf);</span><br><span class="line">    &#125;<span class="keyword">while</span>(continueReading())</span><br><span class="line">      </span><br><span class="line">      <span class="comment">// 传播读取完成事件到责任链中</span></span><br><span class="line">    	pipeline.fireChannelReadComplete();</span><br><span class="line">    	<span class="keyword">if</span>(close)&#123;</span><br><span class="line">      	closeOnRead(pipeline);</span><br><span class="line">    	&#125;</span><br><span class="line">  &#125;<span class="keyword">catch</span> (Throwable t) &#123;</span><br><span class="line">    <span class="comment">//传播事件异常以及userEventTriggered</span></span><br><span class="line">    handleReadException(pipeline, byteBuf, t, close, allocHandle);</span><br><span class="line">  &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">    <span class="keyword">if</span> (!readPending &amp;&amp; !config.isAutoRead()) &#123;</span><br><span class="line">      <span class="comment">// 取消读取操作</span></span><br><span class="line">      removeReadOp();</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>请求读取流程示意图</li>
+</ul>
+<p><img src="https://raw.githubusercontent.com/xiaokunliu/xiaokunliu.github.io/feature/writing/websites/zimages/netty/event2/channel_read.jpg"></p>
+<h5 id="数据写出事件"><a href="#数据写出事件" class="headerlink" title="数据写出事件"></a>数据写出事件</h5><ul>
+<li>入口程序代码</li>
+</ul>
+<p>对于写出操作,主要在开发者实现Channel的channelRead或者channelReadCompleted方法下手动调用方法执行写出操作,即入口程序代码如下:</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 写出操作的触发点是在某个handler下的channelRead方法下手动执行write或者writeAndFlush方法</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">handlerRead</span><span class="params">(AbstractHandlerContext ctx, Object msg)</span></span>&#123;</span><br><span class="line">  <span class="comment">// 执行写操作的流程说明责任链执行当前入站事件handler已经是最后一个,从当前handler的上下文对象开始执行出站事件</span></span><br><span class="line">  ctx.writeAndFlush(msg);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>可以看到,写出操作是调用上下文对象的写出操作,基于这个线索,先来查看上下文对象的类图设计关系.</p>
+<ul>
+<li>上下文对象类设计图</li>
+</ul>
+<p>在添加handler的时候,我们通过源码看到addLast方法内部的实现中,默认上下文对象为DefaultChannelHandlerContext,于是对应的类图关系如下:</p>
+<p><img src="https://raw.githubusercontent.com/xiaokunliu/xiaokunliu.github.io/feature/writing/websites/zimages/netty/event2/context_class.jpg"></p>
+<p>通过上述的类图可知,上下文对象有一个父类<code>AbstractChannelHandlerContext</code>来实现通用的方法,同时上下文对象具备出入站事件,因此我们可以在handler中对接收到的上下文对象ctx手动处理出站或入站事件的传播,对此当我们调用<code>ctx.writeAndFlush()</code>方法的时候也将会触发对应的一个handler触发事件(通过源码分析是属于出站事件)</p>
+<ul>
+<li>源码分析</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// AbstractChannelHandlerContext.java</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">invokeWriteAndFlush</span><span class="params">(Object msg, ChannelPromise promise)</span> </span>&#123;</span><br><span class="line">  <span class="keyword">if</span> (invokeHandler()) &#123;</span><br><span class="line">    <span class="comment">// 负责将写出的数据存储到OutboundBuffer缓冲区</span></span><br><span class="line">    invokeWrite0(msg, promise);</span><br><span class="line">    <span class="comment">// 执行刷新操作</span></span><br><span class="line">    invokeFlush0();</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    writeAndFlush(msg, promise);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 通过责任链传播写出事件,</span></span><br><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">invokeWrite0</span><span class="params">(Object msg, ChannelPromise promise)</span> </span>&#123;</span><br><span class="line">  <span class="keyword">try</span> &#123;</span><br><span class="line">    ((ChannelOutboundHandler) handler()).write(<span class="keyword">this</span>, msg, promise);</span><br><span class="line">  &#125; <span class="keyword">catch</span> (Throwable t) &#123;</span><br><span class="line">    notifyOutboundHandlerException(t, promise);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 通过责任链传播刷新事件</span></span><br><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">invokeFlush0</span><span class="params">()</span> </span>&#123;</span><br><span class="line">  <span class="keyword">try</span> &#123;</span><br><span class="line">    ((ChannelOutboundHandler) handler()).flush(<span class="keyword">this</span>);</span><br><span class="line">  &#125; <span class="keyword">catch</span> (Throwable t) &#123;</span><br><span class="line">    notifyHandlerException(t);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 根据责任链执行流程可知,最终会执行headContext下write以及flush的方法</span></span><br><span class="line"><span class="comment">// HeadContext.java</span></span><br><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">write</span><span class="params">(ChannelHandlerContext ctx, Object msg, ChannelPromise promise)</span> </span>&#123;</span><br><span class="line">  unsafe.write(msg, promise);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">flush</span><span class="params">(ChannelHandlerContext ctx)</span> </span>&#123;</span><br><span class="line">  unsafe.flush();</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 最后会调用AbstractUnsafe的write以及flush方法(这里就不贴出代码.直接查看流程图)</span></span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>写出事件执行流程图</li>
+</ul>
+<p><img src="https://raw.githubusercontent.com/xiaokunliu/xiaokunliu.github.io/feature/writing/websites/zimages/netty/event2/channel_write.jpg"></p>
+<h4 id="Channel与Handler生命周期小结"><a href="#Channel与Handler生命周期小结" class="headerlink" title="Channel与Handler生命周期小结"></a>Channel与Handler生命周期小结</h4><h5 id="Channel的生命周期"><a href="#Channel的生命周期" class="headerlink" title="Channel的生命周期"></a>Channel的生命周期</h5><p>结合上一篇的事件流程分析,channel主要经历创建 - 初始化 - 注册 - 事件接收处理 - 销毁过程,其经历的流程如下:</p>
+<p><img src="https://raw.githubusercontent.com/xiaokunliu/xiaokunliu.github.io/feature/writing/websites/zimages/netty/event2/channel_flow.jpg"></p>
+<ul>
+<li>Channel生命周期</li>
+</ul>
+<p><img src="https://raw.githubusercontent.com/xiaokunliu/xiaokunliu.github.io/feature/writing/websites/zimages/netty/event2/channel_lifetime.jpg"></p>
+<h5 id="Handler的生命周期"><a href="#Handler的生命周期" class="headerlink" title="Handler的生命周期"></a>Handler的生命周期</h5><ul>
+<li>handler类设计图</li>
+</ul>
+<p><img src="https://raw.githubusercontent.com/xiaokunliu/xiaokunliu.github.io/feature/writing/websites/zimages/netty/event2/handler_class.jpg"></p>
+<ul>
+<li>Handler生命周期</li>
+</ul>
+<p>根据上述类图可知,ChannelHandler定义了handlerAdd以及handlerRemoved并且结合上述责任链的流程分析可知,handler是通过上下文对象来传播事件并回调方法,并且上下文对象通过handlerState以及channel事件流程来保证上述方法执行的先后顺序,从而保证handler的执行生命周期</p>
+<p><img src="https://raw.githubusercontent.com/xiaokunliu/xiaokunliu.github.io/feature/writing/websites/zimages/netty/event2/handler_lifetime.jpg"></p>
+<h5 id="Handler方法回调与生命周期联系"><a href="#Handler方法回调与生命周期联系" class="headerlink" title="Handler方法回调与生命周期联系"></a>Handler方法回调与生命周期联系</h5><p>最后,根据前面分析的事件流程以及上述的Channel生命周期,对Channel与handler执行回调方法作一个小结,如下:</p>
+<p><img src="https://raw.githubusercontent.com/xiaokunliu/xiaokunliu.github.io/feature/writing/websites/zimages/netty/event2/channle_life.jpg"></p>
+
+    </div>
+
+    <div>全文完。</div>
+  </article>
+  <div class="toc-container">
+    
+  <div id="toc" class="toc-article">
+    <strong class="toc-title">目录</strong>
+    <ol class="toc"><li class="toc-item toc-level-4"><a class="toc-link" href="#pipeline%E8%B4%A3%E4%BB%BB%E9%93%BE%E6%B5%81%E7%A8%8B%E5%88%86%E6%9E%90"><span class="toc-text">pipeline责任链流程分析</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#%E8%B4%A3%E4%BB%BB%E9%93%BE%E5%88%9B%E5%BB%BA%E6%B5%81%E7%A8%8B"><span class="toc-text">责任链创建流程</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%E6%B7%BB%E5%8A%A0handler%E6%B5%81%E7%A8%8B"><span class="toc-text">添加handler流程</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%E8%B4%A3%E4%BB%BB%E9%93%BE%E9%94%80%E6%AF%81%E6%B5%81%E7%A8%8B"><span class="toc-text">责任链销毁流程</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#IO%E4%BA%8B%E4%BB%B6%E6%B5%81%E7%A8%8B%E5%88%86%E6%9E%90"><span class="toc-text">IO事件流程分析</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#%E7%9B%91%E5%90%AC%E8%BF%9E%E6%8E%A5%E4%BA%8B%E4%BB%B6"><span class="toc-text">监听连接事件</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%E8%AF%B7%E6%B1%82%E8%AF%BB%E5%8F%96%E4%BA%8B%E4%BB%B6"><span class="toc-text">请求读取事件</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%E6%95%B0%E6%8D%AE%E5%86%99%E5%87%BA%E4%BA%8B%E4%BB%B6"><span class="toc-text">数据写出事件</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Channel%E4%B8%8EHandler%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F%E5%B0%8F%E7%BB%93"><span class="toc-text">Channel与Handler生命周期小结</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#Channel%E7%9A%84%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F"><span class="toc-text">Channel的生命周期</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#Handler%E7%9A%84%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F"><span class="toc-text">Handler的生命周期</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#Handler%E6%96%B9%E6%B3%95%E5%9B%9E%E8%B0%83%E4%B8%8E%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F%E8%81%94%E7%B3%BB"><span class="toc-text">Handler方法回调与生命周期联系</span></a></li></ol></li></ol>
+  </div>
+
+
+  </div>
+</div>
+<div class="copyright">
+    <span>本作品采用</span>
+    <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by/4.0/">知识共享署名 4.0 国际许可协议</a>
+    <span>进行许可。 转载时请注明原文链接。</span>
+</div>
+<div class="share" style="width: 100%;">
+  <img src="/images/wechat-small.jpg" alt="Running Geek" style="margin: auto; display: block;"/>
+
+  <div style="margin: auto; text-align: center; font-size: 0.8em; color: grey;">老铁们关注走一走，不迷路</div>
+  
+</div>
+
+  
+    <div class="post-nav">
+      <div class="post-nav-item post-nav-next">
+        
+          <span>〈 </span>
+          <a href="/2020/04/23/proactor/" rel="next" title="IO事件驱动设计实现">
+          IO事件驱动设计实现
+          </a>
+        
+      </div>
+  
+      <div class="post-nav-item post-nav-prev">
+          
+          <a href="/2020/05/01/netty04/" rel="prev" title="深入分析Netty核心特性">
+            深入分析Netty核心特性
+          </a>
+          <span>〉</span>
+        
+      </div>
+    </div>
+  
+
+
+    </div>
+
+    
+
+  </div>
+  <footer class="footer text-center">
+    <div id="bottom-inner">
+        <a class="bottom-item" href="https://xiaokunliu.github.io">首页</a> |
+        <a class="bottom-item" href="https://xiaokunliu.github.io" target="_blank">主站</a> |
+        <a class="bottom-item" href="https://github.com/xiaokunliu" target="_blank">GitHub</a> |
+        <a class="bottom-item" href="https://hexo.io" target="_blank">Powered by hexo</a> |
+        <a class="bottom-item" href="https://github.com/KevinOfNeu/hexo-theme-xoxo" target="_blank">Theme xoxo</a>
+    </div>
+</footer>
+  
+
+<script>
+  (function(window, document, undefined) {
+
+    var timer = null;
+
+    function returnTop() {
+      cancelAnimationFrame(timer);
+      timer = requestAnimationFrame(function fn() {
+        var oTop = document.body.scrollTop || document.documentElement.scrollTop;
+        if (oTop > 0) {
+          document.body.scrollTop = document.documentElement.scrollTop = oTop - 50;
+          timer = requestAnimationFrame(fn);
+        } else {
+          cancelAnimationFrame(timer);
+        }
+      });
+    }
+
+    var hearts = [];
+    window.requestAnimationFrame = (function() {
+      return window.requestAnimationFrame ||
+        window.webkitRequestAnimationFrame ||
+        window.mozRequestAnimationFrame ||
+        window.oRequestAnimationFrame ||
+        window.msRequestAnimationFrame ||
+        function(callback) {
+          setTimeout(callback, 1000 / 60);
+        }
+    })();
+    init();
+
+    function init() {
+      css(".heart{z-index:9999;width: 10px;height: 10px;position: fixed;background: #f00;transform: rotate(45deg);-webkit-transform: rotate(45deg);-moz-transform: rotate(45deg);}.heart:after,.heart:before{content: '';width: inherit;height: inherit;background: inherit;border-radius: 50%;-webkit-border-radius: 50%;-moz-border-radius: 50%;position: absolute;}.heart:after{top: -5px;}.heart:before{left: -5px;}");
+      attachEvent();
+      gameloop();
+      addMenuEvent();
+    }
+
+    function gameloop() {
+      for (var i = 0; i < hearts.length; i++) {
+        if (hearts[i].alpha <= 0) {
+          document.body.removeChild(hearts[i].el);
+          hearts.splice(i, 1);
+          continue;
+        }
+        hearts[i].y--;
+        hearts[i].scale += 0.004;
+        hearts[i].alpha -= 0.013;
+        hearts[i].el.style.cssText = "left:" + hearts[i].x + "px;top:" + hearts[i].y + "px;opacity:" + hearts[i].alpha + ";transform:scale(" + hearts[i].scale + "," + hearts[i].scale + ") rotate(45deg);background:" + hearts[i].color;
+      }
+      requestAnimationFrame(gameloop);
+    }
+
+    /**
+     * 给logo设置点击事件
+     * 
+     * - 回到顶部
+     * - 出现爱心
+     */
+    function attachEvent() {
+      var old = typeof window.onclick === "function" && window.onclick;
+      var logo = document.getElementById("logo");
+      if (logo) {
+        logo.onclick = function(event) {
+          returnTop();
+          old && old();
+          createHeart(event);
+        }
+      }
+      
+    }
+
+    function createHeart(event) {
+      var d = document.createElement("div");
+      d.className = "heart";
+      hearts.push({
+        el: d,
+        x: event.clientX - 5,
+        y: event.clientY - 5,
+        scale: 1,
+        alpha: 1,
+        color: randomColor()
+      });
+      document.body.appendChild(d);
+    }
+
+    function css(css) {
+      var style = document.createElement("style");
+      style.type = "text/css";
+      try {
+        style.appendChild(document.createTextNode(css));
+      } catch (ex) {
+        style.styleSheet.cssText = css;
+      }
+      document.getElementsByTagName('head')[0].appendChild(style);
+    }
+
+    function randomColor() {
+      // return "rgb(" + (~~(Math.random() * 255)) + "," + (~~(Math.random() * 255)) + "," + (~~(Math.random() * 255)) + ")";
+      return "#F44336";
+    }
+
+    function addMenuEvent() {
+      var menu = document.getElementById('menu-main-post');
+      if (menu) {
+        var toc = document.getElementById('toc');
+        if (toc) {
+          menu.onclick = function() {
+            if (toc) {
+              if (toc.style.display == 'block') {
+                toc.style.display = 'none';
+              } else {
+                toc.style.display = 'block';
+              }
+            }
+          };
+        } else {
+          menu.style.display = 'none';
+        }
+      }
+    }
+
+  })(window, document);
+</script>
+
+  
+
+
+
+</body>
+</html>

@@ -1,0 +1,394 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<!--
+config header
+-->
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#202020"/>
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  <script src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" async></script>
+
+  
+      <meta name="google-site-verification" content="{{ theme.google_site_verification }}" />
+  
+
+  
+    <meta name="keywords" content="并发编程," />
+  
+
+  
+    <meta name="description" content="分享个人学习工作的技术知识" />
+  
+  
+  <link rel="icon" type="image/x-icon" href="/logo.jpg">
+  <title>category: 并发编程 [ 疾风先生 ]</title>
+  
+    <!-- stylesheets list from config.yml -->
+    
+      <link rel="stylesheet" href="//cdn.bootcss.com/pure/1.0.0/pure-min.css">
+    
+      <link rel="stylesheet" href="/css/xoxo.css">
+    
+  
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+
+<body>
+  <div class="nav-container">
+    <nav class="home-menu pure-menu pure-menu-horizontal">
+  <a class="pure-menu-heading" href="/">
+    <img class="avatar" src="https://xiaokunliu.github.io/images/logo.jpg">
+    <span class="title">疾风先生</span>
+  </a>
+
+  <ul class="pure-menu-list clearfix">
+      
+          
+            <li class="pure-menu-item"><a href="/" class="pure-menu-link">首页</a></li>
+          
+      
+          
+            <li class="pure-menu-item"><a href="/archives" class="pure-menu-link">归档</a></li>
+          
+      
+          
+            <li class="pure-menu-item"><a href="/tags" class="pure-menu-link">标签</a></li>
+          
+      
+          
+            <li class="pure-menu-item"><a href="/categories" class="pure-menu-link">分类</a></li>
+          
+      
+          
+            <li class="pure-menu-item"><a href="/search" class="pure-menu-link">搜索</a></li>
+          
+      
+  </ul>
+   
+</nav>
+  </div>
+
+  <div class="container" id="content-outer">
+    <div class="inner" id="content-inner">
+      <div class="post-container">
+  <article class="post" id="post">
+    <header class="post-header text-center">
+      <h1 class="title">
+        并发编程之伪共享
+      </h1>
+      <span>
+        
+        <time class="time" datetime="2020-02-14T20:47:28.000Z">
+        2020-02-14
+      </time>
+        
+      </span>
+      <span class="slash">/</span>
+      <span class="post-meta">
+      <span class="post-tags">
+        <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E5%B9%B6%E5%8F%91%E7%BC%96%E7%A8%8B/" rel="tag">并发编程</a></li></ul>
+      </span>
+    </span>
+      <span class="slash">/</span>
+      <span class="read">
+      <span id="busuanzi_value_page_pv"></span> 点击
+    </span>
+    </header>
+
+    <div class="post-content">
+      <span id="more"></span>
+<h6 id="1-CPU高速缓存与伪共享"><a href="#1-CPU高速缓存与伪共享" class="headerlink" title="1. CPU高速缓存与伪共享"></a>1. CPU高速缓存与伪共享</h6><blockquote>
+<p>CPU缓存与一致性</p>
+</blockquote>
+<p>在<a target="_blank" rel="noopener" href="https://blog.csdn.net/wind_602/article/details/103914263">CPU高速缓存与内存屏障</a>的介绍中,CPU在对数据进行读取的时候遵循缓存一致性来解决高速缓存的数据不一致问题,现简述如下:</p>
+<ul>
+<li>CPU高速缓存包含L1-L3 Cache缓存,每个缓存Cache都是分段(line)存储的,也就是缓存段(Cache line)</li>
+<li>根据缓存的一致性,多核CPU处理器情况下,当其中一个CPU对其所在的Cache进行写操作并通知其他CPU,这时候其他CPU便会令该缓存失效从而去读取主内存上的数据并将连续的变量地址的数据copy到缓存段中</li>
+</ul>
+<blockquote>
+<p>伪共享定义以及产生原因</p>
+</blockquote>
+<ul>
+<li><p>伪共享</p>
+<ul>
+<li>前提:在多核CPU处理器中,每个CPU都会有对应的缓存数据,并且缓存段缓存连续存储的数据,假设是在多核处理器上有L1和L2缓存,那么此时在L1和L2的缓存段上将会从主内存中拷贝一份连续内存地址的变量数据的一个副本,实现一次读主内存,后续多次读取缓存段的数据,<strong>即CPU高速缓存是针对内存地址连续的数据变量实现一次写,多次读的效果</strong></li>
+<li>伪共享情景:当其中一个CPU对一个内存地址不连续的变量数据进行写操作的时候,由于CPU遵循缓存的一致性,那么此时另外的CPU需要对变量数据进行读操作,<strong>由于变量数据内存地址不连续导致读取缓存段中不存在该数据而从主内存中加载,也就是说对数据变量写入缓存段的时候还没有来得及读取就失效了</strong></li>
+<li>产生的影响: 伪共享产生的结果就是CPU高速缓存不生效,没有命中缓存,同时缓存的一致性破坏了读取CPU一级缓存的原则,原因是在于并发线程进行写操作的时候会令CPU缓存失效,也会造成伪共享</li>
+<li>上述就是一个伪共享的现象,即在CPU多写的情况下,CPU高速缓存对内存地址不连续的数据变量并没有真正起到缓存的作用</li>
+</ul>
+</li>
+<li><p>读取数据伪共享代码演示</p>
+</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// FalseShared.java</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">FalseShared</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 存储连续数据，同一行</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> <span class="keyword">static</span> <span class="keyword">int</span>[][] arr2continuous = <span class="keyword">new</span> <span class="keyword">int</span>[<span class="number">1024</span>][<span class="number">1024</span>];</span><br><span class="line">    <span class="comment">// 存储不连续数据，同一列</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> <span class="keyword">static</span> <span class="keyword">int</span>[][] arr2notcontinuos = <span class="keyword">new</span> <span class="keyword">int</span>[<span class="number">1024</span>][<span class="number">1024</span>];</span><br><span class="line"></span><br><span class="line">    <span class="keyword">static</span> &#123;</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> index = <span class="number">0</span>; index &lt; <span class="number">1024</span>; index ++)&#123;</span><br><span class="line">            arr2continuous[<span class="number">0</span>][index] = index * <span class="number">2</span> + <span class="number">1</span>;</span><br><span class="line">            arr2notcontinuos[index][<span class="number">0</span>] = index * <span class="number">2</span> + <span class="number">1</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">readByContinuous</span><span class="params">()</span></span>&#123;</span><br><span class="line">        <span class="keyword">long</span> start = System.currentTimeMillis();</span><br><span class="line">        <span class="keyword">int</span> len = arr2continuous.length;</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> row = <span class="number">0</span>; row &lt; len; row ++)&#123;</span><br><span class="line">            <span class="keyword">for</span> (<span class="keyword">int</span> col = <span class="number">0</span>; col &lt; len;  col ++)&#123;</span><br><span class="line">            	<span class="comment">// 读取1数据的时候会先从内存加载并把与1连续的数据也一起加载到缓存,下次读取3的时候是从缓存读取</span></span><br><span class="line">                <span class="keyword">long</span> temp = arr2continuous[row][col];</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">long</span> end = System.currentTimeMillis();</span><br><span class="line">        System.out.println(<span class="string">&quot;read arr by continuous with time : &quot;</span>+ (end - start));</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">readByNotContinuous</span><span class="params">()</span></span>&#123;</span><br><span class="line">        <span class="keyword">long</span> start = System.currentTimeMillis();</span><br><span class="line">        <span class="keyword">int</span> len = arr2notcontinuos.length;</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> row = <span class="number">0</span>; row &lt; len; row ++)&#123;</span><br><span class="line">            <span class="keyword">for</span> (<span class="keyword">int</span> col = <span class="number">0</span>; col &lt; len;  col ++)&#123;</span><br><span class="line">            	<span class="comment">// 读取1的时候并没有发现有连续数据的,因此只会copy数据1到缓存,也就是下次读取3的时候还要从</span></span><br><span class="line">            	<span class="comment">// 主内存中读取</span></span><br><span class="line">                <span class="keyword">long</span> temp = arr2notcontinuos[col][row];</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">long</span> end = System.currentTimeMillis();</span><br><span class="line">        System.out.println(<span class="string">&quot;read arr by not continuous with time : &quot;</span>+ (end - start));</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> Exception </span>&#123;</span><br><span class="line">        <span class="keyword">new</span> Thread()&#123;</span><br><span class="line">            <span class="meta">@Override</span></span><br><span class="line">            <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</span><br><span class="line">                readByContinuous();</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;.start();</span><br><span class="line"></span><br><span class="line">        <span class="keyword">new</span> Thread()&#123;</span><br><span class="line">            <span class="meta">@Override</span></span><br><span class="line">            <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</span><br><span class="line">                readByNotContinuous();</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;.start();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>代码结果</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">## case 1</span><br><span class="line">read arr by continuous with time : 12</span><br><span class="line">read arr by not continuous with time : 24</span><br><span class="line"></span><br><span class="line">## case 2</span><br><span class="line">read arr by continuous with time : 12</span><br><span class="line">read arr by not continuous with time : 19</span><br><span class="line">// ...</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><p>代码结果分析</p>
+<ul>
+<li>在上述演示的代码中,数组存储的数据都一样,区别在于数据分别存储在数据的同一行以及同一列</li>
+<li>在程序运行过程中,遍历获取同一列数组的数据执行的时间要慢于同一行的数组</li>
+<li>数组存储的数据在同一行上是数据连续的,同一列的数组数据不具备连续性</li>
+<li>存储连续性的数据有助于提升程序的执行效率,也就是响应时间</li>
+<li>不连续性的数据最终存储在不同的缓存段中</li>
+</ul>
+</li>
+<li><p>结果示意图演示(便于理解)<br><img src="https://img-blog.csdnimg.cn/20200129164400909.jpg?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dpbmRfNjAy,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"></p>
+</li>
+<li><p>写数据产生伪共享</p>
+</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// shared.java</span></span><br><span class="line"><span class="keyword">int</span> x = <span class="number">10</span>;</span><br><span class="line"><span class="keyword">int</span> y = <span class="number">9</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">// write thread</span></span><br><span class="line">run()&#123;</span><br><span class="line">	x = <span class="number">11</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// read thread</span></span><br><span class="line">run()&#123;</span><br><span class="line">	TimeUnit.SECONDS.sleep(<span class="number">1L</span>);</span><br><span class="line">	<span class="keyword">int</span> x1 = x;</span><br><span class="line">	<span class="keyword">int</span> temp = y;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>分析<ul>
+<li>根据缓存一致性原则,最后输出的x1必然与x=11的数据一致</li>
+<li>说明由于缓存一致性的原则,读取线程最终会去读取主内存更新后的x的数据,读取线程当前的缓存段缓存的x与y(数据内存连续性会缓存在同一个缓存段中)失效,说明这时候的y也是从主内存中读取数据,对于y而言,缓存没有命中,存在伪共享</li>
+</ul>
+</li>
+</ul>
+<h6 id="2-java解决伪共享的方案"><a href="#2-java解决伪共享的方案" class="headerlink" title="2. java解决伪共享的方案"></a>2. java解决伪共享的方案</h6><blockquote>
+<p>使用<code>@sun.misc.Contended</code>解决伪共享的问题</p>
+</blockquote>
+<ul>
+<li><p>修饰字段属性</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// The following three initially uninitialized fields are exclusively</span></span><br><span class="line"><span class="comment">// managed by class java.util.concurrent.ThreadLocalRandom. These</span></span><br><span class="line"> <span class="comment">// fields are used to build the high-performance PRNGs in the</span></span><br><span class="line"> <span class="comment">// concurrent code, and we can not risk accidental false sharing.</span></span><br><span class="line"> <span class="comment">// Hence, the fields are isolated with @Contended.</span></span><br><span class="line"></span><br><span class="line"> <span class="comment">/** The current seed for a ThreadLocalRandom */</span></span><br><span class="line"> <span class="meta">@sun</span>.misc.Contended(<span class="string">&quot;tlr&quot;</span>)</span><br><span class="line"> <span class="keyword">long</span> threadLocalRandomSeed;</span><br><span class="line"></span><br><span class="line"> <span class="comment">/** Probe hash value; nonzero if threadLocalRandomSeed initialized */</span></span><br><span class="line"> <span class="meta">@sun</span>.misc.Contended(<span class="string">&quot;tlr&quot;</span>)</span><br><span class="line"> <span class="keyword">int</span> threadLocalRandomProbe;</span><br><span class="line"></span><br><span class="line"> <span class="comment">/** Secondary seed isolated from public ThreadLocalRandom sequence */</span></span><br><span class="line"> <span class="meta">@sun</span>.misc.Contended(<span class="string">&quot;tlr&quot;</span>)</span><br><span class="line"> <span class="keyword">int</span> threadLocalRandomSecondarySeed;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>修饰类</p>
+</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@sun</span>.misc.Contended</span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ForkJoinPool</span> <span class="keyword">extends</span> <span class="title">AbstractExecutorService</span> </span>&#123;</span><br><span class="line">	<span class="comment">// 表示这个类下的属性内存地址在cache line都具备连续性</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><p>解决方案原理示意图<br><img src="https://img-blog.csdnimg.cn/20200129182306442.jpg?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dpbmRfNjAy,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"></p>
+</li>
+<li><p>分析</p>
+<ul>
+<li>其实就是将不连续的数据变量通过注解的方式将它们存储到缓存段中连续紧密的区域中</li>
+<li>按照这个思路,也可以根据实际场景有针对性地对数据进行划分,比如热点数据以及冷数据,即可以根据数据的读写场景情况来分配变量在缓存段的存储位置,这样能够有效地提升CPU利用缓存的特点来提升响应速度</li>
+</ul>
+</li>
+<li><p>参考外链文档代码以及输出字段</p>
+</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// source.java</span></span><br><span class="line"> <span class="keyword">public</span> <span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">ContendedTest1</span> </span>&#123;</span><br><span class="line">    <span class="meta">@Contended</span></span><br><span class="line">      <span class="keyword">private</span> Object contendedField1;</span><br><span class="line">      <span class="keyword">private</span> Object plainField1;</span><br><span class="line">      <span class="keyword">private</span> Object plainField2;</span><br><span class="line">      <span class="keyword">private</span> Object plainField3;</span><br><span class="line">      <span class="keyword">private</span> Object plainField4;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// 输出</span></span><br><span class="line">  TestContended$ContendedTest1: field layout</span><br><span class="line">     @ <span class="number">12</span> --- instance fields start ---</span><br><span class="line">     @ <span class="number">12</span> <span class="string">&quot;plainField1&quot;</span> Ljava.lang.Object;</span><br><span class="line">     @ <span class="number">16</span> <span class="string">&quot;plainField2&quot;</span> Ljava.lang.Object;</span><br><span class="line">     @ <span class="number">20</span> <span class="string">&quot;plainField3&quot;</span> Ljava.lang.Object;</span><br><span class="line">     @ <span class="number">24</span> <span class="string">&quot;plainField4&quot;</span> Ljava.lang.Object;</span><br><span class="line">     @<span class="number">156</span> <span class="string">&quot;contendedField1&quot;</span> Ljava.lang.Object; (contended, group = <span class="number">0</span>)</span><br><span class="line">     @<span class="number">288</span> --- instance fields end ---</span><br><span class="line">     @<span class="number">288</span> --- instance ends ---</span><br><span class="line"> </span><br><span class="line"><span class="comment">// 结果: 将contendedField1与其他字段分配的内存地址区分开,没有放在同一个cache line中(jdk默认cache line是128bit)</span></span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>用户使用方式<ul>
+<li>在对应类或者属性字段添加注解<code>@Contended</code></li>
+<li>其次运行的时候需要设置VM参数为<code>-XX:-RestrictContended</code></li>
+<li>如果需要设置cache line的宽度,可以通过<code>-XX:-RestrictContended -XX:ContendedPaddingWidth=256</code>设置生效</li>
+</ul>
+</li>
+</ul>
+<blockquote>
+<p>参考文档</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">https://dzone.com/articles/what-false-sharing-is-and-how-jvm-prevents-it</span><br><span class="line">http://mail.openjdk.java.net/pipermail/hotspot-dev/2012-November/007309.html</span><br></pre></td></tr></table></figure>
+
+    </div>
+
+    <div>全文完。</div>
+  </article>
+  <div class="toc-container">
+    
+  <div id="toc" class="toc-article">
+    <strong class="toc-title">目录</strong>
+    <ol class="toc"><li class="toc-item toc-level-6"><a class="toc-link" href="#1-CPU%E9%AB%98%E9%80%9F%E7%BC%93%E5%AD%98%E4%B8%8E%E4%BC%AA%E5%85%B1%E4%BA%AB"><span class="toc-text">1. CPU高速缓存与伪共享</span></a></li><li class="toc-item toc-level-6"><a class="toc-link" href="#2-java%E8%A7%A3%E5%86%B3%E4%BC%AA%E5%85%B1%E4%BA%AB%E7%9A%84%E6%96%B9%E6%A1%88"><span class="toc-text">2. java解决伪共享的方案</span></a></li></ol>
+  </div>
+
+
+  </div>
+</div>
+<div class="copyright">
+    <span>本作品采用</span>
+    <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by/4.0/">知识共享署名 4.0 国际许可协议</a>
+    <span>进行许可。 转载时请注明原文链接。</span>
+</div>
+<div class="share" style="width: 100%;">
+  <img src="/images/wechat-small.jpg" alt="Running Geek" style="margin: auto; display: block;"/>
+
+  <div style="margin: auto; text-align: center; font-size: 0.8em; color: grey;">老铁们关注走一走，不迷路</div>
+  
+</div>
+
+  
+    <div class="post-nav">
+      <div class="post-nav-item post-nav-next">
+        
+          <span>〈 </span>
+          <a href="/2020/02/07/regex/" rel="next" title="正则常用参考">
+          正则常用参考
+          </a>
+        
+      </div>
+  
+      <div class="post-nav-item post-nav-prev">
+          
+          <a href="/2020/02/15/final/" rel="prev" title="final线程安全与工作原理">
+            final线程安全与工作原理
+          </a>
+          <span>〉</span>
+        
+      </div>
+    </div>
+  
+
+
+    </div>
+
+    
+
+  </div>
+  <footer class="footer text-center">
+    <div id="bottom-inner">
+        <a class="bottom-item" href="https://xiaokunliu.github.io">首页</a> |
+        <a class="bottom-item" href="https://xiaokunliu.github.io" target="_blank">主站</a> |
+        <a class="bottom-item" href="https://github.com/xiaokunliu" target="_blank">GitHub</a> |
+        <a class="bottom-item" href="https://hexo.io" target="_blank">Powered by hexo</a> |
+        <a class="bottom-item" href="https://github.com/KevinOfNeu/hexo-theme-xoxo" target="_blank">Theme xoxo</a>
+    </div>
+</footer>
+  
+
+<script>
+  (function(window, document, undefined) {
+
+    var timer = null;
+
+    function returnTop() {
+      cancelAnimationFrame(timer);
+      timer = requestAnimationFrame(function fn() {
+        var oTop = document.body.scrollTop || document.documentElement.scrollTop;
+        if (oTop > 0) {
+          document.body.scrollTop = document.documentElement.scrollTop = oTop - 50;
+          timer = requestAnimationFrame(fn);
+        } else {
+          cancelAnimationFrame(timer);
+        }
+      });
+    }
+
+    var hearts = [];
+    window.requestAnimationFrame = (function() {
+      return window.requestAnimationFrame ||
+        window.webkitRequestAnimationFrame ||
+        window.mozRequestAnimationFrame ||
+        window.oRequestAnimationFrame ||
+        window.msRequestAnimationFrame ||
+        function(callback) {
+          setTimeout(callback, 1000 / 60);
+        }
+    })();
+    init();
+
+    function init() {
+      css(".heart{z-index:9999;width: 10px;height: 10px;position: fixed;background: #f00;transform: rotate(45deg);-webkit-transform: rotate(45deg);-moz-transform: rotate(45deg);}.heart:after,.heart:before{content: '';width: inherit;height: inherit;background: inherit;border-radius: 50%;-webkit-border-radius: 50%;-moz-border-radius: 50%;position: absolute;}.heart:after{top: -5px;}.heart:before{left: -5px;}");
+      attachEvent();
+      gameloop();
+      addMenuEvent();
+    }
+
+    function gameloop() {
+      for (var i = 0; i < hearts.length; i++) {
+        if (hearts[i].alpha <= 0) {
+          document.body.removeChild(hearts[i].el);
+          hearts.splice(i, 1);
+          continue;
+        }
+        hearts[i].y--;
+        hearts[i].scale += 0.004;
+        hearts[i].alpha -= 0.013;
+        hearts[i].el.style.cssText = "left:" + hearts[i].x + "px;top:" + hearts[i].y + "px;opacity:" + hearts[i].alpha + ";transform:scale(" + hearts[i].scale + "," + hearts[i].scale + ") rotate(45deg);background:" + hearts[i].color;
+      }
+      requestAnimationFrame(gameloop);
+    }
+
+    /**
+     * 给logo设置点击事件
+     * 
+     * - 回到顶部
+     * - 出现爱心
+     */
+    function attachEvent() {
+      var old = typeof window.onclick === "function" && window.onclick;
+      var logo = document.getElementById("logo");
+      if (logo) {
+        logo.onclick = function(event) {
+          returnTop();
+          old && old();
+          createHeart(event);
+        }
+      }
+      
+    }
+
+    function createHeart(event) {
+      var d = document.createElement("div");
+      d.className = "heart";
+      hearts.push({
+        el: d,
+        x: event.clientX - 5,
+        y: event.clientY - 5,
+        scale: 1,
+        alpha: 1,
+        color: randomColor()
+      });
+      document.body.appendChild(d);
+    }
+
+    function css(css) {
+      var style = document.createElement("style");
+      style.type = "text/css";
+      try {
+        style.appendChild(document.createTextNode(css));
+      } catch (ex) {
+        style.styleSheet.cssText = css;
+      }
+      document.getElementsByTagName('head')[0].appendChild(style);
+    }
+
+    function randomColor() {
+      // return "rgb(" + (~~(Math.random() * 255)) + "," + (~~(Math.random() * 255)) + "," + (~~(Math.random() * 255)) + ")";
+      return "#F44336";
+    }
+
+    function addMenuEvent() {
+      var menu = document.getElementById('menu-main-post');
+      if (menu) {
+        var toc = document.getElementById('toc');
+        if (toc) {
+          menu.onclick = function() {
+            if (toc) {
+              if (toc.style.display == 'block') {
+                toc.style.display = 'none';
+              } else {
+                toc.style.display = 'block';
+              }
+            }
+          };
+        } else {
+          menu.style.display = 'none';
+        }
+      }
+    }
+
+  })(window, document);
+</script>
+
+  
+
+
+
+</body>
+</html>
