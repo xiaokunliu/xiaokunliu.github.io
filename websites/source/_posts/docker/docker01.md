@@ -1,6 +1,6 @@
 ---
-title: Docker
-category: docker使用笔记
+title: Docker使用小结
+category: Docker
 date: 2021-04-18 11:44:43
 tags: Docker
 ---
@@ -418,3 +418,15 @@ cat /etc/hosts
 ```text
 SDN（软件定义网络）或NFV（网络功能虚拟化）的相关技术
 ```
+
+#### docker使用相关的细节
+- source.list配置
+- 参考：https://www.oreilly.com/library/view/robot-operating-system/9781783987443/0b841e6d-1ac3-4b5d-adba-482c92119e64.xhtml
+```text
+deb http://mirrors.163.com/ubuntu/ trusty main restricted universe multiverse
+deb http://mirrors.163.com/ubuntu/ trusty-security main restricted universe multiverse
+deb http://mirrors.163.com/ubuntu/ trusty-updates main restricted universe multiverse
+deb http://mirrors.163.com/ubuntu/ trusty-proposed main restricted universe multiverse
+deb http://mirrors.163.com/ubuntu/ trusty-backports main restricted universe multiverse
+```
+
