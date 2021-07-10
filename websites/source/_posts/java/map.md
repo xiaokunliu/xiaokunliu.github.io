@@ -1,14 +1,14 @@
 ---
-title: 单节点的一致性hash算法
-category: 分布式架构设计
+title: Java之HashMap与ConcurrentHashMap
+category: Java核心笔记
 date: 2020-10-01 13:03:44
-tags: 分布式架构设计
+tags: Java核心笔记 
 
 ---
 
 <!-- more -->
 
-![](/Users/keithl/docker/dev/data/xiaokunliu.github.io/websites/zimages/arch/single_consistence/title.jpg)
+![](/Users/keithl/github/personal/xiaokunliu.github.io/websites/zimages/java/map/title.jpg)
 
 ###   JDK1.7版本的Hash
 
@@ -26,7 +26,7 @@ tags: 分布式架构设计
 
 ##### HashTable的类关系图
 
-![](/Users/keithl/docker/dev/data/xiaokunliu.github.io/websites/zimages/arch/single_consistence/hashtabe_class.jpg)
+![](/Users/keithl/github/personal/xiaokunliu.github.io/websites/zimages/java/map/hashtabe_class.jpg)
 
 根据上述类图,我们知道HashTable主要包含三个核心部分,一个是控制hash阀值的Holder,一个是存储key-value的Entry以及提供遍历查询的KeySet/ValueSet/迭代器Enumerator.
 

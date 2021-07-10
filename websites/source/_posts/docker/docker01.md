@@ -430,3 +430,39 @@ deb http://mirrors.163.com/ubuntu/ trusty-proposed main restricted universe mult
 deb http://mirrors.163.com/ubuntu/ trusty-backports main restricted universe multiverse
 ```
 
+#### Dockerfile使用
+##### 组成部分
+- 基础镜像信息 
+- 维护者信息 
+- 镜像操作指令
+- 容器启动时执行指令
+
+
+##### 基础镜像信息
+```text
+FROM openjdk:8
+```
+
+##### 维护者信息
+```text
+MAINTAINER xiaokunliu
+```
+
+##### 镜像操作指令
+```text
+VOLUME /tmp
+ADD ./dubbo-admin/dubbo-admin/target/dubbo-admin-0.0.1-SNAPSHOT.jar
+```
+
+##### 容器启动时执行指令
+```text
+ENTRYPOINT ["java", "-Djava.security.egd=file:/dev/./urandom", "-jar", "/app.jar]
+```
+
+##### 指令操作说明
+```text
+https://docs.docker.com/engine/reference/builder/
+```
+
+#### Docker Client 指令
+`https://docs.docker.com/engine/reference/commandline/docker/`

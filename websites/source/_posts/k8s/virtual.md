@@ -1,5 +1,5 @@
 ---
-title: vagrant安装linux
+title: vagrant安装linux-ubuntu
 category: k8s
 date: 2021-06-16 23:44:43
 tags: k8s
@@ -77,4 +77,25 @@ vagrant up
 vagrant status
 vagrant halt
 vagrant ssh
+```
+
+#### vagrant出现timeout
+
+```text
+default: SSH auth method: private key
+default: Warning: Connection reset. Retrying...
+default: Warning: Remote connection disconnect. Retrying...
+default: Warning: Connection reset. Retrying...
+default: Warning: Connection reset. Retrying...
+default: Warning: Remote connection disconnect. Retrying...
+default: Warning: Connection reset. Retrying...
+default: Warning: Remote connection disconnect. Retrying...
+default: Warning: Connection reset. Retrying...
+default: Warning: Remote connection disconnect. Retrying...
+```
+
+- 解决方案(TODO)
+
+```text
+
 ```
