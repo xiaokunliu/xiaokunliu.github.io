@@ -58,14 +58,13 @@ vagrant init ubuntu/xenial64
 ## TODO
 ## https://blog.csdn.net/feifeixiang2835/article/details/91348700
 Vagrant.configure('2') do |config|
-    config.vm.network = "public_network"
+    config.vm.network = "private_network", type: "dhcp"
     
     ## 配置虚拟机信息
     config.vm.provider "virtualbox" do |vb|
         vb.memory = "2048"
         vb.cpus = 2
-        vb.name = "master" 
-        vb.gui = true ## 解决下面timeout的问题
+        vb.name = "master"  
 end    
 ```
 
