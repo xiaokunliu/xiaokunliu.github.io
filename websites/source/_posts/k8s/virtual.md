@@ -65,6 +65,7 @@ Vagrant.configure('2') do |config|
         vb.memory = "2048"
         vb.cpus = 2
         vb.name = "master" 
+        vb.gui = true ## 解决下面timeout的问题
 end    
 ```
 
@@ -75,13 +76,15 @@ vagrant add box ubuntu/xenial64 box_image_path
 vagrant up
 
 vagrant status
-vagrant halt
+## vagrant halt - 关机操作
+vagrant suspend ## 挂起，重新唤醒vagrant up
 vagrant ssh
 ```
 
 #### vagrant出现timeout
 
 ```text
+## 主要是指定网络的时候指定了一个固定IP，一旦切换网络，分配的IP就不可用
 default: SSH auth method: private key
 default: Warning: Connection reset. Retrying...
 default: Warning: Remote connection disconnect. Retrying...
@@ -97,5 +100,6 @@ default: Warning: Remote connection disconnect. Retrying...
 - 解决方案(TODO)
 
 ```text
-
+## 设置为私网 - 待验证
+config.vm.network "private network", type: "dhcp" ## 动态分配IP
 ```
