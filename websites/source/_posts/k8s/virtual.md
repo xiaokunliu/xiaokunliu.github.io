@@ -78,6 +78,7 @@ vagrant status
 ## vagrant halt - 关机操作
 vagrant suspend ## 挂起，重新唤醒vagrant up
 vagrant ssh
+vagrant provision  ### 恢复之前镜像
 ```
 
 #### vagrant出现timeout
