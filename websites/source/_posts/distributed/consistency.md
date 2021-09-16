@@ -41,22 +41,18 @@ tags: 分布式架构设计
 
 - 由于网络延迟问题产生数据不一致
 
-![](/Users/keithl/docker/dev/data/xiaokunliu.github.io/websites/zimages/arch/consistency/consistency.jpg)
-
+![](https://raw.githubusercontent.com/xiaokunliu/xiaokunliu.github.io/feature/writing/websites/zimages/arch/consistency/consistency.jpg)
 
 
 - 数据库强一致性分析
 
-![](/Users/keithl/docker/dev/data/xiaokunliu.github.io/websites/zimages/arch/consistency/isoluation_consistency.jpg)
+![](https://raw.githubusercontent.com/xiaokunliu/xiaokunliu.github.io/feature/writing/websites/zimages/arch/consistency/isoluation_consistency.jpg)
 
 
-
-![](/Users/keithl/docker/dev/data/xiaokunliu.github.io/websites/zimages/arch/consistency/isoluation_consistency2.jpg)
-
+![](https://raw.githubusercontent.com/xiaokunliu/xiaokunliu.github.io/feature/writing/websites/zimages/arch/consistency/isoluation_consistency2.jpg)
 
 
-![](/Users/keithl/docker/dev/data/xiaokunliu.github.io/websites/zimages/arch/consistency/isoluation_consistency3.jpg)
-
+![](https://raw.githubusercontent.com/xiaokunliu/xiaokunliu.github.io/feature/writing/websites/zimages/arch/consistency/isoluation_consistency3.jpg)
 
 
 > 串行化与强一致性区分
@@ -64,18 +60,13 @@ tags: 分布式架构设计
 - 串行化
 
 
-
 - 强一致性
-
-
 
 
 
 #### 顺序一致性
 
 分布事件的执行顺序一致性问题
-
-
 
 
 
@@ -86,7 +77,6 @@ tags: 分布式架构设计
 #### 服务状态
 
 ##### 有状态服务
-
 
 
 
