@@ -8,3 +8,4 @@ public/
 .idea/
 package-lock.json
 websites/themes/next/
+.obsidian/
